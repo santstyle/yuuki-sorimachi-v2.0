@@ -66,12 +66,12 @@ async function instagramCommand(sock, chatId, message) {
                 await sock.sendMessage(chatId, {
                     video: { url: mediaUrl },
                     mimetype: "video/mp4",
-                    caption: "✅ Video Instagram berhasil diunduh!\n\n_Downloaded by Artoria Bot_"
+                    caption: "✅ Video Instagram berhasil diunduh!\n\n_Downloaded by Yuuki Bot_"
                 }, { quoted: message });
             } else {
                 await sock.sendMessage(chatId, {
                     image: { url: mediaUrl },
-                    caption: "✅ Foto Instagram berhasil diunduh!\n\n_Downloaded by Artoria Bot_"
+                    caption: "✅ Foto Instagram berhasil diunduh!\n\n_Downloaded by Yuuki Bot_"
                 }, { quoted: message });
             }
 

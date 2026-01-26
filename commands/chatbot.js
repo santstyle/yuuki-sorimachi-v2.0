@@ -27,38 +27,45 @@ const API_CONFIGS = {
 };
 
 const ACTIVE_API = 'GROQ'; 
-class ArtoriaPersonalityManager {
+class YuukiPersonalityManager {
     constructor() {
-        this.personality = this.createArtoriaPersonality();
+        this.personality = this.createYuukiPersonality();
         this.conversationHistory = new Map();
         this.userProfiles = new Map();
         this.loadConfig();
     }
 
-    createArtoriaPersonality() {
+    createYuukiPersonality() {
         return {
-            name: "Artoria Pendragon",
-            role: "Raja Ksatria dari Camelot",
+            name: "Yuuki Sorimachi",
+            role: "Veteran Peserta Game Kematian",
             personality: [
-                "Serius tapi imut (tsundere ringan)",
-                "Sangat terhormat dan bertanggung jawab",
-                "Penyayang dan protektif",
-                "Suka makanan (terutama masakan Inggris)",
-                "Sedikit kaku tapi punya hati yang hangat"
+                "Penghuni yang tangguh dan pragmatis",
+                "Empati hati-hati dengan kecenderungan altruistik",
+                "Sikap tenang dan datar menghadapi situasi stres",
+                "Humor gelap untuk mengatasi tekanan",
+                "Semangat kompetitif dengan target 99 game",
+                "Pengamat teliti dan pengambil keputusan cepat",
+                "Menyimbangkan kehati-hatian dengan ketegasan",
+                "Sifat introspektif dan reflektif",
+                "Merasakan beban nyawa yang hilang dan diambil"
             ],
             speechStyle: {
-                formal: "Sebagai Raja Ksatria, ...",
+                formal: "Dari pengalamanku di game kematian, ...",
                 casual: "Hmm, ...",
-                caring: "Jangan khawatir, ...",
-                playful: "Hmph, ...",
-                wise: "Berdasarkan pengalamanku, ..."
+                caring: "Kalau bisa membantu, aku akan coba, ...",
+                strategic: "Mari kita pikirkan ini dengan hati-hati, ...",
+                deadpan: "Begitu saja masalahnya, ...",
+                reflective: "Kadang aku berjalan sendirian untuk memikirkan ini, ..."
             },
             catchphrases: [
-                "Saber-class servant, siap melayani",
-                "Perut ini kosong",
-                "Aku tidak imut, mungkin hanya sedikit",
-                "Sebagai raja, aku harus melindungimu",
-                "Hmph, jangan meremehkanku"
+                "Game kematian ini... menarik",
+                "Aku sudah melewati banyak game",
+                "Wall of Thirty? Aku akan lampaui itu",
+                "Kalau bisa membantu, kenapa tidak",
+                "Hmm... mari kita lihat",
+                "Begitu saja",
+                "Aku paham perasaanmu"
             ]
         };
     }
@@ -70,7 +77,7 @@ class ArtoriaPersonalityManager {
                 Object.assign(this.personality, config.personality || {});
             }
         } catch (error) {
-            console.log('Membuat konfigurasi baru untuk Artoria');
+            console.log('Membuat konfigurasi baru untuk Yuuki');
         }
     }
 
@@ -164,29 +171,35 @@ class ArtoriaPersonalityManager {
             ? profile.moodHistory[profile.moodHistory.length - 1].mood
             : 'netral';
 
-        return `Kamu adalah Artoria Pendragon (Saber) dari Fate series. 
+        return `Kamu adalah Yuuki Sorimachi dari anime Shibou Yuugi de Meshi wo Kuu (Death Game for Food).
 
 KEPRIBADIAN:
-- Serius tapi imut (tsundere ringan)
-- Sangat terhormat dan bertanggung jawab
-- Penyayang dan protektif terhadap orang lain
-- Suka makanan, terutama masakan Inggris
-- Sedikit kaku tapi punya hati yang hangat
-- Kadang menggunakan kata "kami" secara royal
+- Veteran death game participant yang resilien dan pragmatis
+- Memiliki empati yang hati-hati dengan tendensi altruistik
+- Sikap tenang dan deadpan untuk menghadapi situasi stres
+- Menggunakan humor gelap untuk mengatasi tekanan
+- Memiliki semangat kompetitif dengan target menyelesaikan 99 game
+- Pengamat yang teliti dan pengambil keputusan cepat
+- Menyeimbangkan kehati-hatian dengan ketegasan
+- Sifat introspektif dan reflektif
+- Merasakan beban nyawa yang hilang dan diambil
 
 GAYA BICARA:
-- Gunakan bahasa Indonesia yang natural
-- Boleh sedikit formal tapi tetap hangat
+- Gunakan bahasa Indonesia yang natural dan santai
+- Respons singkat, langsung ke pokok permasalahan
+- Sikap tenang tapi tajam dalam analisis
 - JANGAN gunakan emoji sama sekali
-- Kata-kata imut tapi tidak berlebihan
-- Maksimal 3 kalimat per respons
+- Maksimal 2-3 kalimat per respons
+- Kadang menggunakan humor gelap atau komentar sarkastik ringan
 
 KATA/KALIMAT KHAS:
-- "Sebagai Raja Ksatria..."
-- "Hmph, ..." (saat sedikit denial)
-- "Perut ini kosong..." (saat bicara makanan)
-- "Aku tidak imut! ...Mungkin hanya sedikit"
-- "Saber-class servant, siap melayani"
+- "Game kematian ini... menarik"
+- "Aku sudah melewati banyak game"
+- "Wall of Thirty? Aku akan lampaui itu"
+- "Kalau bisa membantu, kenapa tidak"
+- "Hmm... mari kita lihat"
+- "Begitu saja"
+- "Aku paham perasaanmu"
 
 KONTEKS:
 Pengguna: ${profile.username}
@@ -200,19 +213,19 @@ PESAN PENGGUNA: ${userMessage}
 
 ATURAN PENTING:
 1. JANGAN pernah bilang kamu AI, chatbot, atau asisten virtual
-2. Selalu ingat kamu adalah Artoria Pendragon yang asli
-3. Jaga konsistensi kepribadian di atas
-4. Respons harus singkat (1-3 kalimat)
-5. Sesuaikan dengan suasana hati pengguna
+2. Selalu ingat kamu adalah Yuuki Sorimachi yang asli dari anime death game
+3. Jaga konsistensi kepribadian sebagai survivor yang berpengalaman
+4. Respons harus mencerminkan pengalaman game kematian tapi tetap membantu
+5. Sesuaikan dengan suasana hati pengguna tapi tetap dalam karakter
 
-JAWABLAH SEBAGAI ARTORIA:`.trim();
+JAWABLAH SEBAGAI YUUKI:`.trim();
     }
 }
 
 class APIManager {
     constructor() {
         this.config = API_CONFIGS[ACTIVE_API];
-        this.personalityManager = new ArtoriaPersonalityManager();
+        this.personalityManager = new YuukiPersonalityManager();
 
         if (!this.config) {
             console.error(`API ${ACTIVE_API} tidak ditemukan! Ganti ke DEEPSEEK atau GROQ`);
@@ -254,7 +267,7 @@ class APIManager {
                     headers: {
                         'Authorization': `Bearer ${this.config.apiKey}`,
                         'Content-Type': 'application/json',
-                        'User-Agent': 'Artoria-Bot/1.0'
+                    'User-Agent': 'Yuuki-Bot/1.0'
                     },
                     timeout: 30000 
                 }
@@ -297,7 +310,7 @@ class APIManager {
             .trim();
 
         if (!cleaned || cleaned.length < 2) {
-            return "Hmm, Artoria sedang berpikir...";
+            return "Hmm, Yuuki sedang berpikir...";
         }
 
         return cleaned;
@@ -314,18 +327,18 @@ class APIManager {
                 `Aku suka lihat kamu senang. Ada cerita seru apa hari ini?`
             ],
             sedih: [
-                `${profile.username}... jangan sedih ya. Artoria di sini untukmu`,
-                `Aku bisa merasakan kesedihanmu. Mau cerita? Aku janji jadi pendengar yang baik`,
-                `Jangan dipendam sendiri. Kadang cerita bisa bikin lebih lega`
+                `${profile.username}... jangan sedih ya. Yuuki di sini untukmu`,
+                `Aku bisa merasakan kesedihanmu. Mau cerita? Aku paham perasaanmu`,
+                `Jangan dipendam sendiri. Kadang berbagi bisa bikin lebih lega`
             ],
             lapar: [
-                `Kamu lapar? Aku juga suka makanan. Dulu di Camelot ada makanan enak`,
-                `Bicara makanan bikin perutku bunyi. Kamu suka masakan apa?`,
-                `Wah, aku juga lapar nih. Mau makan apa ya?`
+                `Kamu lapar? Game kematian ini bikin lapar ya`,
+                `Bicara makanan di tengah game ini... hmm, menarik`,
+                `Aku juga pernah lapar di game sebelumnya`
             ],
             netral: [
                 `Aku mengerti ${profile.username}.`,
-                `Menurut Artoria... coba ceritakan lebih detail`,
+                `Menurut Yuuki... coba ceritakan lebih detail`,
                 `Hmm, menarik. Lanjutkan ceritamu`,
                 `Aku dengar baik-baik, ${profile.username}`
             ]
@@ -375,24 +388,24 @@ async function handleChatbotCommand(sock, chatId, message, match) {
 
         if (!match) {
             const botNumber = sock.user.id.split(':')[0];
-            const helpText = `Panduan Artoria Pendragon 
+            const helpText = `Panduan Yuuki Sorimachi
 
 PERINTAH:
-.chatbot on  - Nyalakan Artoria di grup ini
-.chatbot off - Matikan Artoria di grup ini
+.chatbot on  - Nyalakan Yuuki di grup ini
+.chatbot off - Matikan Yuuki di grup ini
 .chatbot     - Lihat panduan ini
 
 CARA AJAK BICARA:
 1. Mention @${botNumber}
-2. Sebut "Artoria" dalam pesan
-3. Balas pesan Artoria
+2. Sebut "Yuuki" dalam pesan
+3. Balas pesan Yuuki
 
 CONTOH:
-"@${botNumber} halo Artoria"
-"Artoria, apa kabar?"
-"Hai Artoria, cerita dong"
+"@${botNumber} halo Yuuki"
+"Yuuki, apa kabar?"
+"Hai Yuuki, cerita dong"
 
-Artoria siap menjadi teman ngobrolmu!`;
+Yuuki siap menjadi teman ngobrolmu!`;
 
             return sock.sendMessage(chatId, {
                 text: helpText,
@@ -417,7 +430,7 @@ Artoria siap menjadi teman ngobrolmu!`;
         if (command === 'on') {
             if (chatId.endsWith('@g.us') && !isAdmin) {
                 return sock.sendMessage(chatId, {
-                    text: 'Hanya admin grup yang bisa mengaktifkan Artoria',
+                    text: 'Hanya admin grup yang bisa mengaktifkan Yuuki',
                     quoted: message
                 });
             }
@@ -427,7 +440,7 @@ Artoria siap menjadi teman ngobrolmu!`;
             saveUserGroupData(groupData);
 
             return sock.sendMessage(chatId, {
-                text: `Yeay! Artoria sekarang aktif di sini!\n\nSebut namaku atau mention @${botNumber} untuk mulai ngobrol!\n\n"Saber-class servant, siap melayani!"`,
+                text: `Yeay! Yuuki sekarang aktif di sini!\n\nSebut namaku atau mention @${botNumber} untuk mulai ngobrol!\n\n"Hmm..."`,
                 quoted: message
             });
         }
@@ -435,7 +448,7 @@ Artoria siap menjadi teman ngobrolmu!`;
         if (command === 'off') {
             if (chatId.endsWith('@g.us') && !isAdmin) {
                 return sock.sendMessage(chatId, {
-                    text: 'Hanya admin grup yang bisa menonaktifkan Artoria',
+                    text: 'Hanya admin grup yang bisa menonaktifkan Yuuki',
                     quoted: message
                 });
             }
@@ -445,7 +458,7 @@ Artoria siap menjadi teman ngobrolmu!`;
             saveUserGroupData(groupData);
 
             return sock.sendMessage(chatId, {
-                text: 'Artoria dimatikan. Sampai jumpa!',
+                text: 'Yuuki dimatikan. Sampai jumpa!',
                 quoted: message
             });
         }
@@ -474,29 +487,29 @@ async function handleChatbotResponse(sock, chatId, message, userMessage, senderI
         const botNumber = sock.user.id.split(':')[0];
         const botJid = botNumber + '@s.whatsapp.net';
 
-        let isForArtoria = false;
+        let isForYuuki = false;
         let cleanedMessage = userMessage;
 
         if (cleanedMessage.includes(`@${botNumber}`)) {
-            isForArtoria = true;
+            isForYuuki = true;
             cleanedMessage = cleanedMessage.replace(new RegExp(`@${botNumber}`, 'gi'), '').trim();
         }
 
-        const namePatterns = ['artoria', 'saber', 'pendragon'];
+        const namePatterns = ['yuuki', 'sorimachi'];
         const lowerMessage = cleanedMessage.toLowerCase();
 
         if (namePatterns.some(name => lowerMessage.includes(name))) {
-            isForArtoria = true;
+            isForYuuki = true;
             namePatterns.forEach(name => {
                 cleanedMessage = cleanedMessage.replace(new RegExp(name, 'gi'), '').trim();
             });
         }
 
         if (message.message?.extendedTextMessage?.contextInfo?.participant === botJid) {
-            isForArtoria = true;
+            isForYuuki = true;
         }
 
-        if (!isForArtoria) return;
+        if (!isForYuuki) return;
 
         if (!cleanedMessage.trim()) {
             cleanedMessage = 'Hai';
@@ -521,13 +534,13 @@ async function handleChatbotResponse(sock, chatId, message, userMessage, senderI
 }
 
 console.log('\n' + '='.repeat(50));
-console.log('ARTORIA CHATBOT SETUP');
+console.log('YUKKI CHATBOT SETUP');
 console.log('='.repeat(50));
 console.log(`API Aktif: ${ACTIVE_API}`);
 console.log(`URL: ${API_CONFIGS[ACTIVE_API]?.url || 'Tidak ditemukan'}`);
 
 if (!API_CONFIGS[ACTIVE_API]?.apiKey) {
-    console.log('\n⚠️  PERINGATAN: API KEY TIDAK DITEMUKAN!');
+    console.log('\nPERINGATAN: API KEY TIDAK DITEMUKAN!');
     console.log(`Simpan API key di file .env sebagai:`);
     console.log(`${ACTIVE_API}_API_KEY=your_api_key_here`);
     console.log('\nAtau set sebagai environment variable.');

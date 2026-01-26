@@ -1,4 +1,4 @@
-# Artoria Bot
+# Yuuki Bot
 Version:
 - setting.js
 - package.json

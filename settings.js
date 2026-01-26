@@ -1,8 +1,8 @@
 const settings = {
-  packname: 'Artoria Pendragon | Bot',
+  packname: 'Yuuki Sorimachi | Bot',
   wm: '',
   author: '‎',
-  botName: "Artoria Pendragon | Bot",
+  botName: "Yuuki Sorimachi | Bot",
   botOwner: 'SantStyle', // Your name
   ownerNumber: '6287855675059', //Set your number
   giphyApiKey: 'qnl7ssQChTdPjsKta2Ax2LMaGXz303tq',

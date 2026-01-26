@@ -1,9 +1,9 @@
 module.exports = {
   apps: [{
-    name: "artoria-bot",
+    name: "yuuki-bot",
     "version": "1.8.0",
     script: "./index.js",
-    cwd: "/home/ubuntu/santstyle/artoriabot-v1.8",
+    cwd: "/home/ubuntu/santstyle/yuukibot-v2.0",
 
     // Log settings
     log_date_format: "YYYY-MM-DD HH:mm:ss",

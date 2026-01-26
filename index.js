@@ -3,7 +3,7 @@ const { Boom } = require('@hapi/boom')
 const fs = require('fs')
 const chalk = require('chalk')
 
-console.log('Artoria Pendragon | Bot')
+console.log('Yuuki Sorimachi | Bot')
 
 process.env.FFMPEG_PATH = 'ffmpeg'
 process.env.FFPROBE_PATH = 'ffprobe'
@@ -56,21 +56,21 @@ setInterval(() => store.writeToFile(), settings.storeWriteInterval || 10000)
 setInterval(() => {
     if (global.gc) {
         global.gc()
-        console.log('🧹 Garbage collection completed')
+        console.log(' Garbage collection completed')
     }
 }, 60000)
 
 setInterval(() => {
     const used = process.memoryUsage().rss / 1024 / 1024
     if (used > 400) {
-        console.log('⚠️  RAM too high (>400MB), restarting...')
+        console.log('RAM too high (>400MB), restarting...')
         process.exit(1)
     }
 }, 30000)
 
 let owner = JSON.parse(fs.readFileSync('./data/owner.json'))
 
-global.botname = "Artoria Pendragon | Bot"
+global.botname = "Yuuki Sorimachi | Bot"
 global.themeemoji = "•"
 
 function clearOldSessionData() {
@@ -83,13 +83,13 @@ function clearOldSessionData() {
             const oneDay = 24 * 60 * 60 * 1000
 
             if (sessionAge > oneDay) {
-                console.log('🧹 Clearing old session data...')
+                console.log('Clearing old session data...')
                 fs.rmSync(sessionDir, { recursive: true, force: true })
                 console.log('✅ Old session cleared')
             }
         }
     } catch (error) {
-        console.log('ℹ️  No session to clear:', error.message)
+        console.log('ℹNo session to clear:', error.message)
     }
 }
 
@@ -251,7 +251,7 @@ async function startXeonBotInc() {
             connectionAttempts++
 
             if (statusCode === DisconnectReason.loggedOut || statusCode === 401) {
-                console.log('🔑 Session logged out. Clearing session...')
+                console.log('Session logged out. Clearing session...')
                 try {
                     fs.rmSync('./session', { recursive: true, force: true })
                 } catch (error) {
@@ -260,7 +260,7 @@ async function startXeonBotInc() {
                 await delay(3000)
                 startXeonBotInc()
             } else if (connectionAttempts <= maxConnectionAttempts) {
-                console.log(`🔄 Reconnecting... (${connectionAttempts}/${maxConnectionAttempts})`)
+                console.log(`Reconnecting... (${connectionAttempts}/${maxConnectionAttempts})`)
                 await delay(5000)
                 startXeonBotInc()
             } else {
@@ -293,27 +293,27 @@ async function startXeonBotInc() {
 startXeonBotInc().catch(error => {
     console.error('Fatal error:', error)
     setTimeout(() => {
-        console.log('🔄 Restarting in 10 seconds...')
+        console.log('Restarting in 10 seconds...')
         startXeonBotInc()
     }, 10000)
 })
 
 process.on('uncaughtException', (err) => {
     if (!err.message.includes('Bad MAC') && !err.message.includes('decrypt')) {
-        console.error('⚠️  Uncaught Exception:', err.message)
+        console.error('Uncaught Exception:', err.message)
     }
 })
 
 process.on('unhandledRejection', (err) => {
     if (!err.message?.includes('Bad MAC') && !err.message?.includes('decrypt')) {
-        console.error('⚠️  Unhandled Rejection:', err.message)
+        console.error('Unhandled Rejection:', err.message)
     }
 })
 
 let file = require.resolve(__filename)
 fs.watchFile(file, () => {
     fs.unwatchFile(file)
-    console.log(chalk.redBright(`🔄 File ${__filename} updated`))
+    console.log(chalk.redBright(`File ${__filename} updated`))
     delete require.cache[file]
     require(file)
 })

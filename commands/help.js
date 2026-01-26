@@ -2,17 +2,17 @@ const settings = require('../settings');
 
 async function menuCommand(sock, chatId, message) {
     const menuMessage = `
-*${settings.botName || 'Artoria Pendragon | Bot'}*  
+*${settings.botName || 'Yuuki Sorimachi | Bot'}*
 Version: ${settings.version || '1.8'}  
 
 *DESCRIPTION*
-Artoria Bot is a multifunctional WhatsApp bot designed to assist with group and personal activities.
-The name "Artoria" is inspired by the character Artoria Pendragon from the Fate series.
+Yuuki Bot is a multifunctional WhatsApp bot designed to assist with group and personal activities.
+The name "Yuuki" is inspired by the character Yuuki Sorimachi from Shibou Yuugi de Meshi wo Kuu anime.
 
 To contact the owner, you can use the command .owner
 or simply chat with SantStyle if they are in the same group.
 
-Here are the available command menus in Artoria Bot:
+Here are the available command menus in Yuuki Bot:
 
 *ADMIN*
 • .antitag <on/off>

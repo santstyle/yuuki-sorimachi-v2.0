@@ -1,6 +1,6 @@
-# Artoria Pendragon | Bot
+# Yuuki Sorimachi | Bot
 
-ArtoriaBot adalah bot WhatsApp yang dibangun menggunakan Node.js dan Baileys. Bot ini menyediakan berbagai fitur seperti pengelolaan grup, downloader media, dan banyak lagi.
+YuukiBot adalah bot WhatsApp yang dibangun menggunakan Node.js dan Baileys. Bot ini menyediakan berbagai fitur seperti pengelolaan grup, downloader media, dan banyak lagi.
 
 ## Fitur Utama
 
@@ -24,8 +24,8 @@ ArtoriaBot adalah bot WhatsApp yang dibangun menggunakan Node.js dan Baileys. Bo
 Clone repository ini menggunakan Git:
 
 ```bash
-git clone https://github.com/santstyle/artoriabot-v1.8.git
-cd artoriabot-v1.8
+git clone https://github.com/santstyle/yuukibot-v2.0.git
+cd yuukibot-v2.0
 ```
 
 ### Langkah 2: Install Node Modules
@@ -126,7 +126,7 @@ Untuk menjalankan bot di background dan auto-restart:
 npm install -g pm2
 
 # Jalankan bot dengan PM2
-pm2 start npm --name "artoria-bot" -- start
+pm2 start npm --name "yuuki-bot" -- start
 
 # Atau jika menggunakan ecosystem.config.js
 pm2 start ecosystem.config.js
@@ -142,8 +142,8 @@ Cek status bot yang sedang berjalan:
 
 ```bash
 pm2 list
-pm2 status artoria-bot
-pm2 logs artoria-bot --lines 50
+pm2 status yuuki-bot
+pm2 logs yuuki-bot --lines 50
 ```
 
 ## Update Bot
@@ -152,7 +152,7 @@ Untuk memperbarui bot ke versi terbaru:
 
 ```bash
 # Hentikan bot terlebih dahulu
-pm2 stop artoria-bot
+pm2 stop yuuki-bot
 
 # Backup data penting jika perlu
 cp -r session session-backup
@@ -165,7 +165,7 @@ git pull origin main
 npm install
 
 # Restart bot
-pm2 restart artoria-bot
+pm2 restart yuuki-bot
 ```
 
 ## Penggunaan
@@ -218,16 +218,16 @@ sudo chmod -R 755 .
 pm2 monit
 
 # Restart bot
-pm2 restart artoria-bot
+pm2 restart yuuki-bot
 
 # Stop bot
-pm2 stop artoria-bot
+pm2 stop yuuki-bot
 
 # Hapus dari PM2
-pm2 delete artoria-bot
+pm2 delete yuuki-bot
 
 # Cek resource usage
-pm2 show artoria-bot
+pm2 show yuuki-bot
 ```
 
 ## Lisensi

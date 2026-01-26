@@ -7,7 +7,7 @@ async function broadcastCommand(sock, chatId, message, args) {
     const ownerJid = settings.ownerNumber + '@s.whatsapp.net';
 
     if (sender !== ownerJid) {
-        return sock.sendMessage(chatId, { text: '❌ Kamu tidak punya akses untuk broadcast!' }, { quoted: message });
+        return sock.sendMessage(chatId, { text: 'Kamu tidak punya akses untuk broadcast!' }, { quoted: message });
     }
 
     let bcText = args.join(' ') || '';
