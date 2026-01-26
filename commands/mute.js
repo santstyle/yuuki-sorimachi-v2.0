@@ -5,14 +5,14 @@ async function muteCommand(sock, chatId, senderId, durationInMinutes) {
 
     if (!isBotAdmin) {
         await sock.sendMessage(chatId, {
-            text: 'Aku harus jadi admin dulu biar bisa mute grup~'
+            text: 'Aku harus jadi admin dulu biar bisa mute grup'
         });
         return;
     }
 
     if (!isSenderAdmin) {
         await sock.sendMessage(chatId, {
-            text: 'Wah, cuma admin yang bisa mute grup nih~'
+            text: 'Wah, cuma admin yang bisa mute grup'
         });
         return;
     }
@@ -21,19 +21,19 @@ async function muteCommand(sock, chatId, senderId, durationInMinutes) {
     try {
         await sock.groupSettingUpdate(chatId, 'announcement'); 
         await sock.sendMessage(chatId, {
-            text: `Grup dimute untuk ${durationInMinutes} menit ya~`
+            text: `Grup dimute untuk ${durationInMinutes} menit ya`
         });
 
         setTimeout(async () => {
             await sock.groupSettingUpdate(chatId, 'not_announcement'); 
             await sock.sendMessage(chatId, {
-                text: 'Waktunya selesai~ grup udah di-unmute!'
+                text: 'Waktunya selesai grup udah di-unmute'
             });
         }, durationInMilliseconds);
     } catch (error) {
         console.error('Error mute/unmute grup:', error);
         await sock.sendMessage(chatId, {
-            text: 'Aduh, gagal mute/unmute grup nih. Coba lagi ya~'
+            text: 'Aduh, gagal mute/unmute grup nih. Mending kamu manual aja deh'
         });
     }
 }

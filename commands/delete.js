@@ -5,14 +5,14 @@ async function deleteCommand(sock, chatId, message, senderId) {
 
     if (!isBotAdmin) {
         await sock.sendMessage(chatId, {
-            text: 'Aku harus jadi admin dulu biar bisa hapus pesan~'
+            text: 'Aku harus jadi admin dulu biar bisa hapus pesan'
         });
         return;
     }
 
     if (!isSenderAdmin) {
         await sock.sendMessage(chatId, {
-            text: 'Wah, cuma admin yang bisa hapus pesan nih~'
+            text: 'Wah, cuma admin yang bisa hapus pesan nih'
         });
         return;
     }
@@ -31,7 +31,7 @@ async function deleteCommand(sock, chatId, message, senderId) {
         });
     } else {
         await sock.sendMessage(chatId, {
-            text: 'Reply pesan yang mau dihapus dong~'
+            text: 'Reply pesan yang mau dihapus dong'
         });
     }
 }

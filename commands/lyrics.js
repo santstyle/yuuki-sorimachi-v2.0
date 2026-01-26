@@ -51,8 +51,8 @@ function parseSongQuery(query) {
 
         if (words.length === 3) {
             return {
-                artist: words.slice(0, 2).join(' '), // "alan walker"
-                title: words[2] // "faded"
+                artist: words.slice(0, 2).join(' '), 
+                title: words[2] 
             };
         }
     }

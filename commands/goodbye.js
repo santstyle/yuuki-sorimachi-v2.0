@@ -3,7 +3,7 @@ const { handleGoodbye } = require('../lib/welcome');
 async function goodbyeCommand(sock, chatId, message, match) {
     if (!chatId.endsWith('@g.us')) {
         await sock.sendMessage(chatId, {
-            text: 'Hmm, command ini cuma untuk grup aja lho~'
+            text: 'Hmm, command ini cuma untuk grup aja lho'
         });
         return;
     }

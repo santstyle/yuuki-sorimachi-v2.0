@@ -38,7 +38,7 @@ async function instagramCommand(sock, chatId, message) {
         ];
         if (!igPatterns.some(pattern => pattern.test(text))) {
             return await sock.sendMessage(chatId, {
-                text: "⚠️ Itu bukan link Instagram yang valid."
+                text: "Itu bukan link Instagram yang valid."
             }, { quoted: message });
         }
 
@@ -83,7 +83,7 @@ async function instagramCommand(sock, chatId, message) {
     } catch (error) {
         console.error("Error di Instagram command:", error);
         await sock.sendMessage(chatId, {
-            text: "❌ Terjadi error saat ambil media Instagram. Coba lagi nanti.\n\nError: " + error.message
+            text: "Terjadi error saat ambil media Instagram. Coba lagi nanti.\n\nError: " + error.message
         }, { quoted: message });
     }
 }

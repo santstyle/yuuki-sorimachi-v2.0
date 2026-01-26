@@ -3,7 +3,7 @@ const settings = require('../settings');
 async function menuCommand(sock, chatId, message) {
     const menuMessage = `
 *${settings.botName || 'Yuuki Sorimachi | Bot'}*
-Version: ${settings.version || '1.8'}  
+Version: ${settings.version || '2.0.0'}  
 
 *DESCRIPTION*
 Yuuki Bot is a multifunctional WhatsApp bot designed to assist with group and personal activities.

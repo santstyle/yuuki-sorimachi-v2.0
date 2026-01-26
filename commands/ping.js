@@ -44,7 +44,7 @@ Aku masih sehat dan siap bantu!`.trim();
     } catch (error) {
         console.error('Error di ping command:', error);
         await sock.sendMessage(chatId, {
-            text: 'Aduh, gagal cek status nih. Coba lagi ya~'
+            text: 'Aduh, gagal cek status nih. Coba lagi ya'
         });
     }
 }

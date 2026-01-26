@@ -5,10 +5,10 @@ Version:
 - package-lock.json
 - README.md
 
-Files containing "Artoria Bot":
+Files containing "Yuuki Bot":
 - settings.js
 - session/creds.json
-- README,md
+- README.md
 - index.js
 - lang/en.json
 - lang/id.json

@@ -179,7 +179,7 @@ Setelah bot berjalan, gunakan perintah `.help` atau `!menu` untuk melihat daftar
 Cek log error:
 
 ```bash
-pm2 logs artoria-bot
+pm2 logs yuuki-bot
 ```
 
 Pastikan FFmpeg terinstall:

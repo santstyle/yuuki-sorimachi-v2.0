@@ -5,7 +5,7 @@ async function handleAntitagCommand(sock, chatId, userMessage, senderId, isSende
     try {
         if (!isSenderAdmin) {
             await sock.sendMessage(chatId, {
-                text: 'Wah, cuma admin yang bisa atur antitag nih~'
+                text: 'Wah, cuma admin yang bisa atur antitag nih'
             });
             return;
         }
@@ -25,20 +25,20 @@ async function handleAntitagCommand(sock, chatId, userMessage, senderId, isSende
                 const existingConfig = await getAntitag(chatId, 'on');
                 if (existingConfig?.enabled) {
                     await sock.sendMessage(chatId, {
-                        text: 'Antitag udah aktif dari tadi lho~'
+                        text: 'Antitag udah aktif dari tadi lho'
                     });
                     return;
                 }
                 const result = await setAntitag(chatId, 'on', 'delete');
                 await sock.sendMessage(chatId, {
-                    text: result ? 'Yeay! antitag udah aku nyalain~' : 'Aduh, gagal nyalain antitag nih'
+                    text: result ? 'Yeay! antitag udah aku nyalain' : 'Aduh, gagal nyalain antitag nih'
                 });
                 break;
 
             case 'off':
                 await removeAntitag(chatId, 'on');
                 await sock.sendMessage(chatId, {
-                    text: 'Oke, antitag udah aku matiin~'
+                    text: 'Oke, antitag udah aku matiin'
                 });
                 break;
 
@@ -52,7 +52,7 @@ async function handleAntitagCommand(sock, chatId, userMessage, senderId, isSende
                 const setAction = args[1];
                 if (!['delete', 'kick'].includes(setAction)) {
                     await sock.sendMessage(chatId, {
-                        text: 'Wah, aksinya ga sesuai nih. Pilih delete atau kick aja ya~'
+                        text: 'Wah, aksinya ga sesuai nih. Pilih delete atau kick aja ya'
                     });
                     return;
                 }
@@ -72,7 +72,7 @@ async function handleAntitagCommand(sock, chatId, userMessage, senderId, isSende
 
             default:
                 await sock.sendMessage(chatId, {
-                    text: `Coba ketik ${prefix}antitag aja ya buat lihat caranya~`
+                    text: `Coba ketik ${prefix}antitag aja ya buat lihat caranya`
                 });
         }
     } catch (error) {
@@ -114,14 +114,14 @@ async function handleTagDetection(sock, chatId, message, senderId) {
                     });
 
                     await sock.sendMessage(chatId, {
-                        text: `Hai, jangan tag semua member ya~`
+                        text: `Hai, jangan tag semua member ya`
                     }, { quoted: message });
 
                 } else if (action === 'kick') {
                     await sock.groupParticipantsUpdate(chatId, [senderId], "remove");
 
                     await sock.sendMessage(chatId, {
-                        text: `@${senderId.split('@')[0]} di-kick karena tag semua member~`
+                        text: `@${senderId.split('@')[0]} di-kick karena tag semua member`
                     });
                 }
             }

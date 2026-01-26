@@ -5,7 +5,7 @@ async function handleAntilinkCommand(sock, chatId, userMessage, senderId, isSend
     try {
         if (!isSenderAdmin) {
             await sock.sendMessage(chatId, {
-                text: 'Hmm, cuma admin yang bisa atur antilink nih~'
+                text: 'Hmm, cuma admin yang bisa atur antilink nih'
             });
             return;
         }
@@ -25,20 +25,20 @@ async function handleAntilinkCommand(sock, chatId, userMessage, senderId, isSend
                 const existingConfig = await getAntilink(chatId, 'on');
                 if (existingConfig?.enabled) {
                     await sock.sendMessage(chatId, {
-                        text: 'Antilink udah aktif dari tadi lho di grup ini~'
+                        text: 'Antilink udah aktif dari tadi lho di grup ini'
                     });
                     return;
                 }
                 const result = await setAntilink(chatId, 'on', 'delete');
                 await sock.sendMessage(chatId, {
-                    text: result ? 'Yeay! antilink udah aku nyalain~' : 'Aduh, gagal nyalain antilink nih'
+                    text: result ? 'Yeay! antilink udah aku nyalain' : 'Aduh, gagal nyalain antilink nih'
                 });
                 break;
 
             case 'off':
                 await removeAntilink(chatId, 'on');
                 await sock.sendMessage(chatId, {
-                    text: 'Oke, antilink udah aku matiin di grup ini~'
+                    text: 'Oke, antilink udah aku matiin di grup ini'
                 });
                 break;
 
@@ -52,7 +52,7 @@ async function handleAntilinkCommand(sock, chatId, userMessage, senderId, isSend
                 const setAction = args[1];
                 if (!['delete', 'kick', 'warn'].includes(setAction)) {
                     await sock.sendMessage(chatId, {
-                        text: 'Wah, aksinya ga sesuai nih. Pilih delete, kick, atau warn aja ya~'
+                        text: 'Wah, aksinya ga sesuai nih. Pilih delete, kick, atau warn aja ya'
                     });
                     return;
                 }
@@ -72,7 +72,7 @@ async function handleAntilinkCommand(sock, chatId, userMessage, senderId, isSend
 
             default:
                 await sock.sendMessage(chatId, {
-                    text: `Coba ketik ${prefix}antilink aja ya buat lihat caranya~`
+                    text: `Coba ketik ${prefix}antilink aja ya buat lihat caranya`
                 });
         }
     } catch (error) {
@@ -144,17 +144,17 @@ async function handleLinkDetection(sock, chatId, message, userMessage, senderId)
             const mentionedJidList = [senderId];
 
             const action = antilinkSetting.action || 'delete';
-            let warningMessage = `Hai @${senderId.split('@')[0]}, jangan post link ya~`;
+            let warningMessage = `Hai @${senderId.split('@')[0]}, jangan post link ya`;
 
             if (action === 'warn') {
-                warningMessage = `Hai @${senderId.split('@')[0]}, ini peringatan ya, jangan post link~`;
+                warningMessage = `Hai @${senderId.split('@')[0]}, ini peringatan ya, jangan post link`;
             } else if (action === 'kick') {
                 try {
                     await sock.groupParticipantsUpdate(chatId, [senderId], "remove");
-                    warningMessage = `@${senderId.split('@')[0]} di-kick karena post link~`;
+                    warningMessage = `@${senderId.split('@')[0]} di-kick karena post link`;
                 } catch (kickError) {
                     console.error('Gagal kick user:', kickError);
-                    warningMessage = `Hai @${senderId.split('@')[0]}, post link ga boleh~`;
+                    warningMessage = `Hai @${senderId.split('@')[0]}, post link ga boleh`;
                 }
             }
 

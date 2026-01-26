@@ -7,14 +7,14 @@ async function kickCommand(sock, chatId, senderId, mentionedJids, message) {
 
         if (!isBotAdmin) {
             await sock.sendMessage(chatId, {
-                text: 'Aku harus jadi admin dulu biar bisa kick member~'
+                text: 'Aku harus jadi admin dulu biar bisa kick member'
             }, { quoted: message });
             return;
         }
 
         if (!isSenderAdmin) {
             await sock.sendMessage(chatId, {
-                text: 'Wah, cuma admin yang bisa kick member nih~'
+                text: 'kamu gaboleh, cuma admin yang bisa kick member'
             }, { quoted: message });
             return;
         }
@@ -31,7 +31,7 @@ async function kickCommand(sock, chatId, senderId, mentionedJids, message) {
 
     if (usersToKick.length === 0) {
         await sock.sendMessage(chatId, {
-            text: 'Sebutin dong usernya yang mau di-kick? Mention atau reply chatnya~'
+            text: 'Sebutin dong usernya yang mau di-kick? Mention atau reply chatnya'
         }, { quoted: message });
         return;
     }
@@ -40,7 +40,7 @@ async function kickCommand(sock, chatId, senderId, mentionedJids, message) {
 
     if (usersToKick.includes(botId)) {
         await sock.sendMessage(chatId, {
-            text: "Wah, aku ga bisa kick diri sendiri dong~"
+            text: "Wah, aku ga bisa kick diri sendiri dong"
         }, { quoted: message });
         return;
     }
@@ -53,13 +53,13 @@ async function kickCommand(sock, chatId, senderId, mentionedJids, message) {
         }));
 
         await sock.sendMessage(chatId, {
-            text: `${usernames.join(', ')} udah di-kick dari grup ya~`,
+            text: `${usernames.join(', ')} udah di-kick dari grup ya`,
             mentions: usersToKick
         });
     } catch (error) {
         console.error('Error di kick command:', error);
         await sock.sendMessage(chatId, {
-            text: 'Gagal kick member nih, coba lagi ya~'
+            text: 'Gagal kick member nih, manual aja yah'
         });
     }
 }

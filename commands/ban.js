@@ -13,7 +13,7 @@ async function banCommand(sock, chatId, message) {
 
     if (!userToBan) {
         await sock.sendMessage(chatId, {
-            text: 'Sebutin dong usernya yang mau di-ban? Mention atau reply chatnya~'
+            text: 'Sebutin dong usernya yang mau di-ban? Mention atau reply chatnya'
         });
         return;
     }
@@ -30,7 +30,7 @@ async function banCommand(sock, chatId, message) {
             fs.writeFileSync(bannedPath, JSON.stringify(bannedUsers, null, 2));
 
             await sock.sendMessage(chatId, {
-                text: `@${userToBan.split('@')[0]} udah di-ban ya~`,
+                text: `@${userToBan.split('@')[0]} udah di-ban ya`,
                 mentions: [userToBan]
             });
         } else {
@@ -42,7 +42,7 @@ async function banCommand(sock, chatId, message) {
     } catch (error) {
         console.error('Error di ban command:', error);
         await sock.sendMessage(chatId, {
-            text: 'Aduh, gagal ban user nih. Coba lagi ya~'
+            text: 'Aduh, gagal ban user nih. Coba lagi ya'
         });
     }
 }

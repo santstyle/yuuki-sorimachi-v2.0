@@ -267,7 +267,7 @@ class APIManager {
                     headers: {
                         'Authorization': `Bearer ${this.config.apiKey}`,
                         'Content-Type': 'application/json',
-                    'User-Agent': 'Yuuki-Bot/1.0'
+                    'User-Agent': 'Yuuki-Bot'
                     },
                     timeout: 30000 
                 }
