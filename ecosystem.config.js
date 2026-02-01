@@ -1,7 +1,7 @@
 module.exports = {
   apps: [{
     name: "yuuki-bot",
-    "version": "1.8.0",
+    "version": "2.0.0",
     script: "./index.js",
     cwd: "/home/ubuntu/santstyle/yuukibot-v2.0",
 

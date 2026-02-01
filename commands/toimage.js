@@ -32,11 +32,9 @@ const convertSticker = async (sock, quotedMessage, chatId, sender, args) => {
             return;
         }
 
-        // Cek apakah stiker adalah animasi (GIF/WebP animasi)
         const isAnimated = stickerMessage.isAnimated || false;
         const command = args[0]?.toLowerCase() || 'toimage';
 
-        // Download stiker
         const stickerFilePath = path.join(tempDir, `sticker_${Date.now()}.webp`);
         const stream = await downloadContentFromMessage(stickerMessage, 'sticker');
         let buffer = Buffer.from([]);
@@ -67,13 +65,11 @@ const convertSticker = async (sock, quotedMessage, chatId, sender, args) => {
     }
 };
 
-// Fungsi untuk konversi ke gambar
 const convertToImage = async (sock, chatId, stickerFilePath, isAnimated) => {
     try {
         const outputImagePath = path.join(tempDir, `image_${Date.now()}.png`);
 
         if (isAnimated) {
-            // Untuk stiker animasi, ambil frame pertama
             await sharp(stickerFilePath, { animated: true, pages: 1 })
                 .toFormat('png')
                 .toFile(outputImagePath);
@@ -84,7 +80,6 @@ const convertToImage = async (sock, chatId, stickerFilePath, isAnimated) => {
                 caption: 'Stiker GIF berhasil dikonversi ke gambar (frame pertama)!'
             });
         } else {
-            // Untuk stiker biasa
             await sharp(stickerFilePath)
                 .toFormat('png')
                 .toFile(outputImagePath);
@@ -109,5 +104,4 @@ const convertToImage = async (sock, chatId, stickerFilePath, isAnimated) => {
 
 
 
-// Export fungsi utama
 module.exports = convertSticker;

@@ -10,7 +10,7 @@ process.env.FFPROBE_PATH = 'ffprobe'
 
 try {
     if (fs.existsSync('./ffmpeg')) {
-        console.log('🗑️  Removing Windows FFmpeg folder...')
+        console.log('Removing Windows FFmpeg folder...')
         fs.rmSync('./ffmpeg', { recursive: true, force: true })
     }
 } catch (err) {

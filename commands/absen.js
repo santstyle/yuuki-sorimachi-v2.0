@@ -20,7 +20,7 @@ async function addAbsen(sock, m, text) {
     }
 
     if (!absenSessions[groupId] || !absenSessions[groupId].active) {
-        return sock.sendMessage(groupId, { text: "❌ Absen belum dimulai. Gunakan `.startabsen` dulu." }, { quoted: m });
+        return sock.sendMessage(groupId, { text: "Absen belum dimulai. Gunakan `.startabsen` dulu." }, { quoted: m });
     }
 
     const userText = text.trim();

@@ -38,7 +38,7 @@ function getDefaultWords() {
     return {
         categories: {
             'hewan': {
-                name: '🐯 Hewan & Binatang',
+                name: 'Hewan & Binatang',
                 description: 'Tebak nama hewan dari seluruh dunia',
                 difficulty: 'easy',
                 tags: ['binatang', 'fauna', 'satwa'],
@@ -51,7 +51,7 @@ function getDefaultWords() {
                 ]
             },
             'buah': {
-                name: '🍎 Buah-buahan',
+                name: 'Buah-buahan',
                 description: 'Tebak nama buah lokal dan internasional',
                 difficulty: 'easy',
                 tags: ['makanan', 'sehat', 'tropis'],
@@ -64,7 +64,7 @@ function getDefaultWords() {
                 ]
             },
             'negara': {
-                name: '🌍 Negara & Ibukota',
+                name: 'Negara & Ibukota',
                 description: 'Tebak nama negara dan ibukota dunia',
                 difficulty: 'medium',
                 tags: ['geografi', 'dunia', 'peta'],
@@ -77,7 +77,7 @@ function getDefaultWords() {
                 ]
             },
             'film': {
-                name: '🎬 Film & Serial',
+                name: 'Film & Serial',
                 description: 'Tebak judul film terkenal',
                 difficulty: 'medium',
                 tags: ['hiburan', 'cinema', 'hollywood'],
@@ -100,18 +100,18 @@ function getDefaultAchievements() {
         achievements: [
             {
                 id: 'first_blood',
-                name: '🩸 First Blood',
+                name: 'First Blood',
                 description: 'Menang game pertama kali',
-                icon: '🩸',
+                icon: '',
                 points: 50,
                 condition: { type: 'games_won', threshold: 1 },
                 secret: false
             },
             {
                 id: 'word_master',
-                name: '📚 Master Kata',
+                name: 'Master Kata',
                 description: 'Tebak 50 kata dengan benar',
-                icon: '📚',
+                icon: '',
                 points: 200,
                 condition: { type: 'words_guessed', threshold: 50 },
                 secret: false
@@ -298,7 +298,7 @@ class TebakKataGame {
 
             return {
                 success: false,
-                message: '❌ Tebakan Salah!',
+                message: 'Tebakan Salah!',
                 attempts: this.state.attempts,
                 remaining: this.state.maxAttempts - this.state.attempts,
                 wordHint: this.getWordHint()
@@ -705,7 +705,7 @@ async function handleGuess(sock, chatId, userId, userName, args, gamesData, game
     const guess = args.join(' ').trim();
     if (!guess) {
         return await sock.sendMessage(chatId, {
-            text: '⚠️ *Masukkan tebakan!*\n\n' +
+            text: '*Masukkan tebakan!*\n\n' +
                 'Contoh: `.tebakkata tebak harimau`'
         }, { quoted: message });
     }
@@ -940,7 +940,7 @@ async function handleLeaderboard(sock, chatId, message) {
 
     if (leaderboard.length === 0) {
         return await sock.sendMessage(chatId, {
-            text: '📊 *LEADERBOARD KOSONG*\n\n' +
+            text: '*LEADERBOARD KOSONG*\n\n' +
                 'Belum ada yang bermain game tebak kata!\n' +
                 'Jadilah yang pertama dengan `.tebakkata start`'
         }, { quoted: message });

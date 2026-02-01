@@ -6,7 +6,7 @@ async function staffCommand(sock, chatId, msg) {
         try {
             pp = await sock.profilePictureUrl(chatId, 'image');
         } catch {
-            pp = 'https://i.imgur.com/2wzGhpF.jpeg'; 
+            pp = ''; 
         }
 
         const participants = groupMetadata.participants;
@@ -43,7 +43,7 @@ module.exports = staffCommand; async function staffCommand(sock, chatId, msg) {
         try {
             pp = await sock.profilePictureUrl(chatId, 'image');
         } catch {
-            pp = 'https://i.imgur.com/2wzGhpF.jpeg'; 
+            pp = ''; 
         }
 
         const participants = groupMetadata.participants;
@@ -51,7 +51,7 @@ module.exports = staffCommand; async function staffCommand(sock, chatId, msg) {
 
         if (groupAdmins.length === 0) {
             await sock.sendMessage(chatId, {
-                text: 'Wah, grup ini belum ada admin nih~'
+                text: 'Wah, grup ini belum ada admin nih'
             });
             return;
         }
@@ -60,7 +60,7 @@ module.exports = staffCommand; async function staffCommand(sock, chatId, msg) {
 
         const owner = groupMetadata.owner || groupAdmins.find(p => p.admin === 'superadmin')?.id || chatId.split('-')[0] + '@s.whatsapp.net';
 
-        const text = `Daftar admin grup ${groupMetadata.subject}~ \n\nYang bisa diandalkan:\n${listAdmin}\n\nKalau butuh bantuan, bisa tanya mereka ya!`;
+        const text = `Daftar admin grup ${groupMetadata.subject} \n\nYang bisa diandalkan:\n${listAdmin}\n\nKalau butuh bantuan, bisa tanya mereka ya!`;
 
         await sock.sendMessage(chatId, {
             image: { url: pp },
@@ -71,7 +71,7 @@ module.exports = staffCommand; async function staffCommand(sock, chatId, msg) {
     } catch (error) {
         console.error('Wah, error di staff command nih:', error);
         await sock.sendMessage(chatId, {
-            text: 'Aduh, gagal ambil daftar admin nih. Coba lagi ya~'
+            text: 'Aduh, gagal ambil daftar admin nih. Coba lagi ya'
         });
     }
 }

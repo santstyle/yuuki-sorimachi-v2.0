@@ -14,7 +14,7 @@ async function handleSsCommand(sock, chatId, message, match) {
         await sock.sendPresenceUpdate('composing', chatId);
 
         await sock.sendMessage(chatId, {
-            text: 'Bentar ya, lagi aku ambil screenshotnya~',
+            text: 'Bentar ya, lagi aku ambil screenshotnya',
             quoted: message
         });
 
@@ -38,7 +38,7 @@ async function handleSsCommand(sock, chatId, message, match) {
 
         await sock.sendMessage(chatId, {
             image: imageBuffer,
-            caption: 'Ini screenshotnya~'
+            caption: 'Ini screenshotnya'
         }, {
             quoted: message
         });
@@ -46,7 +46,7 @@ async function handleSsCommand(sock, chatId, message, match) {
     } catch (error) {
         console.error('Error di ss command:', error);
         await sock.sendMessage(chatId, {
-            text: 'Yah, gagal ambil screenshot nih. Coba lagi ya nanti~\n\nMungkin karena:\n• URL nya ga bener\n• Websitenya ga mau di-screenshot\n• Lagi down\n• API nya lagi istirahat',
+            text: 'Yah, gagal ambil screenshot nih. Coba lagi ya nanti\n\nMungkin karena:\n• URL nya ga bener\n• Websitenya ga mau di-screenshot\n• Lagi down\n• API nya lagi istirahat',
             quoted: message
         });
     }

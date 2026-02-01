@@ -21,7 +21,7 @@ async function warnCommand(sock, chatId, senderId, mentionedJids, message) {
 
         if (!chatId.endsWith('@g.us')) {
             await sock.sendMessage(chatId, {
-                text: 'Hmm, command warn cuma bisa dipakai di grup aja lho~ Kirim ke grup ya'
+                text: 'Hmm, command warn cuma bisa dipakai di grup aja lho Kirim ke grup ya'
             });
             return;
         }
@@ -31,21 +31,21 @@ async function warnCommand(sock, chatId, senderId, mentionedJids, message) {
 
             if (!isBotAdmin) {
                 await sock.sendMessage(chatId, {
-                    text: 'Aduh, aku harus jadi admin dulu nih biar bisa kasih warning. Minta admin dulu ya~'
+                    text: 'Aduh, aku harus jadi admin dulu nih biar bisa kasih warning. Minta admin dulu ya'
                 });
                 return;
             }
 
             if (!isSenderAdmin) {
                 await sock.sendMessage(chatId, {
-                    text: 'Maaf, cuma admin grup yang boleh kasih warning ke member lain~'
+                    text: 'Maaf, cuma admin grup yang boleh kasih warning ke member lain'
                 });
                 return;
             }
         } catch (adminError) {
             console.error('Error waktu cek status admin:', adminError);
             await sock.sendMessage(chatId, {
-                text: 'Wah, ada masalah waktu cek admin nih. Pastiin aku jadi admin ya~'
+                text: 'Wah, ada masalah waktu cek admin nih. Pastiin aku jadi admin ya'
             });
             return;
         }
@@ -63,7 +63,7 @@ async function warnCommand(sock, chatId, senderId, mentionedJids, message) {
 
         if (!userToWarn) {
             await sock.sendMessage(chatId, {
-                text: 'Sebutin dong usernya siapa yang mau di-warn? Bisa mention atau reply chatnya~'
+                text: 'Sebutin dong usernya siapa yang mau di-warn? Bisa mention atau reply chatnya'
             });
             return;
         }
@@ -88,10 +88,10 @@ async function warnCommand(sock, chatId, senderId, mentionedJids, message) {
             fs.writeFileSync(warningsPath, JSON.stringify(warnings, null, 2));
 
             const warningMessage = `*「 PERINGATAN 」*\n\n` +
-                `👤 *User:* @${userToWarn.split('@')[0]}\n` +
-                `⚠️ *Warning ke:* ${warnings[chatId][userToWarn]}/3\n` +
-                `👑 *Oleh:* @${senderId.split('@')[0]}\n\n` +
-                `Hai @${userToWarn.split('@')[0]}, jangan diulangi lagi ya~ Aku sayang semua member di grup ini 💝`;
+                `*User:* @${userToWarn.split('@')[0]}\n` +
+                `*Warning ke:* ${warnings[chatId][userToWarn]}/3\n` +
+                `*Oleh:* @${senderId.split('@')[0]}\n\n` +
+                `Hai @${userToWarn.split('@')[0]}, jangan diulangi lagi ya`;
 
             await sock.sendMessage(chatId, {
                 text: warningMessage,
@@ -108,7 +108,7 @@ async function warnCommand(sock, chatId, senderId, mentionedJids, message) {
                 fs.writeFileSync(warningsPath, JSON.stringify(warnings, null, 2));
 
                 const kickMessage = `*「 AUTO-KICK 」*\n\n` +
-                    `@${userToWarn.split('@')[0]} udah dapat 3 warning, jadi terpaksa aku keluarin dari grup nih~ Jangan sedih ya, bisa join lagi kalau udah janji bakal baik-baik! 🥺`;
+                    `@${userToWarn.split('@')[0]} udah dapat 3 warning, jadi terpaksa aku keluarin dari grup nih Jangan sedih ya, bisa join lagi kok nanti`;
 
                 await sock.sendMessage(chatId, {
                     text: kickMessage,
@@ -118,7 +118,7 @@ async function warnCommand(sock, chatId, senderId, mentionedJids, message) {
         } catch (error) {
             console.error('Error waktu warn user:', error);
             await sock.sendMessage(chatId, {
-                text: 'Aduh, gagal kasih warning nih. Coba lagi ya~'
+                text: 'Aduh, gagal kasih warning nih. Coba lagi ya'
             });
         }
     } catch (error) {
@@ -127,7 +127,7 @@ async function warnCommand(sock, chatId, senderId, mentionedJids, message) {
             await new Promise(resolve => setTimeout(resolve, 2000));
             try {
                 await sock.sendMessage(chatId, {
-                    text: 'Wah, terlalu cepat nih. Tunggu bentar ya baru coba lagi~'
+                    text: 'Wah, terlalu cepat nih. Tunggu bentar ya baru coba lagi'
                 });
             } catch (retryError) {
                 console.error('Error waktu kirim pesan retry:', retryError);
@@ -135,7 +135,7 @@ async function warnCommand(sock, chatId, senderId, mentionedJids, message) {
         } else {
             try {
                 await sock.sendMessage(chatId, {
-                    text: 'Gagal kasih warning nih. Pastiin aku admin dan punya permission ya~'
+                    text: 'Gagal kasih warning nih. Pastiin aku admin dan punya permission ya'
                 });
             } catch (sendError) {
                 console.error('Error waktu kirim pesan error:', sendError);

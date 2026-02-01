@@ -31,7 +31,7 @@ async function pingCommand(sock, chatId, message) {
         const totalMemory = (os.totalmem() / 1024 / 1024).toFixed(2);
 
         const botInfo = `
-Status Yuuki Bot
+Status Yuuki
 
 Ping     : ${ping} ms
 Uptime   : ${uptimeFormatted}

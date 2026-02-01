@@ -58,7 +58,7 @@ sudo apt install ffmpeg -y
 brew install ffmpeg
 ```
 
-#### Install yt-dlp for linux
+#### Install yt-dlp
 ```bash
 sudo apt install python3 python3-pip
 pip3 install yt-dlp
@@ -68,6 +68,13 @@ Atau curl langsung
 sudo curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
 sudo chmod a+rx /usr/local/bin/yt-dlp
 yt-dlp --version
+```
+
+### Downloader 
+```bash
+npm install btch-downloader
+npm install instagram-url-downloader
+
 ```
 
 ### Langkah 4: Konfigurasi Environment
@@ -117,7 +124,7 @@ npm start
 - Tunggu hingga terkoneksi (biasanya muncul pesan "Connected!")
 - Tekan Ctrl + C untuk menghentikan setelah session tersimpan
 
-### Langkah 6: Jalankan dengan PM2 (Production)
+### Langkah 6: Jalankan dengan PM2 (Production) jika running bot di linux (Ubuntu)
 
 Untuk menjalankan bot di background dan auto-restart:
 

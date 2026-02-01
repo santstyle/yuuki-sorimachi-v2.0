@@ -16,7 +16,7 @@ async function warningsCommand(sock, chatId, mentionedJidList) {
 
     if (mentionedJidList.length === 0) {
         await sock.sendMessage(chatId, {
-            text: 'Haii~ sebutin dong usernya siapa yang mau dicek warningnya?\nContoh: .warnings @username'
+            text: 'Haii sebutin dong usernya siapa yang mau dicek warningnya?\nContoh: .warnings @username'
         });
         return;
     }
@@ -26,22 +26,22 @@ async function warningsCommand(sock, chatId, mentionedJidList) {
 
     if (warningCount === 0) {
         await sock.sendMessage(chatId, {
-            text: `Yeayy! @${userToCheck.split('@')[0]} belum pernah dapat warning sama sekali~ Masih bersih banget! ✨`,
+            text: `Yeayy! @${userToCheck.split('@')[0]} belum pernah dapat warning sama sekali Masih bersih banget!`,
             mentions: [userToCheck]
         });
     } else if (warningCount === 1) {
         await sock.sendMessage(chatId, {
-            text: `Hmm, @${userToCheck.split('@')[0]} udah dapat 1 warning nih. Hati-hati ya jangan sampe tambah lagi~`,
+            text: `Hmm, @${userToCheck.split('@')[0]} udah dapat 1 warning nih. Hati-hati ya jangan sampe tambah lagi`,
             mentions: [userToCheck]
         });
     } else if (warningCount === 2) {
         await sock.sendMessage(chatId, {
-            text: `Oya, @${userToCheck.split('@')[0]} udah dapat 2 warning. Tinggal 1 lagi lho sebelum konsekuensinya~`,
+            text: `Oya, @${userToCheck.split('@')[0]} udah dapat 2 warning. Tinggal 1 lagi lho sebelum konsekuensinya`,
             mentions: [userToCheck]
         });
     } else {
         await sock.sendMessage(chatId, {
-            text: `Wah, @${userToCheck.split('@')[0]} udah dapat ${warningCount} warning. Sudah melewati batas nih, harus lebih baik lagi ya~`,
+            text: `Wah, @${userToCheck.split('@')[0]} udah dapat ${warningCount} warning. Sudah melewati batas nih, harus lebih baik lagi ya`,
             mentions: [userToCheck]
         });
     }

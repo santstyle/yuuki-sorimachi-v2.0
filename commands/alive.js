@@ -2,7 +2,7 @@ const settings = require("../settings");
 
 async function aliveCommand(sock, chatId, message) {
     try {
-        const message1 = `Aku masih hidup dan sehat Versi ${settings.version}~`;
+        const message1 = `Yuuki Sorimachi Bot Whatsapp Versi ${settings.version}~`;
 
         await sock.sendMessage(chatId, {
             text: message1

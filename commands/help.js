@@ -35,8 +35,7 @@ Here are the available command menus in Yuuki Bot:
 • .chatbot
 
 *GENERAL*
-• .help
-• .menu
+• .menu /.help
 • .ping
 • .alive
 • .owner
@@ -62,19 +61,18 @@ Here are the available command menus in Yuuki Bot:
 • .take <setwm>
 
 
-*DOWNLOADER*
+*SEARCH*
 • .lyrics <judul lagu>
+• .ytsearch <kata kunci>
 • .song <song name>
-• .play <link>
-• .pin <kata kunci gambar>
-• .twitter <link>
-• .instagram <link>
-• .youtube <link>
-• .facebook <link>
-• .tiktok <link>
+• .pin <kata kunci>
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Powered & Modified By SantStyle
+*DOWNLOADER*
+• .btch <link> - Universal downloader for all platforms
+   Supported: Instagram, TikTok, Facebook, Twitter, YouTube, MediaFire, CapCut,
+   Google Drive, Pinterest, Douyin, Xiaohongshu, SnackVideo, CocoFun, Spotify,
+   SoundCloud, Threads, YouTube Search
+
 `;
 
     try {

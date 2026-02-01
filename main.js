@@ -60,23 +60,27 @@ const groupInfoCommand = require('./commands/groupinfo');
 const resetlinkCommand = require('./commands/resetlink');
 const staffCommand = require('./commands/staff');
 const broadcastCommand = require('./commands/broadcast');
-const instagramCommand = require('./commands/instagram');
-const { facebook: facebookCommand } = require('./commands/facebook');
-const { play: playCommand } = require('./commands/play');
-const { tiktok: tiktokCommand } = require('./commands/tiktok');
-const { song: songCommand } = require('./commands/song');
-const { pinterest } = require('./commands/pinterest');
-const { twitter } = require('./commands/twitter');
 const { handleTranslateCommand } = require('./commands/translate');
 const { handleSsCommand } = require('./commands/ss');
 const { addCommandReaction, handleAreactCommand } = require('./lib/reactions');
-const youtubeModule = require('./commands/youtube');
 const stickercropCommand = require('./commands/stickercrop');
 const { startAbsen, addAbsen, finishAbsen } = require('./commands/absen');
 const tebakkataCommand = require('./commands/tebakkata');
 
 global.packname = settings.packname;
 global.author = settings.author;
+
+async function showTypingAfterCommand(sock, chatId) {
+    // Simple implementation to show typing indicator briefly
+    try {
+        await sock.sendPresenceUpdate('composing', chatId);
+        setTimeout(() => {
+            sock.sendPresenceUpdate('available', chatId);
+        }, 1000);
+    } catch (error) {
+        console.error('Error showing typing:', error);
+    }
+}
 
 
 async function handleMessages(sock, messageUpdate, printLog) {
@@ -100,7 +104,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
         }
 
         const senderId = message.key.participant || message.key.remoteJid;
-        chatId = message.key.remoteJid; // Assign to the scoped variable
+        chatId = message.key.remoteJid; 
         const isGroup = chatId.endsWith('@g.us');
         const senderIsSudo = await isSudo(senderId);
 
@@ -110,7 +114,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             message.message?.imageMessage?.caption?.trim() ||
             message.message?.videoMessage?.caption?.trim() ||
             ''
-        ).toLowerCase().replace(/\.\s+/g, '.').trim();
+        ).toLowerCase().trim();
 
         const rawText = message.message?.conversation?.trim() ||
             message.message?.extendedTextMessage?.text?.trim() ||
@@ -276,12 +280,10 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 await deleteCommand(sock, chatId, message, senderId);
                 break;
             case userMessage.startsWith('.mode'):
-                // Cek apakah pengirim adalah owner
                 if (!message.key.fromMe && !senderIsSudo) {
                     await sock.sendMessage(chatId, { text: 'Hanya owner bot yang bisa menggunakan command ini!' });
                     return;
                 }
-                // Baca data saat ini terlebih dahulu
                 let data;
                 try {
                     data = JSON.parse(fs.readFileSync('./data/messageCount.json'));
@@ -292,7 +294,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 }
 
                 const action = userMessage.split(' ')[1]?.toLowerCase();
-                // Jika tidak ada argumen, tampilkan status saat ini
                 if (!action) {
                     const currentMode = data.isPublic ? 'publik' : 'privat';
                     await sock.sendMessage(chatId, {
@@ -342,7 +343,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 }
                 break;
             case userMessage.startsWith('.tag'):
-                const messageText = rawText.slice(4).trim();  // gunakan rawText di sini, bukan userMessage
+                const messageText = rawText.slice(4).trim(); 
                 const replyMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage || null;
                 await tagCommand(sock, chatId, senderId, messageText, replyMessage);
                 break;
@@ -562,36 +563,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage === '.setpp':
                 await setProfilePicture(sock, chatId, message);
                 break;
-            case userMessage.startsWith('.instagram') || userMessage.startsWith('.insta') || userMessage.startsWith('.ig'):
-                await instagramCommand(sock, chatId, message);
-                break;
-            case userMessage.startsWith('.pinterest') || userMessage.startsWith('.pin') || userMessage.startsWith('.pins'):
-                await pinterest(sock, chatId, message);
-                break;
-            case userMessage.startsWith('.fb') || userMessage.startsWith('.facebook'):
-                await facebookCommand(sock, chatId, message);
-                break;
-            case userMessage.startsWith('.music'):
-                await playCommand(sock, chatId, message);
-                break;
-            case userMessage.startsWith('.play') || userMessage.startsWith('.mp3') || userMessage.startsWith('.ytmp3'):
-                await playCommand(sock, chatId, message);
-                break;
-            case userMessage.startsWith('.song'):
-                await songCommand(sock, chatId, message);
-                break;
-            case userMessage.startsWith('.video') || userMessage.startsWith('.youtube') || userMessage.startsWith('.yt'):
-                await youtubeModule.yt(sock, chatId, message);
-                break;
-            case userMessage.startsWith('.tiktok') || userMessage.startsWith('.tt'):
-                await tiktokCommand(sock, chatId, message);
-                break;
-            case userMessage.startsWith('.twitter'):
-                await twitter(sock, chatId, message, '.twitter');
-                break;
-            case userMessage.startsWith('.twt'):
-                await twitter(sock, chatId, message, '.twt');
-                break;
+            // Commands removed as they are now handled by .btch universal downloader
             case userMessage.startsWith('.gpt') || userMessage.startsWith('.gemini'):
                 await aiCommand(sock, chatId, message);
                 break;
@@ -653,9 +625,28 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage.startsWith('.tebakkata'):
                 await tebakkataCommand.tebakkata(sock, chatId, message);
                 break;
+            case userMessage.startsWith('.btch'):
+                const btchUrl = rawText.slice(5).trim();
+                if (btchUrl) {
+                    const btchCommand = require('./commands/btch');
+                    await btchCommand(sock, chatId, message, btchUrl);
+                } else {
+                    await sock.sendMessage(chatId, {
+                        text: 'Masukkan URL yang valid\nContoh: .btch https://instagram.com/p/...'
+                    }, { quoted: message });
+                }
+                break;
             default:
+                if (userMessage.startsWith('.') && !userMessage.includes(' ')) {
+                    await sock.sendMessage(chatId, {
+                        text: 'Perintah yang Anda masukkan tidak dikenali. Ketik .menu untuk melihat semua fitur yang tersedia.'
+                    }, { quoted: message });
+                    commandExecuted = true;
+                    break;
+                }
+
                 if (isGroup) {
-                    if (userMessage) {  
+                    if (userMessage) {
                         await handleChatbotResponse(sock, chatId, message, userMessage, senderId);
                     }
                     await Antilink(message, sock);
@@ -775,7 +766,7 @@ async function handleMessageRevocation(sock, message) {
 
         if (originalMessage) {
             await sock.sendMessage(chatId, {
-                text: `🗑️ *Message Deleted*\n\nFrom: @${message.key.participant?.split('@')[0] || 'unknown'}\n\n*Original Message:*\n${originalMessage.message?.conversation || originalMessage.message?.extendedTextMessage?.text || 'Media message'}`,
+                text: `*Message Deleted*\n\nFrom: @${message.key.participant?.split('@')[0] || 'unknown'}\n\n*Original Message:*\n${originalMessage.message?.conversation || originalMessage.message?.extendedTextMessage?.text || 'Media message'}`,
                 mentions: [message.key.participant]
             });
         }
@@ -850,11 +841,11 @@ async function handleAntideleteCommand(sock, chatId, message, match) {
         if (match.toLowerCase() === 'on') {
             antideleteData.enabled = true;
             fs.writeFileSync('./data/antidelete.json', JSON.stringify(antideleteData, null, 2));
-            await sock.sendMessage(chatId, { text: '✅ Antidelete diaktifkan.' });
+            await sock.sendMessage(chatId, { text: 'Antidelete diaktifkan.' });
         } else if (match.toLowerCase() === 'off') {
             antideleteData.enabled = false;
             fs.writeFileSync('./data/antidelete.json', JSON.stringify(antideleteData, null, 2));
-            await sock.sendMessage(chatId, { text: '❌ Antidelete dinonaktifkan.' });
+            await sock.sendMessage(chatId, { text: 'Antidelete dinonaktifkan.' });
         } else {
             await sock.sendMessage(chatId, { text: 'Penggunaan: .antidelete on/off/status' });
         }
@@ -866,103 +857,7 @@ async function handleAntideleteCommand(sock, chatId, message, match) {
 
 
 
-async function handleTicTacToeMove(sock, chatId, senderId, move) {
-    await sock.sendMessage(chatId, { text: 'Fitur tic-tac-toe belum diimplementasikan.' });
-}
 
-async function topMembers(sock, chatId, isGroup) {
-    await sock.sendMessage(chatId, { text: 'Fitur top members belum diimplementasikan.' });
-}
-
-async function blurCommand(sock, chatId, message, quotedMessage) {
-    await sock.sendMessage(chatId, { text: 'Fitur blur belum diimplementasikan.' });
-}
-
-async function githubCommand(sock, chatId) {
-    await sock.sendMessage(chatId, { text: 'Fitur github belum diimplementasikan.' });
-}
-
-async function flirtCommand(sock, chatId, message) {
-    await sock.sendMessage(chatId, { text: 'Fitur flirt belum diimplementasikan.' });
-}
-
-async function characterCommand(sock, chatId, message) {
-    await sock.sendMessage(chatId, { text: 'Fitur character belum diimplementasikan.' });
-}
-
-async function wastedCommand(sock, chatId, message) {
-    await sock.sendMessage(chatId, { text: 'Fitur wasted belum diimplementasikan.' });
-}
-
-async function shipCommand(sock, chatId, message) {
-    await sock.sendMessage(chatId, { text: 'Fitur ship belum diimplementasikan.' });
-}
-
-async function emojimixCommand(sock, chatId, message) {
-    await sock.sendMessage(chatId, { text: 'Fitur emojimix belum diimplementasikan.' });
-}
-
-async function stickerTelegramCommand(sock, chatId, message) {
-    await sock.sendMessage(chatId, { text: 'Fitur sticker telegram belum diimplementasikan.' });
-}
-
-async function viewOnceCommand(sock, chatId, message) {
-    await sock.sendMessage(chatId, { text: 'Fitur view once belum diimplementasikan.' });
-}
-
-async function clearSessionCommand(sock, chatId, message) {
-    await sock.sendMessage(chatId, { text: 'Fitur clear session belum diimplementasikan.' });
-}
-
-async function autoStatusCommand(sock, chatId, message, args) {
-    await sock.sendMessage(chatId, { text: 'Fitur auto status belum diimplementasikan.' });
-}
-
-async function clearTmpCommand(sock, chatId, message) {
-    await sock.sendMessage(chatId, { text: 'Fitur clear tmp belum diimplementasikan.' });
-}
-
-async function setProfilePicture(sock, chatId, message) {
-    await sock.sendMessage(chatId, { text: 'Fitur set profile picture belum diimplementasikan.' });
-}
-
-async function aiCommand(sock, chatId, message) {
-    await sock.sendMessage(chatId, { text: 'Fitur AI belum diimplementasikan.' });
-}
-
-async function sudoCommand(sock, chatId, message) {
-    await sock.sendMessage(chatId, { text: 'Fitur sudo belum diimplementasikan.' });
-}
-
-async function goodnightCommand(sock, chatId, message) {
-    await sock.sendMessage(chatId, { text: 'Fitur goodnight belum diimplementasikan.' });
-}
-
-async function animeCommand(sock, chatId, message, args) {
-    await sock.sendMessage(chatId, { text: 'Fitur anime belum diimplementasikan.' });
-}
-
-async function piesCommand(sock, chatId, message, args) {
-    await sock.sendMessage(chatId, { text: 'Fitur pies belum diimplementasikan.' });
-}
-
-async function updateCommand(sock, chatId, message, senderIsSudo, zipArg) {
-    await sock.sendMessage(chatId, { text: 'Fitur update belum diimplementasikan.' });
-}
-
-async function removebgCommand(sock, message, args) {
-    await sock.sendMessage(message.key.remoteJid, { text: 'Fitur removebg belum diimplementasikan.' });
-}
-
-async function reminiCommand(sock, chatId, message, args) {
-    await sock.sendMessage(chatId, { text: 'Fitur remini belum diimplementasikan.' });
-}
-
-async function showTypingAfterCommand(sock, chatId) {
-}
-
-async function handleStatusUpdate(sock, status) {
-}
 
 module.exports = {
     handleMessages,

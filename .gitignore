@@ -1,11 +1,13 @@
 ﻿cat > .gitignore << 'EOF'
 # Dependencies
 node_modules/
+ffmpeg/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 package-lock.json
 yarn.lock
+yt-dlp.exe
 
 # Binaries and executables
 bin/
@@ -39,6 +41,7 @@ logs/
 *.log
 
 # Runtime data
+data/
 pids/
 *.pid
 *.seed
