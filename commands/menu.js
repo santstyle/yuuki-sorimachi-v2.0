@@ -6,68 +6,68 @@ async function menuCommand(sock, chatId, message, input) {
     const pushName = message.pushName || 'User';
     const botNumber = sock.user.id.split(':')[0];
 
-    const menuText = `*Yuuki Sorimachi | Whatsapp Bot*
-
-- *Admin*
-.antitag
-.welcome
-.goodbye
-.ban
-.mute
-.kick
-.warnings
-.warn
-.tag
-.unmute
-.delete
-.antilink
-.antibadword
-.clear
-.tagall
-.hidetag
-.resetlink
-.chatbot
+    const menuText = `*YUUKI BOT MENU*
 
 - *General*
-.sewa
-.ceksewa
-.menu
-.ping
-.alive
-.owner
-.groupinfo
-.staff
-.startabsen
-.joke
-.meme
-.quote
-.fact
-.news
-.weather
+.sewa - Sewa bot ke grup
+.ceksewa - Cek sisa durasi sewa
+.menu - Menampilkan daftar ini
+.ping - Cek kecepatan bot
+.alive - Status aktif bot
+.owner - Kontak pemilik bot
+.groupinfo - Info detail grup
+.staff - Daftar admin grup
+.startabsen - Mulai sesi absen
+.joke - Cerita lucu acak
+.meme - Gambar meme lucu
+.quote - Kata-kata bijak
+.fact - Fakta unik dunia
+.news - Berita terkini
+.weather - Cek cuaca kota
 
 - *Games*
-.tebakkata
+.tebakkata - Main tebak-tebakan
 
 - *Image & Sticker*
-.sticker
-.crop
-.toimage
-.tovideo
-.tgsticker
-.setwm
+.sticker - Gambar jadi stiker
+.crop - Stiker tanpa kotak
+.toimage - Stiker jadi gambar
+.tovideo - Stiker jadi video
+.tgsticker - Stiker Telegram
+.setwm - Ganti nama stiker
 
 - *Search & Downloader*
-.lyrics
-.song
-.play
-.download / .dl
+.lyrics - Cari lirik lagu
+.song - Download lagu audio
+.play - Cari & putar lagu
+.download / .dl - Unduh Video/Foto (YT, TT, IG, FB)
+
+- *Admin*
+.antitag - Larang tag massal
+.welcome - Sambutan member baru
+.goodbye - Salam perpisahan
+.ban - Blokir user dari bot
+.mute - Matikan chat grup
+.kick - Keluarkan member
+.warnings - Cek poin peringatan
+.warn - Beri poin peringatan
+.tag - Beri tag ke pesan
+.unmute - Aktifkan chat grup
+.delete - Hapus pesan bot
+.antilink - Larang kirim link
+.antibadword - Larang kata kasar
+.clear - Bersihkan pesan
+.tagall - Tag semua member
+.hidetag - Tag tanpa terlihat
+.resetlink - Ganti link grup
+.chatbot - Aktifkan AI chat
 
 Powered by SantStyle`;
 
     try {
         const profilesDir = path.join(__dirname, '../assets/profiles');
         let thumbBuffer = Buffer.alloc(0);
-
+        
         if (fs.existsSync(profilesDir)) {
             const files = fs.readdirSync(profilesDir).filter(f => /\.(jpg|jpeg|png)$/i.test(f));
             if (files.length > 0) {
@@ -76,7 +76,6 @@ Powered by SantStyle`;
             }
         }
 
-        // Kirim sebagai pesan teks mewah dengan AdReply (Paling stabil & Berhasil muncul)
         await sock.sendMessage(chatId, {
             text: menuText,
             contextInfo: {
@@ -93,7 +92,7 @@ Powered by SantStyle`;
         }, { quoted: message });
 
     } catch (e) {
-        console.error('Final Luxe Menu error:', e);
+        console.error('Menu error:', e);
         await sock.sendMessage(chatId, { text: menuText }, { quoted: message });
     }
 }

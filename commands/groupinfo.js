@@ -36,10 +36,13 @@ ${groupMetadata.desc?.toString() || 'Belum ada deskripsi'}
         });
 
     } catch (error) {
-        console.error('Error di groupinfo command:', error);
-        await sock.sendMessage(chatId, {
-            text: 'Wah, gagal ambil info grup nih. Coba lagi ya'
-        });
+        const errMsg = error?.message || error?.toString() || '';
+        if (!errMsg.includes('Connection Closed') && !errMsg.includes('Connection Terminated')) {
+            console.error('Error di groupinfo command:', error);
+            await sock.sendMessage(chatId, {
+                text: 'Wah, gagal ambil info grup nih. Coba lagi ya'
+            }).catch(() => {});
+        }
     }
 }
 

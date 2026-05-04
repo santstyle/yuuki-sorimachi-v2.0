@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:../database.sqlite"
+}
+
+model User {
+  id        String    @id // WhatsApp ID / remoteJid
+  name      String?   // PushName
+  isBanned  Boolean   @default(false)
+  packname  String?   // Custom WM packname
+  author    String?   // Custom WM author
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  History   History[]
+}
+
+model Group {
+  id        String    @id // WhatsApp Group ID
+  name      String?   // Group Subject
+  expiredAt DateTime? // Null means permanent
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model History {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  command   String
+  chatId    String   // JID of the chat (group or private)
+  createdAt DateTime @default(now())
+}

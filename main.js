@@ -11,11 +11,9 @@ if (!process.env.FFMPEG_PATH) {
 }
 
 const { isBanned } = require('./lib/isBanned');
-const yts = require('yt-search');
+const prisma = require('./lib/db');
 const fs = require('fs');
-const fetch = require('node-fetch');
-const ytdl = require('ytdl-core');
-const path = require('path'); // 
+const path = require('path');
 const axios = require('axios');
 const ffmpeg = require('fluent-ffmpeg');
 const { addWelcome, delWelcome, isWelcomeOn, addGoodbye, delGoodBye, isGoodByeOn, isSudo } = require('./lib/index');
@@ -23,7 +21,7 @@ const { addWelcome, delWelcome, isWelcomeOn, addGoodbye, delGoodBye, isGoodByeOn
 
 const tagAllCommand = require('./commands/tagall');
 const { hidetagCommand } = require('./commands/hidetag');
-const helpCommand = require('./commands/help');
+const menuCommand = require('./commands/menu');
 const banCommand = require('./commands/ban');
 const muteCommand = require('./commands/mute');
 const unmuteCommand = require('./commands/unmute');
@@ -55,7 +53,7 @@ const goodbyeCommand = require('./commands/goodbye');
 const { handleAntiBadwordCommand, handleBadwordDetection } = require('./lib/antibadword');
 const antibadwordCommand = require('./commands/antibadword');
 const { handleChatbotCommand, handleChatbotResponse } = require('./commands/chatbot');
-const takeCommand = require('./commands/take');
+
 const groupInfoCommand = require('./commands/groupinfo');
 const resetlinkCommand = require('./commands/resetlink');
 const staffCommand = require('./commands/staff');
@@ -66,6 +64,10 @@ const { addCommandReaction, handleAreactCommand } = require('./lib/reactions');
 const stickercropCommand = require('./commands/stickercrop');
 const { startAbsen, addAbsen, finishAbsen } = require('./commands/absen');
 const tebakkataCommand = require('./commands/tebakkata');
+
+const sewaCommand = require('./commands/sewa');
+const cekSewaCommand = require('./commands/ceksewa');
+const setWmCommand = require('./commands/setwm');
 
 global.packname = settings.packname;
 global.author = settings.author;
@@ -84,7 +86,7 @@ async function showTypingAfterCommand(sock, chatId) {
 
 
 async function handleMessages(sock, messageUpdate, printLog) {
-    let chatId = null; 
+    let chatId = null;
     try {
         const { messages, type } = messageUpdate;
         if (type !== 'notify') return;
@@ -104,7 +106,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
         }
 
         const senderId = message.key.participant || message.key.remoteJid;
-        chatId = message.key.remoteJid; 
+        chatId = message.key.remoteJid;
         const isGroup = chatId.endsWith('@g.us');
         const senderIsSudo = await isSudo(senderId);
 
@@ -126,7 +128,46 @@ async function handleMessages(sock, messageUpdate, printLog) {
             console.log(`Command digunakan di ${isGroup ? 'grup' : 'privat'}: ${userMessage}`);
         }
 
-        if (isBanned(senderId) && !userMessage.startsWith('.unban')) {
+        try {
+            await prisma.user.upsert({
+                where: { id: senderId },
+                update: { name: message.pushName || undefined },
+                create: { id: senderId, name: message.pushName || null }
+            });
+
+            if (userMessage.startsWith('.')) {
+                await prisma.history.create({
+                    data: {
+                        userId: senderId,
+                        command: rawText.substring(0, 255),
+                        chatId: chatId
+                    }
+                });
+
+                if (isGroup) {
+                    try {
+                        let groupSubject = 'Unknown Group';
+                        try {
+                            const groupMetadata = await sock.groupMetadata(chatId);
+                            groupSubject = groupMetadata.subject;
+                        } catch (e) { }
+
+                        await prisma.group.upsert({
+                            where: { id: chatId },
+                            update: { name: groupSubject },
+                            create: { id: chatId, name: groupSubject, expiredAt: null }
+                        });
+                    } catch (e) {
+                        console.error('Failed to auto-register group to DB', e);
+                    }
+                }
+            }
+        } catch (dbError) {
+            console.error('Database Error:', dbError);
+        }
+
+        const isUserBanned = await isBanned(senderId);
+        if (isUserBanned && !userMessage.startsWith('.unban')) {
             if (Math.random() < 0.1) {
                 await sock.sendMessage(chatId, {
                     text: 'Anda dibanned dari penggunaan bot. Hubungi admin untuk dibuka.'
@@ -196,7 +237,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
         try {
             const data = JSON.parse(fs.readFileSync('./data/messageCount.json'));
             if (!data.isPublic && !message.key.fromMe && !senderIsSudo) {
-                return; 
+                return;
             }
         } catch (error) {
             console.error('Error memeriksa mode akses:', error);
@@ -260,8 +301,15 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage.startsWith('.unban'):
                 await unbanCommand(sock, chatId, message);
                 break;
-            case userMessage === '.help' || userMessage === '.menu' || userMessage === '.bot' || userMessage === '.list':
-                await helpCommand(sock, chatId, message);
+            case userMessage.startsWith('.help'):
+            case userMessage.startsWith('.menu'):
+            case userMessage === '.bot':
+            case userMessage === '.list':
+                {
+                    const prefix = userMessage.startsWith('.help') ? '.help' : '.menu';
+                    const input = userMessage.slice(prefix.length).trim();
+                    await menuCommand(sock, chatId, message, input);
+                }
                 commandExecuted = true;
                 break;
             case userMessage === '.sticker' || userMessage === '.s':
@@ -343,7 +391,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 }
                 break;
             case userMessage.startsWith('.tag'):
-                const messageText = rawText.slice(4).trim(); 
+                const messageText = rawText.slice(4).trim();
                 const replyMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage || null;
                 await tagCommand(sock, chatId, senderId, messageText, replyMessage);
                 break;
@@ -492,10 +540,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 const match = userMessage.slice(8).trim();
                 await handleChatbotCommand(sock, chatId, message, match);
                 break;
-            case userMessage.startsWith('.take'):
-                const takeArgs = rawText.slice(5).trim().split(' ');
-                await takeCommand(sock, chatId, message, takeArgs);
-                break;
+
             case userMessage === '.flirt':
                 await flirtCommand(sock, chatId, message);
                 break;
@@ -616,6 +661,28 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 }
                 commandExecuted = true;
                 break;
+            case userMessage.startsWith('.sewa'):
+                await sewaCommand(sock, chatId, message, rawText.split(' ').slice(1), senderId);
+                commandExecuted = true;
+                break;
+            case userMessage.startsWith('.help'):
+            case userMessage.startsWith('.menu'):
+                {
+                    const prefix = userMessage.split(' ')[0];
+                    const input = rawText.slice(prefix.length).trim();
+                    await menuCommand(sock, chatId, message, input);
+                }
+                commandExecuted = true;
+                break;
+            case userMessage === '.ceksewa':
+            case userMessage === '.ceksent':
+                await cekSewaCommand(sock, chatId, message);
+                commandExecuted = true;
+                break;
+            case userMessage.startsWith('.setwm'):
+                await setWmCommand(sock, chatId, message, rawText.split(' ').slice(1), senderId);
+                commandExecuted = true;
+                break;
             case userMessage.startsWith('.removebg') || userMessage.startsWith('.rmbg') || userMessage.startsWith('.nobg'):
                 await removebgCommand.exec(sock, message, userMessage.split(' ').slice(1));
                 break;
@@ -626,14 +693,29 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 await tebakkataCommand.tebakkata(sock, chatId, message);
                 break;
             case userMessage.startsWith('.btch'):
-                const btchUrl = rawText.slice(5).trim();
-                if (btchUrl) {
-                    const btchCommand = require('./commands/btch');
-                    await btchCommand(sock, chatId, message, btchUrl);
-                } else {
-                    await sock.sendMessage(chatId, {
-                        text: 'Masukkan URL yang valid\nContoh: .btch https://instagram.com/p/...'
-                    }, { quoted: message });
+            case userMessage.startsWith('.download'):
+            case userMessage.startsWith('.dl'):
+            case userMessage.startsWith('.song'):
+            case userMessage.startsWith('.play'):
+            case userMessage.startsWith('.music'):
+            case userMessage.startsWith('.ytdl'):
+            case userMessage.startsWith('.youtube'):
+                {
+                    const prefix = userMessage.split(' ')[0];
+                    const input = rawText.slice(prefix.length).trim();
+                    if (input) {
+                        if (prefix === '.song' || prefix === '.play' || prefix === '.music') {
+                            const songCommand = require('./commands/song');
+                            await songCommand.song(sock, chatId, message, input);
+                        } else {
+                            const btchCommand = require('./commands/btch');
+                            await btchCommand(sock, chatId, message, input);
+                        }
+                    } else {
+                        await sock.sendMessage(chatId, {
+                            text: `Masukkan URL atau Judul Lagu\n\nContoh:\n${prefix} https://youtube.com/watch?v=...\n${prefix} Alan Walker Faded`
+                        }, { quoted: message });
+                    }
                 }
                 break;
             default:
@@ -680,11 +762,14 @@ async function handleMessages(sock, messageUpdate, printLog) {
             await addCommandReaction(sock, message);
         }
     } catch (error) {
-        console.error('Error dalam penangan pesan:', error.message);
-        if (chatId) {
-            await sock.sendMessage(chatId, {
-                text: 'Gagal memproses command!'
-            });
+        const errMsg = error?.message || error?.toString() || '';
+        if (!errMsg.includes('Connection Closed') && !errMsg.includes('Connection Terminated')) {
+            console.error('Error dalam penangan pesan:', error);
+            if (chatId) {
+                await sock.sendMessage(chatId, {
+                    text: 'Gagal memproses command!'
+                }).catch(() => { });
+            }
         }
     }
 }
@@ -813,15 +898,13 @@ async function unbanCommand(sock, chatId, message) {
             return;
         }
 
-        const bannedData = JSON.parse(fs.readFileSync('./data/banned.json', 'utf8'));
-        const index = bannedData.indexOf(targetJid);
-        if (index > -1) {
-            bannedData.splice(index, 1);
-            fs.writeFileSync('./data/banned.json', JSON.stringify(bannedData, null, 2));
-            await sock.sendMessage(chatId, { text: `✅ Pengguna @${targetJid.split('@')[0]} telah di-unban.`, mentions: [targetJid] });
-        } else {
-            await sock.sendMessage(chatId, { text: 'Pengguna tersebut tidak dalam daftar banned.' });
-        }
+        const user = await prisma.user.upsert({
+            where: { id: targetJid },
+            update: { isBanned: false },
+            create: { id: targetJid, isBanned: false }
+        });
+
+        await sock.sendMessage(chatId, { text: `✅ Pengguna @${targetJid.split('@')[0]} telah di-unban.`, mentions: [targetJid] });
     } catch (error) {
         console.error('Error in unban command:', error);
         await sock.sendMessage(chatId, { text: 'Terjadi kesalahan saat unban pengguna.' });
@@ -855,9 +938,17 @@ async function handleAntideleteCommand(sock, chatId, message, match) {
     }
 }
 
-
-
-
+async function handleStatusUpdate(sock, status) {
+    try {
+        const jid = status.key.remoteJid;
+        if (jid === 'status@broadcast') {
+            await sock.readMessages([status.key]);
+            console.log(`Auto-viewed status from: ${status.pushName || status.key.participant}`);
+        }
+    } catch (e) {
+        console.error('Error in auto-view status:', e);
+    }
+}
 
 module.exports = {
     handleMessages,
@@ -866,3 +957,4 @@ module.exports = {
         await handleStatusUpdate(sock, status);
     }
 };
+

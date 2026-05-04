@@ -2,6 +2,10 @@ const { btch } = require('../lib/btchDownloader');
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
+const FileType = require('file-type');
+const { exec } = require('child_process');
+const util = require('util');
+const execPromise = util.promisify(exec);
 
 async function sendMessageWithRetry(sock, chatId, content, options = {}, maxRetries = 3) {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -122,23 +126,25 @@ async function btchCommand(sock, chatId, message, url) {
 
         const result = await btch(url);
 
-        if (!result.status) {
+        if (!result.status || !result.result || result.result.length === 0) {
             await sock.sendMessage(chatId, {
-                text: `❌ Gagal memproses link\n\nError: ${result.message}`,
+                text: `❌ Gagal memproses link\n\nError: ${result.message || 'Media tidak ditemukan'}`,
                 edit: statusMessage.key
             });
             return;
         }
 
-        await sock.sendMessage(chatId, {
-            text: `✅ Media ditemukan! Sedang mendownload...`,
-            edit: statusMessage.key
-        });
-
         const tempDir = path.join(__dirname, '../temp');
         if (!fs.existsSync(tempDir)) {
             fs.mkdirSync(tempDir, { recursive: true });
         }
+
+        // Jika ini adalah hasil pencarian lagu (biasanya 1 hasil), kirim info dulu
+        // Langsung tampilkan status mendownload di pesan status (edit message)
+        await sock.sendMessage(chatId, {
+            text: `🎵 *Downloading Audio:* ${result.result[0].title || 'Processing...'}\n\nMohon tunggu sebentar...`,
+            edit: statusMessage.key
+        }).catch(() => {});
 
         for (let i = 0; i < result.result.length; i++) {
             const item = result.result[i];
@@ -150,13 +156,21 @@ async function btchCommand(sock, chatId, message, url) {
             const timestamp = Date.now();
             let tempFile;
 
-            let extension = '.bin'; // default
-            if (mediaType === 'image') extension = '.jpg';
-            else if (mediaType === 'video') extension = '.mp4';
-            else if (mediaType === 'audio') extension = '.mp3';
+            let extension = item.ext || '.bin'; 
+            if (!item.ext) {
+                if (mediaType === 'audio' || item.type === 'audio') {
+                    extension = '.mp3';
+                } else if (mediaType === 'video' || item.type === 'video') {
+                    extension = '.mp4';
+                } else if (mediaType === 'image' || item.type === 'image') {
+                    extension = '.jpg';
+                }
+            }
 
             tempFile = path.join(tempDir, `btch_${timestamp}_${i}${extension}`);
             tempFiles.push(tempFile);
+            
+            console.log(`Downloading ${mediaType} to: ${tempFile}`);
 
             try {
                 await sock.sendMessage(chatId, {
@@ -176,28 +190,60 @@ async function btchCommand(sock, chatId, message, url) {
                     throw new Error('File kosong (0 bytes)');
                 }
 
-                // Determine proper media type and extension from mimeType
+                // Determine proper media type and extension
                 let actualMediaType = mediaType;
                 let actualExtension = extension;
                 let actualMimeType = mimeType;
 
-                if (mimeType) {
+                // --- PROSES KONVERSI KHUSUS AUDIO ---
+                if ((actualMediaType === 'audio' || actualExtension === '.mp3' || item.type === 'audio') && actualExtension !== '.m4a') {
+                    const convertedFile = tempFile.replace(/\.[^.]+$/, '') + '_wa.opus';
+                    const ffmpegPath = process.env.FFMPEG_PATH || 'ffmpeg';
+                    
+                    try {
+                        // Cek apakah ffmpeg ada dengan mencoba menjalankan perintah versi
+                        await execPromise(`"${ffmpegPath}" -version`);
+                        
+                        console.log(`[DEBUG] Memulai konversi ke OGG/Opus: ${tempFile}`);
+                        await execPromise(`"${ffmpegPath}" -i "${tempFile}" -c:a libopus -b:a 64k -vbr on -compression_level 10 -y "${convertedFile}"`);
+                        
+                        if (fs.existsSync(convertedFile)) {
+                            console.log(`[DEBUG] Konversi berhasil: ${convertedFile}`);
+                            fs.unlinkSync(tempFile);
+                            tempFile = convertedFile;
+                            tempFiles[tempFiles.length - 1] = tempFile;
+                            actualMediaType = 'audio';
+                            actualMimeType = 'audio/ogg; codecs=opus';
+                            actualExtension = '.opus';
+                        }
+                    } catch (convErr) {
+                        console.log('[DEBUG] Skip konversi karena FFmpeg tidak ditemukan atau error. Menggunakan file asli.');
+                        // Fallback: Jika ini mp3 dari API, gunakan audio/mpeg
+                        if (actualExtension === '.mp3') {
+                            actualMediaType = 'audio';
+                            actualMimeType = 'audio/mpeg';
+                        } else if (actualExtension === '.m4a' || actualExtension === '.mp4') {
+                            actualMediaType = 'audio';
+                            actualMimeType = 'audio/mp4';
+                        } else {
+                            actualMediaType = 'audio';
+                            actualMimeType = 'audio/mpeg';
+                        }
+                    }
+                } else if (actualExtension === '.mp3') {
+                    actualMediaType = 'audio';
+                    actualMimeType = 'audio/mpeg';
+                } else if (actualExtension === '.m4a') {
+                    actualMediaType = 'audio';
+                    actualMimeType = 'audio/mp4';
+                } else if (mimeType) {
+                    // Logika deteksi untuk video/image
                     if (mimeType.startsWith('image/')) {
                         actualMediaType = 'image';
                         actualExtension = '.jpg';
-                        actualMimeType = 'image/jpeg';
                     } else if (mimeType.startsWith('video/')) {
                         actualMediaType = 'video';
                         actualExtension = '.mp4';
-                        actualMimeType = 'video/mp4';
-                    } else if (mimeType.startsWith('audio/')) {
-                        actualMediaType = 'audio';
-                        actualExtension = '.mp3';
-                        actualMimeType = 'audio/mp3';
-                    } else {
-                        actualMediaType = 'document';
-                        actualExtension = path.extname(filename) || '.bin';
-                        actualMimeType = mimeType;
                     }
                 }
 
@@ -217,32 +263,46 @@ async function btchCommand(sock, chatId, message, url) {
                     edit: statusMessage.key
                 });
 
-                const fileName = filename || `btch_download_${timestamp}${actualExtension}`;
+                const fileName = item.title ? `${item.title}${actualExtension}` : (filename || `btch_download_${timestamp}${actualExtension}`);
 
                 if (actualMediaType === 'image') {
                     await sendMessageWithRetry(sock, chatId, {
                         image: fileBuffer,
-                        caption: `✅ Media berhasil didownload!`
+                        caption: `✅ *Media Downloaded*`
                     }, { quoted: message });
                 } else if (actualMediaType === 'video') {
                     await sendMessageWithRetry(sock, chatId, {
                         video: fileBuffer,
                         mimetype: actualMimeType,
-                        caption: `✅ Video berhasil didownload!`
+                        caption: `✅ *Video Downloaded*`
                     }, { quoted: message });
                 } else if (actualMediaType === 'audio') {
                     await sendMessageWithRetry(sock, chatId, {
                         audio: fileBuffer,
-                        mimetype: actualMimeType,
+                        mimetype: actualMimeType || 'audio/mp4',
+                        ptt: false,
                         fileName: fileName,
-                        caption: `✅ Audio berhasil didownload!`
+                        contextInfo: {
+                            externalAdReply: {
+                                title: item.title || 'Yuuki Music Player',
+                                body: 'Klik untuk membuka sumber lagu',
+                                mediaType: 2,
+                                thumbnail: item.thumbnail ? (await axios.get(item.thumbnail, { responseType: 'arraybuffer' }).then(res => Buffer.from(res.data)).catch(() => null)) : null,
+                                mediaUrl: item.url || url,
+                                sourceUrl: item.url || url,
+                                renderLargerThumbnail: true
+                            }
+                        }
                     }, { quoted: message });
+                    
+                    // Hapus pesan status setelah berhasil kirim
+                    await sock.sendMessage(chatId, { delete: statusMessage.key }).catch(() => {});
                 } else {
                     await sendMessageWithRetry(sock, chatId, {
                         document: fileBuffer,
                         mimetype: actualMimeType || 'application/octet-stream',
                         fileName: fileName,
-                        caption: `✅ File berhasil didownload!`
+                        caption: `✅ *File Downloaded*`
                     }, { quoted: message });
                 }
 

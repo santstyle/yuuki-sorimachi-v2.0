@@ -20,11 +20,6 @@ Files containing "Yuuki Bot":
 - commands/instagram.js
 - commands/github.js
 - baileys_store.json
-
-# Toimage
-- simage.js
-- simage-alt.jss
-- toimage.js
   
 ## Command
 #### Owner
@@ -36,3 +31,7 @@ Files containing "Yuuki Bot":
 - .update
 - .autoreact
 - .bc
+
+• .setwm <pack> | <auth>
+• .sewa <ID/days>
+• .ceksewa

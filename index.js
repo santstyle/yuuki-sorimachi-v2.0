@@ -100,10 +100,7 @@ async function startXeonBotInc() {
     const { state, saveCreds } = await useMultiFileAuthState('./session')
     const msgRetryCounterCache = new NodeCache()
 
-    const logger = pino({
-        level: 'error',
-        timestamp: () => `,"time":"${new Date().toLocaleTimeString()}"`
-    })
+    const logger = pino({ level: 'silent' })
 
     const XeonBotInc = makeWASocket({
         version,
@@ -111,7 +108,7 @@ async function startXeonBotInc() {
         browser: ["Ubuntu", "Chrome", "20.0.04"],
         auth: {
             creds: state.creds,
-            keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "error" })),
+            keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "silent" })),
         },
         markOnlineOnConnect: false,
         generateHighQualityLinkPreview: true,
@@ -165,16 +162,20 @@ async function startXeonBotInc() {
             try {
                 await handleMessages(XeonBotInc, chatUpdate, true)
             } catch (err) {
-                console.error("Error in handleMessages:", err.message)
-                if (mek.key && mek.key.remoteJid && !err.message.includes('Bad MAC') && !err.message.includes('decrypt')) {
-                    await XeonBotInc.sendMessage(mek.key.remoteJid, {
-                        text: 'An error occurred while processing your message.'
-                    }).catch(console.error)
+                const errMsg = err?.message || err?.toString() || '';
+                if (!errMsg.includes('Bad MAC') && !errMsg.includes('decrypt') && !errMsg.includes('Connection Closed') && !errMsg.includes('Connection Terminated')) {
+                    console.error("Error in handleMessages:", err);
+                    if (mek.key && mek.key.remoteJid) {
+                        await XeonBotInc.sendMessage(mek.key.remoteJid, {
+                            text: 'An error occurred while processing your message.'
+                        }).catch(() => {});
+                    }
                 }
             }
         } catch (err) {
-            if (!err.message.includes('Bad MAC') && !err.message.includes('decrypt')) {
-                console.error("Error in messages.upsert:", err.message)
+            const errMsg = err?.message || err?.toString() || '';
+            if (!errMsg.includes('Bad MAC') && !errMsg.includes('decrypt') && !errMsg.includes('Connection Closed') && !errMsg.includes('Connection Terminated')) {
+                console.error("Error in messages.upsert:", err);
             }
         }
     })
@@ -287,6 +288,33 @@ async function startXeonBotInc() {
         }
     })
 
+    const prisma = require('./lib/db');
+    setInterval(async () => {
+        try {
+            const expiredGroups = await prisma.group.findMany({
+                where: {
+                    expiredAt: {
+                        lte: new Date()
+                    }
+                }
+            });
+
+            for (const group of expiredGroups) {
+                try {
+                    await XeonBotInc.sendMessage(group.id, { text: 'Waktu sewa bot di grup ini telah habis. Terima kasih telah menggunakan bot ini! 👋' });
+                    await delay(2000);
+                    await XeonBotInc.groupLeave(group.id);
+                    await prisma.group.delete({ where: { id: group.id } });
+                    console.log(`Left expired group: ${group.id}`);
+                } catch (e) {
+                    console.error(`Gagal keluar dari grup expired ${group.id}:`, e);
+                }
+            }
+        } catch (dbError) {
+            console.error('Error mengecek sewa grup:', dbError);
+        }
+    }, 60000); // Check every 1 minute
+
     return XeonBotInc
 }
 
@@ -299,16 +327,34 @@ startXeonBotInc().catch(error => {
 })
 
 process.on('uncaughtException', (err) => {
-    if (!err.message.includes('Bad MAC') && !err.message.includes('decrypt')) {
-        console.error('Uncaught Exception:', err.message)
+    const errMsg = err?.message || err?.toString() || '';
+    if (!errMsg.includes('Bad MAC') && !errMsg.includes('decrypt') && !errMsg.includes('Connection Closed') && !errMsg.includes('Connection Terminated')) {
+        console.error('Uncaught Exception:', err);
     }
 })
 
 process.on('unhandledRejection', (err) => {
-    if (!err.message?.includes('Bad MAC') && !err.message?.includes('decrypt')) {
-        console.error('Unhandled Rejection:', err.message)
+    const errMsg = err?.message || err?.toString() || '';
+    if (!errMsg.includes('Bad MAC') && !errMsg.includes('decrypt') && !errMsg.includes('Connection Closed') && !errMsg.includes('Connection Terminated')) {
+        console.error('Unhandled Rejection:', err);
     }
 })
+
+// Graceful shutdown
+const prisma = require('./lib/db');
+async function shutdown() {
+    console.log('Shutting down gracefully...');
+    try {
+        await prisma.$disconnect();
+        console.log('Prisma disconnected.');
+    } catch (e) {
+        console.error('Error disconnecting Prisma:', e);
+    }
+    process.exit(0);
+}
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
 
 let file = require.resolve(__filename)
 fs.watchFile(file, () => {

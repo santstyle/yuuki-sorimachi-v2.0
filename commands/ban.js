@@ -1,5 +1,4 @@
-const fs = require('fs');
-const path = require('path');
+const prisma = require('../lib/db');
 
 async function banCommand(sock, chatId, message) {
     let userToBan;
@@ -19,26 +18,16 @@ async function banCommand(sock, chatId, message) {
     }
 
     try {
-        const bannedPath = path.join(__dirname, '../data/banned.json');
-        if (!fs.existsSync(bannedPath)) {
-            fs.writeFileSync(bannedPath, JSON.stringify([]));
-        }
+        const user = await prisma.user.upsert({
+            where: { id: userToBan },
+            update: { isBanned: true },
+            create: { id: userToBan, isBanned: true }
+        });
 
-        const bannedUsers = JSON.parse(fs.readFileSync(bannedPath));
-        if (!bannedUsers.includes(userToBan)) {
-            bannedUsers.push(userToBan);
-            fs.writeFileSync(bannedPath, JSON.stringify(bannedUsers, null, 2));
-
-            await sock.sendMessage(chatId, {
-                text: `@${userToBan.split('@')[0]} udah di-ban ya`,
-                mentions: [userToBan]
-            });
-        } else {
-            await sock.sendMessage(chatId, {
-                text: `@${userToBan.split('@')[0]} udah di-ban sebelumnya kok`,
-                mentions: [userToBan]
-            });
-        }
+        await sock.sendMessage(chatId, {
+            text: `@${userToBan.split('@')[0]} udah di-ban ya`,
+            mentions: [userToBan]
+        });
     } catch (error) {
         console.error('Error di ban command:', error);
         await sock.sendMessage(chatId, {

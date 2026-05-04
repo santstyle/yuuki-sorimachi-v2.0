@@ -81,9 +81,23 @@ async function stickerCommand(sock, chatId, message) {
         const img = new webp.Image();
         await img.load(webpBuffer);
 
+        const prisma = require('../lib/db');
+        const senderId = message.key.participant || message.key.remoteJid;
+        let wmName = settings.wm || 'Yuuki Bot';
+        
+        try {
+            const user = await prisma.user.findUnique({ where: { id: senderId } });
+            if (user && (user.packname || user.author)) {
+                wmName = `${user.packname || ''} | ${user.author || ''}`.trim();
+                if (wmName === '|') wmName = settings.wm || 'Yuuki Bot';
+            }
+        } catch (e) {
+            console.error('Error fetching user watermark:', e);
+        }
+
         const json = {
             'sticker-pack-id': crypto.randomBytes(32).toString('hex'),
-            'sticker-pack-name': settings.wm || '',
+            'sticker-pack-name': wmName,
             'emojis': ['']
         };
 
