@@ -124,7 +124,7 @@ async function btchCommand(sock, chatId, message, url) {
             text: 'Memproses link downloader...\n\nMohon tunggu sebentar...'
         }, { quoted: message });
 
-        const result = await btch(url);
+        const result = await btch(url, 'video');
 
         if (!result.status || !result.result || result.result.length === 0) {
             await sock.sendMessage(chatId, {
@@ -178,8 +178,18 @@ async function btchCommand(sock, chatId, message, url) {
                     edit: statusMessage.key
                 });
 
-                const downloadInfo = await downloadFile(mediaUrl, tempFile);
-                const { mimeType, filename } = downloadInfo;
+                let downloadedFilename = '';
+                let downloadedMimeType = '';
+
+                if (item.localFile && fs.existsSync(mediaUrl)) {
+                    console.log(`[DEBUG] Using local file from yt-dlp fallback: ${mediaUrl}`);
+                    tempFile = mediaUrl;
+                    tempFiles[tempFiles.length - 1] = tempFile;
+                } else {
+                    const downloadInfo = await downloadFile(mediaUrl, tempFile);
+                    downloadedMimeType = downloadInfo.mimeType;
+                    downloadedFilename = downloadInfo.filename;
+                }
 
                 if (!fs.existsSync(tempFile)) {
                     throw new Error('File tidak berhasil didownload');
@@ -191,9 +201,27 @@ async function btchCommand(sock, chatId, message, url) {
                 }
 
                 // Determine proper media type and extension
-                let actualMediaType = mediaType;
+                let actualMediaType = item.type || mediaType;
                 let actualExtension = extension;
-                let actualMimeType = mimeType;
+                let actualMimeType = item.localFile && item.type === 'video' ? 'video/mp4' : (item.localFile && item.type === 'audio' ? 'audio/mpeg' : downloadedMimeType);
+                let sendFileName = item.localFile ? '' : downloadedFilename;
+
+                // Detect actual file type from buffer using file-type library
+                const fileBuffer = fs.readFileSync(tempFile);
+                const fileTypeResult = await FileType.fromBuffer(fileBuffer);
+                if (fileTypeResult) {
+                    actualMimeType = fileTypeResult.mime;
+                    if (actualMimeType.startsWith('video/')) {
+                        actualMediaType = 'video';
+                        actualExtension = '.' + fileTypeResult.ext;
+                    } else if (actualMimeType.startsWith('image/')) {
+                        actualMediaType = 'image';
+                        actualExtension = '.' + fileTypeResult.ext;
+                    } else if (actualMimeType.startsWith('audio/')) {
+                        actualMediaType = 'audio';
+                        actualExtension = '.' + fileTypeResult.ext;
+                    }
+                }
 
                 // --- PROSES KONVERSI KHUSUS AUDIO ---
                 if ((actualMediaType === 'audio' || actualExtension === '.mp3' || item.type === 'audio') && actualExtension !== '.m4a') {
@@ -236,12 +264,12 @@ async function btchCommand(sock, chatId, message, url) {
                 } else if (actualExtension === '.m4a') {
                     actualMediaType = 'audio';
                     actualMimeType = 'audio/mp4';
-                } else if (mimeType) {
+                } else if (actualMimeType) {
                     // Logika deteksi untuk video/image
-                    if (mimeType.startsWith('image/')) {
+                    if (actualMimeType.startsWith('image/')) {
                         actualMediaType = 'image';
                         actualExtension = '.jpg';
-                    } else if (mimeType.startsWith('video/')) {
+                    } else if (actualMimeType.startsWith('video/')) {
                         actualMediaType = 'video';
                         actualExtension = '.mp4';
                     }
@@ -255,7 +283,8 @@ async function btchCommand(sock, chatId, message, url) {
                     tempFiles[tempFiles.length - 1] = tempFile;
                 }
 
-                const fileBuffer = fs.readFileSync(tempFile);
+                // Re-read buffer in case file was converted or renamed
+                const finalBuffer = fs.readFileSync(tempFile);
                 const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
 
                 await sock.sendMessage(chatId, {
@@ -263,22 +292,25 @@ async function btchCommand(sock, chatId, message, url) {
                     edit: statusMessage.key
                 });
 
-                const fileName = item.title ? `${item.title}${actualExtension}` : (filename || `btch_download_${timestamp}${actualExtension}`);
+                const fileName = item.title ? `${item.title}${actualExtension}` : (sendFileName || `btch_download_${timestamp}${actualExtension}`);
+
+                console.log(`[DEBUG] actualMediaType: ${actualMediaType}, actualMimeType: ${actualMimeType}, fileSize: ${fileSizeMB}MB`);
 
                 if (actualMediaType === 'image') {
                     await sendMessageWithRetry(sock, chatId, {
-                        image: fileBuffer,
+                        image: finalBuffer,
                         caption: `✅ *Media Downloaded*`
                     }, { quoted: message });
                 } else if (actualMediaType === 'video') {
+                    console.log('[DEBUG] Sending video, size:', fileSizeMB, 'MB');
                     await sendMessageWithRetry(sock, chatId, {
-                        video: fileBuffer,
+                        video: finalBuffer,
                         mimetype: actualMimeType,
                         caption: `✅ *Video Downloaded*`
                     }, { quoted: message });
                 } else if (actualMediaType === 'audio') {
                     await sendMessageWithRetry(sock, chatId, {
-                        audio: fileBuffer,
+                        audio: finalBuffer,
                         mimetype: actualMimeType || 'audio/mp4',
                         ptt: false,
                         fileName: fileName,
@@ -299,7 +331,7 @@ async function btchCommand(sock, chatId, message, url) {
                     await sock.sendMessage(chatId, { delete: statusMessage.key }).catch(() => {});
                 } else {
                     await sendMessageWithRetry(sock, chatId, {
-                        document: fileBuffer,
+                        document: finalBuffer,
                         mimetype: actualMimeType || 'application/octet-stream',
                         fileName: fileName,
                         caption: `✅ *File Downloaded*`

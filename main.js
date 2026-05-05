@@ -206,7 +206,8 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 const xpResult = await addXP(senderId, Math.floor(Math.random() * 15) + 5, pushName);
                 if (xpResult && xpResult.leveledUp) {
                     await sock.sendMessage(chatId, {
-                        text: `LEVEL UP!\n\nSelamat @${senderId.split('@')[0]}!\nKamu naik ke Level ${xpResult.level}\nTerus aktif untuk naik level lagi!`
+                        text: `LEVEL UP!\n\nSelamat @${pushName}!\nKamu naik ke Level ${xpResult.level}\nTerus aktif untuk naik level lagi!`,
+                        mentions: [senderId]
                     }, { quoted: message });
                 }
             }

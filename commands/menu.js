@@ -8,7 +8,7 @@ async function menuCommand(sock, chatId, message, input) {
     const pushName = message.pushName || 'User';
     const botNumber = sock.user.id.split(':')[0];
 
-    const menuText = `*Daftar List Commands*
+    const menuText = `*List Commands*
 
 - *Admin*
 .ceksewa
