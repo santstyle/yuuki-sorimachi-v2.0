@@ -211,6 +211,10 @@ async function btchCommand(sock, chatId, message, url) {
                 const fileTypeResult = await FileType.fromBuffer(fileBuffer);
                 if (fileTypeResult) {
                     actualMimeType = fileTypeResult.mime;
+                    // Check if file is actually a text/html (block page or error)
+                    if (actualMimeType.startsWith('text/html') || actualMimeType.startsWith('application/xhtml')) {
+                        throw new Error('File yang diunduh bukan media (kemungkinan diblokir atau login page)');
+                    }
                     if (actualMimeType.startsWith('video/')) {
                         actualMediaType = 'video';
                         actualExtension = '.' + fileTypeResult.ext;
@@ -220,6 +224,12 @@ async function btchCommand(sock, chatId, message, url) {
                     } else if (actualMimeType.startsWith('audio/')) {
                         actualMediaType = 'audio';
                         actualExtension = '.' + fileTypeResult.ext;
+                    }
+                } else if (stats.size < 1000) {
+                    // Small files that don't have a header might be error responses
+                    const content = fs.readFileSync(tempFile, 'utf8');
+                    if (content.includes('<html') || content.includes('<!DOCTYPE')) {
+                        throw new Error('File yang diunduh bukan media (kemungkinan diblokir atau login page)');
                     }
                 }
 

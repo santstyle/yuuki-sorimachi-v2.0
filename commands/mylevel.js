@@ -5,7 +5,7 @@ async function mylevelCommand(sock, chatId, message, args) {
     try {
         let targetId = message.key.participant || message.key.remoteJid;
         const mentionedJid = message.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
-        
+
         if (mentionedJid.length > 0) {
             targetId = mentionedJid[0];
         } else if (args.length > 0) {
@@ -47,7 +47,7 @@ Level: ${progress.level}
 XP: ${progress.xp} / ${requiredXP}
 Progress: [${progressBar}] ${percentage}%
 
-Info: Terus aktif menggunakan bot untuk naik level!`;
+Terus aktif menggunakan bot untuk naik level!`;
 
         await sock.sendMessage(chatId, { text }, { quoted: message });
     } catch (error) {

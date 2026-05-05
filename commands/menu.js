@@ -8,57 +8,33 @@ async function menuCommand(sock, chatId, message, input) {
     const pushName = message.pushName || 'User';
     const botNumber = sock.user.id.split(':')[0];
 
-    const menuText = `*List Commands*
+    const menuText = `List Menu Yuuki
 
-- *Admin*
-.ceksewa
-.antitag
-.welcome
-.goodbye
-.ban
-.mute
-.kick
-.warnings
-.warn
-.tag
-.unmute
-.delete
-.antilink
-.antibadword
-.clear
-.tagall
-.hidetag
-.resetlink
-.chatbot
+┌──「 ADMIN 」
+│ .ceksewa  .antitag   .welcome  .goodbye
+│ .ban      .mute      .kick     .warnings
+│ .warn     .tag       .unmute   .delete
+│ .antilink .antibadword .clear  .tagall
+│ .hidetag  .resetlink .chatbot
+└───────────────────────────
 
-- *General*
-.menu
-.ping
-.alive
-.owner
-.groupinfo
-.staff
-.startabsen
-.joke
-.meme
-.quote
-.fact
-.news
-.weather
+┌──「 GENERAL 」
+│ .menu     .ping      .alive    .owner
+│ .groupinfo .staff    .startabsen .mylevel
+│ .joke     .meme      .quote    .fact
+│ .news     .weather
+└───────────────────────────
 
-- *Image & Sticker*
-.sticker
-.setwm
-.toimage
-.tovideo
+┌──「 IMAGE & STICKER 」
+│ .sticker  .setwm     .toimage  .tovideo
+└───────────────────────────
 
-- *Search & Downloader*
-.lyrics
-.song
-.play
-.download / .dl
+┌──「 SEARCH & DOWNLOADER 」
+│ .lyrics   .song      .play     .dl
+└───────────────────────────
 
-Powered by SantStyle`;
+> Ketik *.help* untuk detail penggunaan command
+> *Powered by SantStyle*`;
 
     try {
         const profilesDir = path.join(__dirname, '../assets/profiles');
