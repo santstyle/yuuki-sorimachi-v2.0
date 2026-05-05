@@ -3,7 +3,24 @@ const { Boom } = require('@hapi/boom')
 const fs = require('fs')
 const chalk = require('chalk')
 
-console.log('Yuuki Sorimachi | Bot')
+// Filter log bawaan Baileys yang berisik dan tidak relevan untuk developer
+const _originalConsoleError = console.error;
+console.error = (...args) => {
+    const msg = args.join(' ');
+    const noisy = ['Bad MAC', 'Failed to decrypt', 'Session error', 'decrypt'];
+    if (noisy.some(n => msg.includes(n))) return; // buang noise, jangan tampilkan
+    _originalConsoleError(...args);
+};
+const _originalConsoleLog = console.log;
+console.log = (...args) => {
+    const msg = args.join(' ');
+    if (msg.includes('Failed to decrypt') || msg.includes('Session error')) return;
+    _originalConsoleLog(...args);
+};
+
+console.log(chalk.bold.cyan('\n  ╭───────────────────────────────────╮'));
+console.log(chalk.bold.cyan('  │') + chalk.bold.white('   Yuuki Sorimachi | WhatsApp Bot  ') + chalk.bold.cyan('│'));
+console.log(chalk.bold.cyan('  ╰───────────────────────────────────╯\n'));
 
 process.env.FFMPEG_PATH = 'ffmpeg'
 process.env.FFPROBE_PATH = 'ffprobe'
@@ -17,7 +34,7 @@ try {
     console.log('Note: Could not remove ffmpeg folder:', err.message)
 }
 
-console.log('✅ Using system FFmpeg')
+console.log(chalk.green('  ✔') + chalk.white(' FFmpeg  : ') + chalk.green('System Ready'))
 
 const FileType = require('file-type')
 const axios = require('axios')
@@ -235,7 +252,8 @@ async function startXeonBotInc() {
         }
 
         if (connection === 'open') {
-            console.log('✅ Bot connected successfully!')
+            console.log('\n' + chalk.bgGreen.black(' SUCCESS ') + chalk.green(' Bot connected successfully!'));
+            console.log(chalk.cyan('═'.repeat(40)));
             connectionAttempts = 0
         }
 
@@ -243,7 +261,7 @@ async function startXeonBotInc() {
             const statusCode = lastDisconnect?.error?.output?.statusCode
             const errorMessage = lastDisconnect?.error?.message || ''
 
-            console.log(`🔌 Connection closed. Attempt: ${connectionAttempts + 1}/${maxConnectionAttempts}`)
+            console.log(chalk.bgRed.white(' DISCONNECT ') + chalk.red(` Connection closed. Attempt: ${connectionAttempts + 1}/${maxConnectionAttempts}`));
 
             if (!errorMessage.includes('Bad MAC') && !errorMessage.includes('decrypt')) {
                 console.log('Reason:', errorMessage)
@@ -313,7 +331,29 @@ async function startXeonBotInc() {
         } catch (dbError) {
             console.error('Error mengecek sewa grup:', dbError);
         }
-    }, 60000); // Check every 1 minute
+    }, 300000); // Check every 5 minutes
+
+    // Auto-cleanup database every 24 hours (at 3 AM)
+    const { performAutoCleanup } = require('./lib/cleanupManager');
+    setInterval(async () => {
+        await performAutoCleanup();
+    }, 24 * 60 * 60 * 1000);
+
+    // Schedule initial cleanup if bot starts near 3 AM (just to sync it up roughly)
+    const now = new Date();
+    const next3AM = new Date(now);
+    next3AM.setHours(3, 0, 0, 0);
+    if (now > next3AM) {
+        next3AM.setDate(next3AM.getDate() + 1);
+    }
+    const msUntil3AM = next3AM - now;
+    console.log(`[Cleanup] Next auto-cleanup scheduled in ${Math.round(msUntil3AM / 60000)} minutes.`);
+    setTimeout(async () => {
+        await performAutoCleanup();
+        setInterval(async () => {
+            await performAutoCleanup();
+        }, 24 * 60 * 60 * 1000);
+    }, msUntil3AM);
 
     return XeonBotInc
 }

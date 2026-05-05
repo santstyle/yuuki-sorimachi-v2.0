@@ -1,146 +1,83 @@
-const fs = require('fs');
-const path = require('path');
 const isAdmin = require('../lib/isAdmin');
+const { addWarning, getWarningCount, getMaxWarnLevel } = require('../lib/warningManager');
+const { getGroupSettings } = require('../lib/groupSettings');
 
-const databaseDir = path.join(process.cwd(), 'data');
-const warningsPath = path.join(databaseDir, 'warnings.json');
-
-function initializeWarningsFile() {
-    if (!fs.existsSync(databaseDir)) {
-        fs.mkdirSync(databaseDir, { recursive: true });
-    }
-
-    if (!fs.existsSync(warningsPath)) {
-        fs.writeFileSync(warningsPath, JSON.stringify({}), 'utf8');
-    }
-}
-
-async function warnCommand(sock, chatId, senderId, mentionedJids, message) {
+async function warnCommand(sock, chatId, senderId, mentionedJids, message, reason = 'Tidak ada alasan') {
     try {
-        initializeWarningsFile();
-
         if (!chatId.endsWith('@g.us')) {
             await sock.sendMessage(chatId, {
-                text: 'Hmm, command warn cuma bisa dipakai di grup aja lho Kirim ke grup ya'
+                text: 'Command warn hanya bisa dipakai di grup.'
             });
             return;
         }
 
-        try {
-            const { isSenderAdmin, isBotAdmin } = await isAdmin(sock, chatId, senderId);
+        const { isSenderAdmin, isBotAdmin } = await isAdmin(sock, chatId, senderId);
 
-            if (!isBotAdmin) {
-                await sock.sendMessage(chatId, {
-                    text: 'Aduh, aku harus jadi admin dulu nih biar bisa kasih warning. Minta admin dulu ya'
-                });
-                return;
-            }
-
-            if (!isSenderAdmin) {
-                await sock.sendMessage(chatId, {
-                    text: 'Maaf, cuma admin grup yang boleh kasih warning ke member lain'
-                });
-                return;
-            }
-        } catch (adminError) {
-            console.error('Error waktu cek status admin:', adminError);
+        if (!isBotAdmin) {
             await sock.sendMessage(chatId, {
-                text: 'Wah, ada masalah waktu cek admin nih. Pastiin aku jadi admin ya'
+                text: 'Bot harus menjadi admin untuk menggunakan fitur warning.'
+            });
+            return;
+        }
+
+        if (!isSenderAdmin) {
+            await sock.sendMessage(chatId, {
+                text: 'Hanya admin grup yang bisa memberikan warning.'
             });
             return;
         }
 
         let userToWarn;
 
-        // Check for mentioned users
         if (mentionedJids && mentionedJids.length > 0) {
             userToWarn = mentionedJids[0];
-        }
-        // Check for replied message
-        else if (message.message?.extendedTextMessage?.contextInfo?.participant) {
+        } else if (message.message?.extendedTextMessage?.contextInfo?.participant) {
             userToWarn = message.message.extendedTextMessage.contextInfo.participant;
         }
 
         if (!userToWarn) {
             await sock.sendMessage(chatId, {
-                text: 'Sebutin dong usernya siapa yang mau di-warn? Bisa mention atau reply chatnya'
+                text: 'Tag user atau reply pesan yang ingin diberi warning.'
             });
             return;
         }
 
-        // Add delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        const senderName = message.pushName || 'Admin';
+        const targetName = message.message?.extendedTextMessage?.contextInfo?.participant || userToWarn.split('@')[0];
 
-        try {
-            // Read warnings, create empty object if file is empty
-            let warnings = {};
-            try {
-                warnings = JSON.parse(fs.readFileSync(warningsPath, 'utf8'));
-            } catch (error) {
-                warnings = {};
-            }
+        await addWarning(userToWarn, targetName, chatId, reason, message.key.id, senderId, senderName);
 
-            // Initialize nested objects if they don't exist
-            if (!warnings[chatId]) warnings[chatId] = {};
-            if (!warnings[chatId][userToWarn]) warnings[chatId][userToWarn] = 0;
+        const warnCount = await getWarningCount(userToWarn, chatId);
+        const maxWarn = await getMaxWarnLevel(chatId);
 
-            warnings[chatId][userToWarn]++;
-            fs.writeFileSync(warningsPath, JSON.stringify(warnings, null, 2));
+        const warningText = `PERINGATAN\n\n` +
+            `User: @${userToWarn.split('@')[0]}\n` +
+            `Warning ke: ${warnCount}/${maxWarn}\n` +
+            `Oleh: @${senderId.split('@')[0]}\n` +
+            `Alasan: ${reason}\n\n` +
+            `Hai @${userToWarn.split('@')[0]}, jangan diulangi lagi ya.`;
 
-            const warningMessage = `*「 PERINGATAN 」*\n\n` +
-                `*User:* @${userToWarn.split('@')[0]}\n` +
-                `*Warning ke:* ${warnings[chatId][userToWarn]}/3\n` +
-                `*Oleh:* @${senderId.split('@')[0]}\n\n` +
-                `Hai @${userToWarn.split('@')[0]}, jangan diulangi lagi ya`;
+        await sock.sendMessage(chatId, {
+            text: warningText,
+            mentions: [userToWarn, senderId]
+        });
+
+        if (warnCount >= maxWarn) {
+            await sock.groupParticipantsUpdate(chatId, [userToWarn], "remove");
+
+            const kickText = `AUTO-KICK\n\n` +
+                `@${userToWarn.split('@')[0]} telah mencapai batas maksimal warning (${maxWarn}) dan dikeluarkan dari grup.`;
 
             await sock.sendMessage(chatId, {
-                text: warningMessage,
-                mentions: [userToWarn, senderId]
-            });
-
-            // Auto-kick after 3 warnings
-            if (warnings[chatId][userToWarn] >= 3) {
-                // Add delay to avoid rate limiting
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-                await sock.groupParticipantsUpdate(chatId, [userToWarn], "remove");
-                delete warnings[chatId][userToWarn];
-                fs.writeFileSync(warningsPath, JSON.stringify(warnings, null, 2));
-
-                const kickMessage = `*「 AUTO-KICK 」*\n\n` +
-                    `@${userToWarn.split('@')[0]} udah dapat 3 warning, jadi terpaksa aku keluarin dari grup nih Jangan sedih ya, bisa join lagi kok nanti`;
-
-                await sock.sendMessage(chatId, {
-                    text: kickMessage,
-                    mentions: [userToWarn]
-                });
-            }
-        } catch (error) {
-            console.error('Error waktu warn user:', error);
-            await sock.sendMessage(chatId, {
-                text: 'Aduh, gagal kasih warning nih. Coba lagi ya'
+                text: kickText,
+                mentions: [userToWarn]
             });
         }
     } catch (error) {
-        console.error('Error di warn command:', error);
-        if (error.data === 429) {
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            try {
-                await sock.sendMessage(chatId, {
-                    text: 'Wah, terlalu cepat nih. Tunggu bentar ya baru coba lagi'
-                });
-            } catch (retryError) {
-                console.error('Error waktu kirim pesan retry:', retryError);
-            }
-        } else {
-            try {
-                await sock.sendMessage(chatId, {
-                    text: 'Gagal kasih warning nih. Pastiin aku admin dan punya permission ya'
-                });
-            } catch (sendError) {
-                console.error('Error waktu kirim pesan error:', sendError);
-            }
-        }
+        console.error('Error in warn command:', error);
+        await sock.sendMessage(chatId, {
+            text: 'Gagal memberikan warning. Coba lagi.'
+        });
     }
 }
 

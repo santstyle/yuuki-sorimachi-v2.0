@@ -17,11 +17,22 @@ const path = require('path');
 const axios = require('axios');
 const ffmpeg = require('fluent-ffmpeg');
 const { addWelcome, delWelcome, isWelcomeOn, addGoodbye, delGoodBye, isGoodByeOn, isSudo } = require('./lib/index');
+const chalk = require('chalk');
+const moment = require('moment-timezone');
+
+// Fungsi Logger Estetik
+const logger = {
+    info: (msg) => console.log(`${chalk.cyan('[' + moment().tz('Asia/Jakarta').format('HH:mm:ss') + ']')} ${chalk.bgBlue(' INFO ')} ${msg}`),
+    cmd: (msg) => console.log(`${chalk.cyan('[' + moment().tz('Asia/Jakarta').format('HH:mm:ss') + ']')} ${chalk.bgGreen(' CMD  ')} ${msg}`),
+    msg: (msg) => console.log(`${chalk.cyan('[' + moment().tz('Asia/Jakarta').format('HH:mm:ss') + ']')} ${chalk.bgYellow(chalk.black(' MSG  '))} ${msg}`),
+    err: (msg) => console.log(`${chalk.cyan('[' + moment().tz('Asia/Jakarta').format('HH:mm:ss') + ']')} ${chalk.bgRed(' ERR  ')} ${msg}`)
+};
 
 
 const tagAllCommand = require('./commands/tagall');
 const { hidetagCommand } = require('./commands/hidetag');
 const menuCommand = require('./commands/menu');
+const helpCommand = require('./commands/help');
 const banCommand = require('./commands/ban');
 const muteCommand = require('./commands/mute');
 const unmuteCommand = require('./commands/unmute');
@@ -61,9 +72,13 @@ const broadcastCommand = require('./commands/broadcast');
 const { handleTranslateCommand } = require('./commands/translate');
 const { handleSsCommand } = require('./commands/ss');
 const { addCommandReaction, handleAreactCommand } = require('./lib/reactions');
-const stickercropCommand = require('./commands/stickercrop');
+const { mylevelCommand } = require('./commands/mylevel');
+const { addXP } = require('./lib/xpManager');
+const { groupsetCommand } = require('./commands/groupset');
+const { cleanupCommand } = require('./commands/cleanup');
+
 const { startAbsen, addAbsen, finishAbsen } = require('./commands/absen');
-const tebakkataCommand = require('./commands/tebakkata');
+
 
 const sewaCommand = require('./commands/sewa');
 const cekSewaCommand = require('./commands/ceksewa');
@@ -124,25 +139,51 @@ async function handleMessages(sock, messageUpdate, printLog) {
             message.message?.videoMessage?.caption?.trim() ||
             '';
 
+        const pushName = message.pushName || 'User';
+        const displayMsg = rawText.length > 50 ? rawText.substring(0, 47) + '...' : rawText;
+
         if (userMessage.startsWith('.')) {
-            console.log(`Command digunakan di ${isGroup ? 'grup' : 'privat'}: ${userMessage}`);
+            logger.cmd(`${chalk.yellow(pushName)} [${chalk.white(isGroup ? 'GROUP' : 'PRIVATE')}] -> ${chalk.green(userMessage)}`);
+        } else if (rawText) {
+            logger.msg(`${chalk.yellow(pushName)} [${chalk.white(isGroup ? 'GROUP' : 'PRIVATE')}] -> ${chalk.white(displayMsg)}`);
         }
+
+        // Ekstrak nomor HP. WhatsApp baru pakai sistem LID (@lid) bukan nomor asli (@s.whatsapp.net)
+        const isLid = senderId.endsWith('@lid');
+        const phone = isLid
+            ? `LID:${senderId.split('@')[0]}` // LID bukan nomor HP asli
+            : senderId.replace('@s.whatsapp.net', ''); // Nomor HP asli
 
         try {
             await prisma.user.upsert({
                 where: { id: senderId },
-                update: { name: message.pushName || undefined },
-                create: { id: senderId, name: message.pushName || null }
+                update: {
+                    name: message.pushName || undefined,
+                    phone: phone
+                },
+                create: {
+                    id: senderId,
+                    name: message.pushName || null,
+                    phone: phone
+                }
             });
 
             if (userMessage.startsWith('.')) {
-                await prisma.history.create({
-                    data: {
-                        userId: senderId,
-                        command: rawText.substring(0, 255),
-                        chatId: chatId
-                    }
-                });
+                const skipHistory = ['.menu', '.bot', '.list', '.ping', '.alive', '.help'];
+                const isTrivial = skipHistory.some(cmd => userMessage.startsWith(cmd));
+                
+                if (!isTrivial) {
+                    await prisma.history.create({
+                        data: {
+                            userId: senderId,
+                            userName: pushName,
+                            userPhone: phone,
+                            command: rawText.substring(0, 255),
+                            chatId: chatId,
+                            chatType: isGroup ? 'GROUP' : 'PRIVATE'
+                        }
+                    });
+                }
 
                 if (isGroup) {
                     try {
@@ -160,6 +201,13 @@ async function handleMessages(sock, messageUpdate, printLog) {
                     } catch (e) {
                         console.error('Failed to auto-register group to DB', e);
                     }
+                }
+
+                const xpResult = await addXP(senderId, Math.floor(Math.random() * 15) + 5, pushName);
+                if (xpResult && xpResult.leveledUp) {
+                    await sock.sendMessage(chatId, {
+                        text: `LEVEL UP!\n\nSelamat @${senderId.split('@')[0]}!\nKamu naik ke Level ${xpResult.level}\nTerus aktif untuk naik level lagi!`
+                    }, { quoted: message });
                 }
             }
         } catch (dbError) {
@@ -302,11 +350,18 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 await unbanCommand(sock, chatId, message);
                 break;
             case userMessage.startsWith('.help'):
+                {
+                    const prefix = '.help';
+                    const input = userMessage.slice(prefix.length).trim();
+                    await helpCommand(sock, chatId, message, input);
+                }
+                commandExecuted = true;
+                break;
             case userMessage.startsWith('.menu'):
             case userMessage === '.bot':
             case userMessage === '.list':
                 {
-                    const prefix = userMessage.startsWith('.help') ? '.help' : '.menu';
+                    const prefix = userMessage.startsWith('.menu') ? '.menu' : (userMessage === '.bot' ? '.bot' : '.list');
                     const input = userMessage.slice(prefix.length).trim();
                     await menuCommand(sock, chatId, message, input);
                 }
@@ -581,9 +636,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage.startsWith('.emojimix') || userMessage.startsWith('.emix'):
                 await emojimixCommand(sock, chatId, message);
                 break;
-            case userMessage.startsWith('.tg') || userMessage.startsWith('.stickertelegram') || userMessage.startsWith('.tgsticker') || userMessage.startsWith('.telesticker'):
-                await stickerTelegramCommand(sock, chatId, message);
-                break;
+
 
             case userMessage === '.vv':
                 await viewOnceCommand(sock, chatId, message);
@@ -607,6 +660,21 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage === '.setpp':
                 await setProfilePicture(sock, chatId, message);
+                break;
+            case userMessage.startsWith('.mylevel'):
+                const levelArgs = rawText.slice(8).trim().split(' ');
+                await mylevelCommand(sock, chatId, message, levelArgs);
+                commandExecuted = true;
+                break;
+            case userMessage.startsWith('.groupset'):
+                const groupsetArgs = rawText.slice(9).trim().split(' ');
+                await groupsetCommand(sock, chatId, senderId, message, groupsetArgs);
+                commandExecuted = true;
+                break;
+            case userMessage.startsWith('.cleanup'):
+                const cleanupArgs = rawText.slice(9).trim().split(' ');
+                await cleanupCommand(sock, chatId, message, senderId, cleanupArgs);
+                commandExecuted = true;
                 break;
             // Commands removed as they are now handled by .btch universal downloader
             case userMessage.startsWith('.gpt') || userMessage.startsWith('.gemini'):
@@ -641,10 +709,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                     await animeCommand(sock, chatId, message, [sub]);
                 }
                 break;
-            case userMessage === '.crop':
-                await stickercropCommand(sock, chatId, message);
-                commandExecuted = true;
-                break;
+
             case userMessage.startsWith('.pies'):
                 {
                     const parts = rawText.trim().split(/\s+/);
@@ -665,15 +730,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 await sewaCommand(sock, chatId, message, rawText.split(' ').slice(1), senderId);
                 commandExecuted = true;
                 break;
-            case userMessage.startsWith('.help'):
-            case userMessage.startsWith('.menu'):
-                {
-                    const prefix = userMessage.split(' ')[0];
-                    const input = rawText.slice(prefix.length).trim();
-                    await menuCommand(sock, chatId, message, input);
-                }
-                commandExecuted = true;
-                break;
             case userMessage === '.ceksewa':
             case userMessage === '.ceksent':
                 await cekSewaCommand(sock, chatId, message);
@@ -689,9 +745,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage.startsWith('.remini') || userMessage.startsWith('.enhance') || userMessage.startsWith('.upscale'):
                 await reminiCommand(sock, chatId, message, userMessage.split(' ').slice(1));
                 break;
-            case userMessage.startsWith('.tebakkata'):
-                await tebakkataCommand.tebakkata(sock, chatId, message);
-                break;
+
             case userMessage.startsWith('.btch'):
             case userMessage.startsWith('.download'):
             case userMessage.startsWith('.dl'):
@@ -834,7 +888,7 @@ async function handleGroupParticipantUpdate(sock, update) {
 
 
 function storeMessage(message) {
-    console.log('Message stored for antidelete:', message.key.id);
+    // Message silently stored for antidelete tracking
 }
 
 async function handleMessageRevocation(sock, message) {

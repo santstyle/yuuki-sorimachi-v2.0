@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
+const chalk = require('chalk');
 
 const USER_GROUP_DATA = path.join(__dirname, '../data/userGroupData.json');
 const CHATBOT_CONFIG = path.join(__dirname, '../data/chatbotConfig.json');
@@ -533,24 +534,25 @@ async function handleChatbotResponse(sock, chatId, message, userMessage, senderI
     }
 }
 
-console.log('\n' + '='.repeat(50));
-console.log('YUKKI CHATBOT SETUP');
-console.log('='.repeat(50));
-console.log(`API Aktif: ${ACTIVE_API}`);
-console.log(`URL: ${API_CONFIGS[ACTIVE_API]?.url || 'Tidak ditemukan'}`);
+const W = 50; // total inner width
+const pad = (text, len) => text + ' '.repeat(Math.max(0, len - text.length));
+
+const modelLine   = pad(`  Model   : ${ACTIVE_API}`, W);
+const apiKey      = API_CONFIGS[ACTIVE_API]?.apiKey;
+const statusText  = apiKey ? 'READY' : 'MISSING API KEY';
+const statusLine  = pad(`  Status  : ${statusText}`, W);
+
+console.log('');
+console.log(chalk.cyan('╔' + '═'.repeat(W) + '╗'));
+console.log(chalk.cyan('║') + chalk.bold.magenta(pad('       YUUKI CHATBOT ENGINE v2.0', W)) + chalk.cyan('║'));
+console.log(chalk.cyan('╠' + '═'.repeat(W) + '╣'));
+console.log(chalk.cyan('║') + chalk.white('  Model   : ') + chalk.yellow(pad(ACTIVE_API, W - 12)) + chalk.cyan('║'));
+console.log(chalk.cyan('║') + chalk.white('  Status  : ') + (apiKey ? chalk.green(pad('READY', W - 12)) : chalk.red(pad('MISSING API KEY', W - 12))) + chalk.cyan('║'));
+console.log(chalk.cyan('╚' + '═'.repeat(W) + '╝'));
+console.log('');
 
 if (!API_CONFIGS[ACTIVE_API]?.apiKey) {
-    console.log('\nPERINGATAN: API KEY TIDAK DITEMUKAN!');
-    console.log(`Simpan API key di file .env sebagai:`);
-    console.log(`${ACTIVE_API}_API_KEY=your_api_key_here`);
-    console.log('\nAtau set sebagai environment variable.');
-    console.log('\nCara dapatkan API key gratis:');
-    console.log('1. DeepSeek: https://platform.deepseek.com/api_keys');
-    console.log('2. Groq: https://console.groq.com/keys');
-    console.log('='.repeat(50) + '\n');
-} else {
-    console.log('✅ API key terdeteksi');
-    console.log('='.repeat(50) + '\n');
+    console.log(chalk.bgRed.white.bold(' WARNING ') + chalk.red(` API Key for ${ACTIVE_API} is missing in .env`));
 }
 
 module.exports = {

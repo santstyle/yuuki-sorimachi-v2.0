@@ -3,19 +3,34 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:../database.sqlite"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id        String    @id // WhatsApp ID / remoteJid
-  name      String?   // PushName
+  id        String    @id // WhatsApp ID (e.g. 628xxx@s.whatsapp.net)
+  name      String?   // PushName (display name)
+  phone     String?   // Phone number extracted from ID (e.g. 628xxx)
   isBanned  Boolean   @default(false)
   packname  String?   // Custom WM packname
   author    String?   // Custom WM author
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   History   History[]
+  Progress  UserProgress?
+}
+
+model UserProgress {
+  id           Int      @id @default(autoincrement())
+  userName     String?  // Copy of user name for easy dashboard viewing
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
+  xp           Int      @default(0)
+  level        Int      @default(1)
+  streak       Int      @default(0)
+  lastActive   DateTime @default(now())
+  
+  @@index([level(sort: Desc)])
 }
 
 model Group {
@@ -24,13 +39,56 @@ model Group {
   expiredAt DateTime? // Null means permanent
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  Settings  GroupSettings?
+}
+
+model GroupSettings {
+  id              Int      @id @default(autoincrement())
+  groupId         String   @unique
+  group           Group    @relation(fields: [groupId], references: [id])
+  antilink        Boolean  @default(false)
+  antitoxic       Boolean  @default(false)
+  antibadword     Boolean  @default(false)
+  welcomeMsg      String?  // Custom template with {user} placeholder
+  goodbyeMsg      String?  // Custom template with {user} placeholder
+  muteUntil       DateTime? // Sleep mode until specific time
+  banned          Boolean  @default(false) // If bot is banned in this group
+  maxWarnLevel    Int      @default(3)     // Max warnings before auto-kick
+  
+  warnings        WarningRecord[]
+}
+
+model WarningRecord {
+  id            Int      @id @default(autoincrement())
+  userId        String   // Target who got warned
+  userName      String?  // Name snapshot
+  groupId       String?  // Which group (null if private)
+  reason        String   // Why they were warned
+  proofMsgId    String?  // Message ID as evidence
+  moderatorId   String?  // Who gave the warning
+  moderatorName String?  // Name of moderator
+  isAppealed    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  groupSettings GroupSettings? @relation(fields: [groupId], references: [groupId])
+  
+  @@index([userId])
+  @@index([groupId])
+  @@index([createdAt(sort: Desc)])
 }
 
 model History {
   id        Int      @id @default(autoincrement())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
+  // Denormalized for readability in Prisma Studio (no need to click relation)
+  userName  String?  // Copy of user name at time of command
+  userPhone String?  // Copy of user phone number
   command   String
   chatId    String   // JID of the chat (group or private)
+  chatType  String?  // "GROUP" or "PRIVATE"
   createdAt DateTime @default(now())
+
+  @@index([createdAt(sort: Desc)]) // Latest first
+  @@index([userId])
 }

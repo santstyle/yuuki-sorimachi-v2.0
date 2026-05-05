@@ -1,100 +1,113 @@
 const settings = require('../settings');
 const fs = require('fs');
 const path = require('path');
+const chalk = require('chalk');
+const moment = require('moment-timezone');
 
 async function menuCommand(sock, chatId, message, input) {
     const pushName = message.pushName || 'User';
     const botNumber = sock.user.id.split(':')[0];
 
-    const menuText = `*YUUKI BOT MENU*
-
-- *General*
-.sewa - Sewa bot ke grup
-.ceksewa - Cek sisa durasi sewa
-.menu - Menampilkan daftar ini
-.ping - Cek kecepatan bot
-.alive - Status aktif bot
-.owner - Kontak pemilik bot
-.groupinfo - Info detail grup
-.staff - Daftar admin grup
-.startabsen - Mulai sesi absen
-.joke - Cerita lucu acak
-.meme - Gambar meme lucu
-.quote - Kata-kata bijak
-.fact - Fakta unik dunia
-.news - Berita terkini
-.weather - Cek cuaca kota
-
-- *Games*
-.tebakkata - Main tebak-tebakan
-
-- *Image & Sticker*
-.sticker - Gambar jadi stiker
-.crop - Stiker tanpa kotak
-.toimage - Stiker jadi gambar
-.tovideo - Stiker jadi video
-.tgsticker - Stiker Telegram
-.setwm - Ganti nama stiker
-
-- *Search & Downloader*
-.lyrics - Cari lirik lagu
-.song - Download lagu audio
-.play - Cari & putar lagu
-.download / .dl - Unduh Video/Foto (YT, TT, IG, FB)
+    const menuText = `*Daftar List Commands*
 
 - *Admin*
-.antitag - Larang tag massal
-.welcome - Sambutan member baru
-.goodbye - Salam perpisahan
-.ban - Blokir user dari bot
-.mute - Matikan chat grup
-.kick - Keluarkan member
-.warnings - Cek poin peringatan
-.warn - Beri poin peringatan
-.tag - Beri tag ke pesan
-.unmute - Aktifkan chat grup
-.delete - Hapus pesan bot
-.antilink - Larang kirim link
-.antibadword - Larang kata kasar
-.clear - Bersihkan pesan
-.tagall - Tag semua member
-.hidetag - Tag tanpa terlihat
-.resetlink - Ganti link grup
-.chatbot - Aktifkan AI chat
+.ceksewa
+.antitag
+.welcome
+.goodbye
+.ban
+.mute
+.kick
+.warnings
+.warn
+.tag
+.unmute
+.delete
+.antilink
+.antibadword
+.clear
+.tagall
+.hidetag
+.resetlink
+.chatbot
+
+- *General*
+.menu
+.ping
+.alive
+.owner
+.groupinfo
+.staff
+.startabsen
+.joke
+.meme
+.quote
+.fact
+.news
+.weather
+
+- *Image & Sticker*
+.sticker
+.setwm
+.toimage
+.tovideo
+
+- *Search & Downloader*
+.lyrics
+.song
+.play
+.download / .dl
 
 Powered by SantStyle`;
 
     try {
         const profilesDir = path.join(__dirname, '../assets/profiles');
-        let thumbBuffer = Buffer.alloc(0);
-        
+        let thumbBuffer = null;
+
         if (fs.existsSync(profilesDir)) {
             const files = fs.readdirSync(profilesDir).filter(f => /\.(jpg|jpeg|png)$/i.test(f));
             if (files.length > 0) {
                 const randomFile = files[Math.floor(Math.random() * files.length)];
-                thumbBuffer = fs.readFileSync(path.join(profilesDir, randomFile));
+                console.log(`${chalk.cyan('[' + moment().tz('Asia/Jakarta').format('HH:mm:ss') + ']')} ${chalk.bgMagenta(' ASSET ')} Picking random thumbnail: ${chalk.yellow(randomFile)}`);
+                let buffer = fs.readFileSync(path.join(profilesDir, randomFile));
+                // Trik: Tambahkan data unik agar cache WA pecah total (Pake kombinasi waktu + angka acak besar)
+                buffer = Buffer.concat([buffer, Buffer.from(`\n#yuuki_${Date.now()}_${Math.floor(Math.random() * 999999)}`)]);
+
+                if (buffer.length < 400000) {
+                    thumbBuffer = buffer;
+                } else {
+                    console.warn(`Menu thumbnail '${randomFile}' is too large. Skipping.`);
+                }
             }
         }
 
-        await sock.sendMessage(chatId, {
-            text: menuText,
-            contextInfo: {
+        const messageOptions = { text: menuText };
+
+        if (thumbBuffer) {
+            // Gunakan rentang spasi tak terlihat yang lebih luas agar keacakan judul lebih tinggi
+            const invisibleSuffix = '\u200B'.repeat(Math.floor(Math.random() * 100) + 1);
+
+            messageOptions.contextInfo = {
                 externalAdReply: {
-                    title: "Yuuki Sorimachi | Whatsapp Bot",
-                    body: `Hai ${pushName}, Senang bertemu denganmu!`,
+                    title: "Yuuki Sorimachi | Whatsapp Bot" + invisibleSuffix,
+                    body: `Hai ${pushName}, Senang bertemu denganmu`,
                     mediaType: 1,
                     thumbnail: thumbBuffer,
                     renderLargerThumbnail: true,
                     showAdAttribution: true,
-                    sourceUrl: `https://wa.me/${botNumber}`
+                    sourceUrl: `https://wa.me/${botNumber}?v=${Date.now()}_${Math.floor(Math.random() * 1000)}`
                 }
-            }
-        }, { quoted: message });
+            };
+        }
+
+        await sock.sendMessage(chatId, messageOptions, { quoted: message });
 
     } catch (e) {
-        console.error('Menu error:', e);
+        console.error('Menu command failure:', e);
         await sock.sendMessage(chatId, { text: menuText }, { quoted: message });
     }
 }
 
 module.exports = menuCommand;
+
+

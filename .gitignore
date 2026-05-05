@@ -1,5 +1,4 @@
-﻿cat > .gitignore << 'EOF'
-# Dependencies
+﻿# Dependencies
 node_modules/
 ffmpeg/
 npm-debug.log*
@@ -42,6 +41,8 @@ logs/
 
 # Runtime data
 data/
+database.sqlite
+*.db
 pids/
 *.pid
 *.seed
@@ -89,4 +90,3 @@ Thumbs.db
 # Your specific large files
 gh.exe
 libvips-42.dll
-EOF
