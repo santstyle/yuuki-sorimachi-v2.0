@@ -29,60 +29,78 @@ const logger = {
 };
 
 
-const tagAllCommand = require('./commands/tagall');
-const { hidetagCommand } = require('./commands/hidetag');
-const menuCommand = require('./commands/menu');
-const helpCommand = require('./commands/help');
-const banCommand = require('./commands/ban');
-const muteCommand = require('./commands/mute');
-const unmuteCommand = require('./commands/unmute');
-const stickerCommand = require('./commands/sticker');
+const tagAllCommand = require('./commands/group/tagall');
+const { hidetagCommand } = require('./commands/group/hidetag');
+const menuCommand = require('./commands/main/menu');
+const helpCommand = require('./commands/main/help');
+const banCommand = require('./commands/group/ban');
+const muteCommand = require('./commands/group/mute');
+const unmuteCommand = require('./commands/group/unmute');
+const stickerCommand = require('./commands/converter/sticker');
 const isAdmin = require('./lib/isAdmin');
-const warnCommand = require('./commands/warn');
-const warningsCommand = require('./commands/warnings');
-const ownerCommand = require('./commands/owner');
-const deleteCommand = require('./commands/delete');
-const { handleAntilinkCommand, handleLinkDetection } = require('./commands/antilink');
-const { handleAntitagCommand, handleTagDetection } = require('./commands/antitag');
+const warnCommand = require('./commands/group/warn');
+const warningsCommand = require('./commands/group/warnings');
+const ownerCommand = require('./commands/owner/owner');
+const deleteCommand = require('./commands/main/delete');
+const { modeCommand } = require('./commands/owner/mode');
+const { antideleteCommand } = require('./commands/owner/antidelete');
+const { clearSessionCommand } = require('./commands/owner/clearsession');
+const { clearTmpCommand } = require('./commands/owner/cleartmp');
+const { setProfilePicture } = require('./commands/owner/setpp');
+const { autoStatusCommand } = require('./commands/owner/autostatus');
+const { sudoCommand } = require('./commands/owner/sudo');
+const { updateCommand } = require('./commands/owner/update');
+const { handleAntilinkCommand, handleLinkDetection } = require('./commands/group/antilink');
+const { handleAntitagCommand, handleTagDetection } = require('./commands/group/antitag');
 const { Antilink } = require('./lib/antilink');
-const memeCommand = require('./commands/meme');
-const tagCommand = require('./commands/tag');
-const jokeCommand = require('./commands/joke');
-const quoteCommand = require('./commands/quote');
-const factCommand = require('./commands/fact');
-const weatherCommand = require('./commands/weather');
-const newsCommand = require('./commands/news');
-const kickCommand = require('./commands/kick');
-const toimageCommand = require('./commands/toimage');
-const tovideoCommand = require('./commands/tovideo');
-const { lyrics: lyricsCommand } = require('./commands/lyrics');
-const { clearCommand } = require('./commands/clear');
-const pingCommand = require('./commands/ping');
-const aliveCommand = require('./commands/alive');
-const welcomeCommand = require('./commands/welcome');
-const goodbyeCommand = require('./commands/goodbye');
+const memeCommand = require('./commands/information/meme');
+const tagCommand = require('./commands/main/tag');
+const jokeCommand = require('./commands/information/joke');
+const quoteCommand = require('./commands/information/quote');
+const factCommand = require('./commands/information/fact');
+const weatherCommand = require('./commands/information/weather');
+const newsCommand = require('./commands/information/news');
+const kickCommand = require('./commands/group/kick');
+const toimageCommand = require('./commands/converter/toimage');
+const tovideoCommand = require('./commands/converter/tovideo');
+const stickercropCommand = require('./commands/converter/stickercrop');
+const toGifCommand = require('./commands/converter/togif');
+const toAudioCommand = require('./commands/converter/toaudio');
+const { debugLevelUp } = require('./commands/debug/debuglevelup');
+const { lyrics: lyricsCommand } = require('./commands/downloader/lyrics');
+const { clearCommand } = require('./commands/main/clear');
+const pingCommand = require('./commands/main/ping');
+const aliveCommand = require('./commands/main/alive');
+const welcomeCommand = require('./commands/group/welcome');
+const goodbyeCommand = require('./commands/group/goodbye');
 const { handleAntiBadwordCommand, handleBadwordDetection } = require('./lib/antibadword');
-const antibadwordCommand = require('./commands/antibadword');
-const { handleChatbotCommand, handleChatbotResponse } = require('./commands/chatbot');
+const antibadwordCommand = require('./commands/group/antibadword');
+const { handleChatbotCommand, handleChatbotResponse } = require('./commands/chatbot/chatbot');
+const { groqCommand } = require('./commands/ai-chat/groq');
+const { deepseekCommand } = require('./commands/ai-chat/deepseek');
+const { gptCommand } = require('./commands/ai-chat/gpt');
 
-const groupInfoCommand = require('./commands/groupinfo');
-const resetlinkCommand = require('./commands/resetlink');
-const staffCommand = require('./commands/staff');
-const broadcastCommand = require('./commands/broadcast');
-const { handleTranslateCommand } = require('./commands/translate');
-const { handleSsCommand } = require('./commands/ss');
+const groupInfoCommand = require('./commands/group/groupinfo');
+const resetlinkCommand = require('./commands/group/resetlink');
+const staffCommand = require('./commands/group/staff');
+const broadcastCommand = require('./commands/owner/broadcast');
+const { handleTranslateCommand } = require('./commands/tool/translate');
+const { handleSsCommand } = require('./commands/tool/ss');
 const { addCommandReaction, handleAreactCommand } = require('./lib/reactions');
-const { mylevelCommand } = require('./commands/mylevel');
+const { mylevelCommand } = require('./commands/profile/mylevel');
 const { addXP } = require('./lib/xpManager');
-const { groupsetCommand } = require('./commands/groupset');
-const { cleanupCommand } = require('./commands/cleanup');
+const { groupsetCommand } = require('./commands/group/groupset');
+const { cleanupCommand } = require('./commands/owner/cleanup');
+const ownermenuCommand = require('./commands/owner/ownermenu');
+const { pinterestCommand } = require('./commands/search/pinterest');
 
-const { startAbsen, addAbsen, finishAbsen } = require('./commands/absen');
+
+const { startAbsen, addAbsen, finishAbsen } = require('./commands/group/absen');
 
 
-const sewaCommand = require('./commands/sewa');
-const cekSewaCommand = require('./commands/ceksewa');
-const setWmCommand = require('./commands/setwm');
+const sewaCommand = require('./commands/group/sewa');
+const cekSewaCommand = require('./commands/group/ceksewa');
+const setWmCommand = require('./commands/tool/setwm');
 
 global.packname = settings.packname;
 global.author = settings.author;
@@ -187,17 +205,35 @@ async function handleMessages(sock, messageUpdate, printLog) {
 
                 if (isGroup) {
                     try {
-                        let groupSubject = 'Unknown Group';
+                        let groupSubject = undefined;
                         try {
                             const groupMetadata = await sock.groupMetadata(chatId);
                             groupSubject = groupMetadata.subject;
-                        } catch (e) { }
+                        } catch (e) {
+                            console.error('Gagal mengambil metadata grup:', e.message);
+                        }
 
                         await prisma.group.upsert({
                             where: { id: chatId },
-                            update: { name: groupSubject },
-                            create: { id: chatId, name: groupSubject, expiredAt: null }
+                            update: groupSubject ? { name: groupSubject } : {},
+                            create: { id: chatId, name: groupSubject || 'Unknown Group', expiredAt: null }
                         });
+                        
+                        // Sync group name to GroupSettings
+                        try {
+                            const existingSettings = await prisma.groupSettings.findUnique({
+                                where: { groupId: chatId }
+                            });
+                            
+                            if (existingSettings) {
+                                await prisma.groupSettings.update({
+                                    where: { groupId: chatId },
+                                    data: { groupName: groupSubject }
+                                });
+                            }
+                        } catch (e) {
+                            // GroupSettings might not exist yet, that's okay
+                        }
                     } catch (e) {
                         console.error('Failed to auto-register group to DB', e);
                     }
@@ -205,10 +241,40 @@ async function handleMessages(sock, messageUpdate, printLog) {
 
                 const xpResult = await addXP(senderId, Math.floor(Math.random() * 15) + 5, pushName);
                 if (xpResult && xpResult.leveledUp) {
-                    await sock.sendMessage(chatId, {
+                    const levelUpImagePath = path.join(__dirname, 'assets', 'levelup', 'yuuki-uplevel.png');
+                    let thumbBuffer = null;
+
+                    if (fs.existsSync(levelUpImagePath)) {
+                        try {
+                            thumbBuffer = fs.readFileSync(levelUpImagePath);
+                            console.log(`[LEVEL UP] Thumbnail loaded: ${thumbBuffer.length} bytes`);
+                        } catch (e) {
+                            console.error('Gagal baca thumbnail level up:', e.message);
+                        }
+                    } else {
+                        console.log('[LEVEL UP] Image file not found:', levelUpImagePath);
+                    }
+
+                    const levelUpMessage = {
                         text: `LEVEL UP!\n\nSelamat @${pushName}!\nKamu naik ke Level ${xpResult.level}\nTerus aktif untuk naik level lagi!`,
                         mentions: [senderId]
-                    }, { quoted: message });
+                    };
+
+                    if (thumbBuffer) {
+                        levelUpMessage.contextInfo = {
+                            externalAdReply: {
+                                title: "Yuuki Sorimachi | Level Up!",
+                                body: `Level ${xpResult.level} reached!`,
+                                mediaType: 1,
+                                thumbnail: thumbBuffer,
+                                renderLargerThumbnail: true,
+                                showAdAttribution: true,
+                                sourceUrl: `https://wa.me/${sock.user.id.split(':')[0]}`
+                            }
+                        };
+                    }
+
+                    await sock.sendMessage(chatId, levelUpMessage, { quoted: message });
                 }
             }
         } catch (dbError) {
@@ -295,7 +361,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
         let commandExecuted = false;
 
         switch (true) {
-            case userMessage === '.toimage': {
+            case userMessage === '.toimage' || userMessage === '.toimg': {
                 const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
                 if (quotedMessage?.stickerMessage) {
                     await toimageCommand(sock, quotedMessage, chatId, senderId, ['toimage']);
@@ -305,13 +371,26 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 commandExecuted = true;
                 break;
             }
-            case userMessage === '.tovideo': {
+            case userMessage === '.tovideo' || userMessage === '.tovid': {
                 const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
                 if (quotedMessage?.stickerMessage) {
-                    await tovideoCommand(sock, quotedMessage, chatId, senderId, ['tovideo']);
+                    await tovideoCommand(sock, message, chatId, senderId, ['tovideo']);
                 } else {
                     await sock.sendMessage(chatId, { text: 'Balas stiker dengan command .tovideo untuk mengonversinya.' });
                 }
+                commandExecuted = true;
+                break;
+            }
+            case userMessage === '.stickercrop' || userMessage === '.scrop':
+                await stickercropCommand(sock, chatId, message);
+                commandExecuted = true;
+                break;
+            case userMessage === '.togif':
+                await toGifCommand(sock, message, chatId);
+                commandExecuted = true;
+                break;
+            case userMessage === '.toaudio' || userMessage === '.toaud' || userMessage === '.tomp3': {
+                await toAudioCommand(sock, message, chatId, senderId);
                 commandExecuted = true;
                 break;
             }
@@ -384,45 +463,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 await deleteCommand(sock, chatId, message, senderId);
                 break;
             case userMessage.startsWith('.mode'):
-                if (!message.key.fromMe && !senderIsSudo) {
-                    await sock.sendMessage(chatId, { text: 'Hanya owner bot yang bisa menggunakan command ini!' });
-                    return;
-                }
-                let data;
-                try {
-                    data = JSON.parse(fs.readFileSync('./data/messageCount.json'));
-                } catch (error) {
-                    console.error('Error membaca mode akses:', error);
-                    await sock.sendMessage(chatId, { text: 'Gagal membaca status mode bot' });
-                    return;
-                }
-
-                const action = userMessage.split(' ')[1]?.toLowerCase();
-                if (!action) {
-                    const currentMode = data.isPublic ? 'publik' : 'privat';
-                    await sock.sendMessage(chatId, {
-                        text: `Mode bot saat ini: *${currentMode}*\n\nPenggunaan: .mode publik/privat\n\nContoh:\n.mode publik - Izinkan semua orang menggunakan bot\n.mode privat - Batasi hanya untuk owner`
-                    });
-                    return;
-                }
-
-                if (action !== 'public' && action !== 'private') {
-                    await sock.sendMessage(chatId, {
-                        text: 'Penggunaan: .mode public/private\n\nContoh:\n.mode public - Izinkan semua orang menggunakan bot\n.mode private - Batasi hanya untuk owner'
-                    });
-                    return;
-                }
-
-                try {
-                    data.isPublic = action === 'public';
-
-                    fs.writeFileSync('./data/messageCount.json', JSON.stringify(data, null, 2));
-
-                    await sock.sendMessage(chatId, { text: `Bot sekarang dalam mode *${action}*` });
-                } catch (error) {
-                    console.error('Error memperbarui mode akses:', error);
-                    await sock.sendMessage(chatId, { text: 'Gagal memperbarui mode akses bot' });
-                }
+                await modeCommand(sock, chatId, message, senderIsSudo);
                 break;
             case userMessage.startsWith('.bc'):
             case userMessage.startsWith('.broadcast'):
@@ -431,6 +472,14 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage === '.owner':
                 await ownerCommand(sock, chatId);
+                break;
+            case userMessage === '.ownermenu' || userMessage === '.om':
+                if (!message.key.fromMe && !senderIsSudo) {
+                    await sock.sendMessage(chatId, { text: 'Command ini hanya untuk Owner!' }, { quoted: message });
+                    return;
+                }
+                await ownermenuCommand(sock, chatId, message);
+                commandExecuted = true;
                 break;
             case userMessage === '.tagall':
                 if (isSenderAdmin || message.key.fromMe) {
@@ -643,23 +692,51 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 await viewOnceCommand(sock, chatId, message);
                 break;
             case userMessage === '.clearsession' || userMessage === '.clearsesi':
+                if (!message.key.fromMe && !senderIsSudo) {
+                    await sock.sendMessage(chatId, { text: 'Hanya owner yang bisa menggunakan command ini!' });
+                    return;
+                }
                 await clearSessionCommand(sock, chatId, message);
                 break;
             case userMessage.startsWith('.autostatus'):
+                if (!message.key.fromMe && !senderIsSudo) {
+                    await sock.sendMessage(chatId, { text: 'Hanya owner yang bisa menggunakan command ini!' });
+                    return;
+                }
                 const autoStatusArgs = userMessage.split(' ').slice(1);
                 await autoStatusCommand(sock, chatId, message, autoStatusArgs);
                 break;
             case userMessage.startsWith('.antidelete'):
+                if (!message.key.fromMe && !senderIsSudo) {
+                    await sock.sendMessage(chatId, { text: 'Hanya owner yang bisa menggunakan command ini!' });
+                    return;
+                }
                 const antideleteMatch = userMessage.slice(11).trim();
-                await handleAntideleteCommand(sock, chatId, message, antideleteMatch);
+                await antideleteCommand(sock, chatId, message, antideleteMatch);
                 break;
             case userMessage === '.surrender':
                 await handleTicTacToeMove(sock, chatId, senderId, 'surrender');
                 break;
+            case userMessage === '.debuglevelup':
+                if (!message.key.fromMe && !senderIsSudo) {
+                    await sock.sendMessage(chatId, { text: 'Hanya owner/sudo yang bisa pakai command debug!' });
+                    return;
+                }
+                await debugLevelUp(sock, message, chatId, senderId, pushName);
+                commandExecuted = true;
+                break;
             case userMessage === '.cleartmp':
+                if (!message.key.fromMe && !senderIsSudo) {
+                    await sock.sendMessage(chatId, { text: 'Hanya owner yang bisa menggunakan command ini!' });
+                    return;
+                }
                 await clearTmpCommand(sock, chatId, message);
                 break;
             case userMessage === '.setpp':
+                if (!message.key.fromMe && !senderIsSudo) {
+                    await sock.sendMessage(chatId, { text: 'Hanya owner yang bisa menggunakan command ini!' });
+                    return;
+                }
                 await setProfilePicture(sock, chatId, message);
                 break;
             case userMessage.startsWith('.mylevel'):
@@ -673,13 +750,34 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 commandExecuted = true;
                 break;
             case userMessage.startsWith('.cleanup'):
+                if (!message.key.fromMe && !senderIsSudo) {
+                    await sock.sendMessage(chatId, { text: 'Hanya owner yang bisa menggunakan command ini!' });
+                    return;
+                }
                 const cleanupArgs = rawText.slice(9).trim().split(' ');
                 await cleanupCommand(sock, chatId, message, senderId, cleanupArgs);
                 commandExecuted = true;
                 break;
             // Commands removed as they are now handled by .btch universal downloader
-            case userMessage.startsWith('.gpt') || userMessage.startsWith('.gemini'):
-                await aiCommand(sock, chatId, message);
+            case userMessage.startsWith('.groq'):
+                const groqInput = rawText.slice(6).trim();
+                const { groqCommand } = require('./commands/ai-chat/groq');
+                await groqCommand(sock, chatId, message, groqInput, senderId);
+                break;
+            case userMessage.startsWith('.deepseek'):
+                const deepseekInput = rawText.slice(10).trim();
+                const { deepseekCommand } = require('./commands/ai-chat/deepseek');
+                await deepseekCommand(sock, chatId, message, deepseekInput);
+                break;
+            case userMessage.startsWith('.gpt'):
+                const gptInput = rawText.slice(4).trim();
+                const { gptCommand } = require('./commands/ai-chat/gpt');
+                await gptCommand(sock, chatId, message, gptInput, senderId);
+                break;
+            case userMessage.startsWith('.pinterest') || userMessage.startsWith('.pin'):
+                const pinPrefix = userMessage.startsWith('.pinterest') ? 11 : 4;
+                const pinInput = rawText.slice(pinPrefix).trim();
+                await pinterestCommand(sock, chatId, message, pinInput);
                 break;
             case userMessage.startsWith('.translate') || userMessage.startsWith('.trt'):
                 const commandLength = userMessage.startsWith('.translate') ? 10 : 4;
@@ -760,10 +858,10 @@ async function handleMessages(sock, messageUpdate, printLog) {
                     const input = rawText.slice(prefix.length).trim();
                     if (input) {
                         if (prefix === '.song' || prefix === '.play' || prefix === '.music') {
-                            const songCommand = require('./commands/song');
+                            const songCommand = require('./commands/downloader/song');
                             await songCommand.song(sock, chatId, message, input);
                         } else {
-                            const btchCommand = require('./commands/btch');
+                            const btchCommand = require('./commands/downloader/btch');
                             await btchCommand(sock, chatId, message, input);
                         }
                     } else {

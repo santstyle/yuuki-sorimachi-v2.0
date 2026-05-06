@@ -22,19 +22,14 @@ console.log(chalk.bold.cyan('\n  ╭──────────────�
 console.log(chalk.bold.cyan('  │') + chalk.bold.white('   Yuuki Sorimachi | WhatsApp Bot  ') + chalk.bold.cyan('│'));
 console.log(chalk.bold.cyan('  ╰───────────────────────────────────╯\n'));
 
-process.env.FFMPEG_PATH = 'ffmpeg'
-process.env.FFPROBE_PATH = 'ffprobe'
-
-try {
-    if (fs.existsSync('./ffmpeg')) {
-        console.log('Removing Windows FFmpeg folder...')
-        fs.rmSync('./ffmpeg', { recursive: true, force: true })
-    }
-} catch (err) {
-    console.log('Note: Could not remove ffmpeg folder:', err.message)
+const ffmpegPath = require('path').join(__dirname, 'ffmpeg', 'bin', 'ffmpeg.exe');
+if (fs.existsSync(ffmpegPath)) {
+    process.env.FFMPEG_PATH = ffmpegPath;
+    console.log(chalk.green('  ✔') + chalk.white(' FFmpeg  : ') + chalk.green('Local Ready'))
+} else {
+    process.env.FFMPEG_PATH = 'ffmpeg';
+    console.log(chalk.green('  ✔') + chalk.white(' FFmpeg  : ') + chalk.yellow('Using System FFmpeg'))
 }
-
-console.log(chalk.green('  ✔') + chalk.white(' FFmpeg  : ') + chalk.green('System Ready'))
 
 const FileType = require('file-type')
 const axios = require('axios')
@@ -84,8 +79,6 @@ setInterval(() => {
         process.exit(1)
     }
 }, 30000)
-
-let owner = JSON.parse(fs.readFileSync('./data/owner.json'))
 
 global.botname = "Yuuki Sorimachi | Bot"
 global.themeemoji = "•"
@@ -185,7 +178,7 @@ async function startXeonBotInc() {
                     if (mek.key && mek.key.remoteJid) {
                         await XeonBotInc.sendMessage(mek.key.remoteJid, {
                             text: 'An error occurred while processing your message.'
-                        }).catch(() => {});
+                        }).catch(() => { });
                     }
                 }
             }
@@ -319,7 +312,7 @@ async function startXeonBotInc() {
 
             for (const group of expiredGroups) {
                 try {
-                    await XeonBotInc.sendMessage(group.id, { text: 'Waktu sewa bot di grup ini telah habis. Terima kasih telah menggunakan bot ini! 👋' });
+                    await XeonBotInc.sendMessage(group.id, { text: 'Waktu sewa bot di grup ini telah habis. Terima kasih telah menggunakan bot ini!' });
                     await delay(2000);
                     await XeonBotInc.groupLeave(group.id);
                     await prisma.group.delete({ where: { id: group.id } });

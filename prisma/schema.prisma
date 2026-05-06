@@ -13,7 +13,6 @@ model User {
   phone     String?   // Phone number extracted from ID (e.g. 628xxx)
   isBanned  Boolean   @default(false)
   packname  String?   // Custom WM packname
-  author    String?   // Custom WM author
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   History   History[]
