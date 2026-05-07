@@ -1,45 +1,37 @@
+const isAdmin = require('../../lib/isAdmin');
+
 async function resetlinkCommand(sock, chatId, senderId) {
     try {
-        const groupMetadata = await sock.groupMetadata(chatId);
-        const isAdmin = groupMetadata.participants
-            .filter(p => p.admin)
-            .map(p => p.id)
-            .includes(senderId);
+        const { isSenderAdmin, isBotAdmin } = await isAdmin(sock, chatId, senderId);
 
-        const botId = sock.user.id.split(':')[0] + '@s.whatsapp.net';
-        const isBotAdmin = groupMetadata.participants
-            .filter(p => p.admin)
-            .map(p => p.id)
-            .includes(botId);
-
-        if (!isAdmin) {
+        if (!isSenderAdmin) {
             await sock.sendMessage(chatId, {
-                text: 'Wah, cuma admin yang bisa reset link grup nih'
+                text: 'Maaf, Tuan~ Hanya admin yang bisa mereset link grup. Yuuki mohon maaf~'
             });
             return;
         }
 
         if (!isBotAdmin) {
             await sock.sendMessage(chatId, {
-                text: 'Aku harus jadi admin dulu biar bisa reset linknya'
+                text: 'Maaf, Tuan~ Yuuki harus menjadi admin dulu agar bisa mereset linknya. Angkat Yuuki jadi admin, yuk~'
             });
             return;
         }
 
         await sock.sendMessage(chatId, {
-            text: 'Bentar ya, lagi aku reset linknya'
+            text: 'Tuan~ Mohon tunggu, Yuuki sedang mereset link grup. Sedikit sabar, ya~'
         });
 
         const newCode = await sock.groupRevokeInvite(chatId);
 
         await sock.sendMessage(chatId, {
-            text: `Yeay! Link grup udah direset\n\nLink baru:\nhttps://chat.whatsapp.com/${newCode}\n\nShare link yang ini ya, yang lama udah ga bisa dipakai`
+            text: `Tuan~ Link grup telah Yuuki perbarui!\n\nLink baru:\nhttps://chat.whatsapp.com/${newCode}\n\nGunakan link yang ini, ya. Yang lama sudah tidak berlaku lagi~`
         });
 
     } catch (error) {
         console.error('Error di resetlink command:', error);
         await sock.sendMessage(chatId, {
-            text: 'Aduh, gagal reset link grup nih. Coba lagi ya'
+            text: 'Maaf, Tuan~ Yuuki gagal mereset link grup. Coba lagi, ya. Yuuki tidak menyerah~'
         });
     }
 }

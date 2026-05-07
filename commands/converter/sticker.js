@@ -27,7 +27,7 @@ async function stickerCommand(sock, chatId, message) {
 
     if (!mediaMessage) {
         await sock.sendMessage(chatId, {
-            text: 'Haii~ mau bikin sticker ya? Reply gambar atau video pake .sticker dong~ Atau kirim gambarnya langsung pake caption .sticker'
+            text: 'Tuan~ Mau Yuuki buatkan stiker? Reply gambar atau video dengan .sticker, atau kirim langsung dengan caption .sticker~'
         }, { quoted: messageToQuote });
         return;
     }
@@ -40,13 +40,13 @@ async function stickerCommand(sock, chatId, message) {
 
         if (!mediaBuffer) {
             await sock.sendMessage(chatId, {
-                text: 'Wah, gambarnya ga bisa didownload nih. Coba kirim ulang ya~'
+                text: 'Maaf, Tuan~ Gambarnya tidak bisa Yuuki unduh. Mungkin Tuan bisa kirim ulang?'
             });
             return;
         }
 
         await sock.sendMessage(chatId, {
-            text: 'Bentar ya, lagi aku jadikan sticker~'
+            text: 'Mohon tunggu sebentar, Tuan~ Yuuki sedang menyulapnya menjadi stiker untuk Tuan~'
         }, { quoted: messageToQuote });
 
         const tmpDir = path.join(process.cwd(), 'tmp');
@@ -128,7 +128,7 @@ async function stickerCommand(sock, chatId, message) {
     } catch (error) {
         console.error('Yah, error di sticker command nih:', error);
         await sock.sendMessage(chatId, {
-            text: 'Aduh, gagal bikin stickernya. Coba lagi ya~ Kalau masih gagal, mungkin gambarnya terlalu besar'
+            text: 'Maaf, Tuan~ Yuuki gagal membuat stikernya. Mungkin Tuan bisa coba lagi dengan gambar yang lebih kecil?'
         });
     }
 }

@@ -256,12 +256,12 @@ async function songCommand(sock, chatId, message, input) {
 
         if (!searchQuery) {
             return await sock.sendMessage(chatId, {
-                text: 'Mencari Lagu\n\n\`.song <judul lagu>\`'
+                text: 'Tuan~ Cari lagu?\n\n\`.song <judul lagu>\`'
             }, { quoted: message });
         }
 
         statusMessage = await sock.sendMessage(chatId, {
-            text: `🎵 *Mencari:* ${searchQuery}\n\nMohon tunggu sebentar...`
+            text: `Tuan~ Yuuki mencari: ${searchQuery}\nMohon tunggu sebentar~`
         });
         statusKey = statusMessage.key;
 
@@ -270,16 +270,16 @@ async function songCommand(sock, chatId, message, input) {
 
         // Update status download tanpa kirim gambar (biar ga spam)
         await updateMessage(sock, chatId, statusKey, 
-            `🎵 *Mendownload:* ${videoInfo.title}\n\n` +
-            `👤 *Artist:* ${videoInfo.artist}\n` +
-            `⏱️ *Duration:* ${formatDuration(videoInfo.duration)}\n\n` +
-            `⏳ Sedang memproses audio...`
+            `Tuan~ Yuuki sedang mengunduh: ${videoInfo.title}\n\n` +
+            `Artist: ${videoInfo.artist}\n` +
+            `Durasi: ${formatDuration(videoInfo.duration)}\n\n` +
+            `Mohon tunggu, Yuuki sedang memproses audio~`
         );
 
         const audioData = await getAudioUrl(videoInfo);
 
         if (!audioData.success) {
-            return await sock.sendMessage(chatId, { text: `❌ Error: ${audioData.error}` }, { quoted: message });
+            return await sock.sendMessage(chatId, { text: `Maaf, Tuan~ Error: ${audioData.error}` }, { quoted: message });
         }
 
         let fileBuffer;
@@ -321,7 +321,7 @@ async function songCommand(sock, chatId, message, input) {
 
     } catch (error) {
         console.error("[SONG ERROR]:", error);
-        await sock.sendMessage(chatId, { text: `❌ Error: ${error.message}` }, { quoted: message });
+        await sock.sendMessage(chatId, { text: `Maaf, Tuan~ Error: ${error.message}` }, { quoted: message });
     }
 }
 

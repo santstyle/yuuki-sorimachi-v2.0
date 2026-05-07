@@ -21,7 +21,7 @@ async function handleTranslateCommand(sock, chatId, message, match) {
             const args = match.trim().split(' ');
             if (args.length < 2) {
                 return sock.sendMessage(chatId, {
-                    text: `TRANSLATOR\n\nCara pakai:\n1. Reply pesan dengan: .translate <bahasa> atau .trt <bahasa>\n2. Atau ketik: .translate <teks> <bahasa> atau .trt <teks> <bahasa>\n\nContoh:\n.translate halo dunia fr\n.trt halo dunia fr\n\nKode bahasa:\nfr - Perancis\nes - Spanyol\nde - Jerman\nit - Italia\npt - Portugis\nru - Rusia\nja - Jepang\nko - Korea\nzh - China\nar - Arab\nhi - Hindi\nid - Indonesia\nen - Inggris`,
+                    text: `Tuan~ TRANSLATOR\n\nCara pakai:\n1. Reply pesan dengan: .translate <bahasa> atau .trt <bahasa>\n2. Atau ketik: .translate <teks> <bahasa> atau .trt <teks> <bahasa>\n\nContoh:\n.translate halo dunia fr\n.trt halo dunia fr\n\nKode bahasa:\nfr - Perancis\nes - Spanyol\nde - Jerman\nit - Italia\npt - Portugis\nru - Rusia\nja - Jepang\nko - Korea\nzh - China\nar - Arab\nhi - Hindi\nid - Indonesia\nen - Inggris`,
                     quoted: message
                 });
             }
@@ -32,13 +32,13 @@ async function handleTranslateCommand(sock, chatId, message, match) {
 
         if (!textToTranslate) {
             return sock.sendMessage(chatId, {
-                text: 'Hmm, teksnya mana nih? Kasih dong teks yang mau diterjemahin atau reply pesannya',
+                text: 'Tuan~ Teksnya mana? Beri Yuuki teks yang mau diterjemahkan atau reply pesannya~',
                 quoted: message
             });
         }
 
         await sock.sendMessage(chatId, {
-            text: 'Bentar ya, lagi aku terjemahin dulu',
+            text: 'Tuan~ Mohon tunggu, Yuuki sedang menerjemahkan~',
             quoted: message
         });
 
@@ -90,7 +90,7 @@ async function handleTranslateCommand(sock, chatId, message, match) {
         }
 
         await sock.sendMessage(chatId, {
-            text: `Terjemahan Selesai!\n\nAsli: ${textToTranslate}\nHasil: ${translatedText}\n\nTerjemahan udah siap, semoga membantu ya`,
+            text: `Tuan~ Terjemahan selesai!\n\nAsli: ${textToTranslate}\nHasil: ${translatedText}\n\nSemoga membantu Tuan~`,
         }, {
             quoted: message
         });
@@ -98,7 +98,7 @@ async function handleTranslateCommand(sock, chatId, message, match) {
     } catch (error) {
         console.error('Aduh, error di translate command nih:', error);
         await sock.sendMessage(chatId, {
-            text: 'Yah, gagal nerjemahin nih. Kayaknya API nya lagi cape. Coba lagi ya nanti',
+            text: 'Maaf, Tuan~ Yuuki gagal menerjemahkan. Mungkin lain kali~',
             quoted: message
         });
     }

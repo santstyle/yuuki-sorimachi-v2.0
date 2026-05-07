@@ -21,8 +21,7 @@ async function debugLevelUp(sock, message, chatId, senderId, pushName) {
             if (fs.existsSync(levelUpImagePath)) {
                 try {
                     let buffer = fs.readFileSync(levelUpImagePath);
-                    // Trik Anti-Cache: Tambah data random di belakang file biar WA anggap gambar baru
-                    buffer = Buffer.concat([buffer, Buffer.from(`\n#yuuki_lvl_${Date.now()}_${Math.floor(Math.random() * 999999)}`)]); 
+                    buffer = Buffer.concat([buffer, Buffer.from(`\n#yuuki_lvl_${Date.now()}_${Math.floor(Math.random() * 999999)}`)]);
                     thumbBuffer = buffer;
                 } catch (e) {
                     console.error('Gagal baca thumbnail level up:', e.message);
@@ -30,33 +29,31 @@ async function debugLevelUp(sock, message, chatId, senderId, pushName) {
             }
 
             const levelUpMsg = {
-                text: `LEVEL UP!\n\nSelamat @${pushName}!\nKamu naik ke Level ${result.level}\nTerus aktif untuk naik level lagi!`,
+                text: `LEVEL UP, Tuan!\n\n✨ *Sorak sorai bergema di seluruh penjuru ruangan~* ✨\n@${pushName} baru saja naik ke *Level ${result.level}*\nYuuki sangat bangga! Teruslah bercakap-cakap agar Tuan semakin perkasa!`,
                 mentions: [senderId]
             };
 
             if (thumbBuffer) {
-                // Tambah invisible character di title biar pesan unik
-                const invisibleSuffix = '\u200B'.repeat(10);
                 levelUpMsg.contextInfo = {
                     externalAdReply: {
-                        title: "Yuuki Sorimachi | Level Up!" + invisibleSuffix,
+                        title: "Yuuki Sorimachi | Level Up!",
                         body: `Level ${result.level} reached!`,
                         mediaType: 1,
                         thumbnail: thumbBuffer,
                         renderLargerThumbnail: true,
-                        showAdAttribution: true,
+                        showAdAttribution: false,
                         sourceUrl: `https://wa.me/${sock.user.id.split(':')[0]}`
                     }
                 };
             }
             
-            await sock.sendMessage(chatId, levelUpMsg, { quoted: message });
+            await sock.sendMessage(chatId, levelUpMsg);
         } else {
-            await sock.sendMessage(chatId, { text: '[DEBUG] Gagal memicu level up.' }, { quoted: message });
+            await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal memicu level up~' });
         }
     } catch (error) {
         console.error('[DEBUG LEVELUP] Error:', error);
-        await sock.sendMessage(chatId, { text: '[DEBUG] Terjadi error saat testing level up.' }, { quoted: message });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki mengalami error saat testing level up~' });
     }
 }
 

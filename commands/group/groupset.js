@@ -3,7 +3,7 @@ const { getGroupSettings, updateGroupSetting, toggleGroupSetting } = require('..
 async function groupsetCommand(sock, chatId, senderId, message, args) {
     try {
         if (!chatId.endsWith('@g.us')) {
-            await sock.sendMessage(chatId, { text: 'Command ini hanya bisa digunakan di grup.' });
+            await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Command ini hanya bisa digunakan di grup. Yuuki tidak bisa melayaninya di sini~' });
             return;
         }
 
@@ -11,7 +11,7 @@ async function groupsetCommand(sock, chatId, senderId, message, args) {
             const isAdminCheck = require('../../lib/isAdmin');
             const { isSenderAdmin } = await isAdminCheck(sock, chatId, senderId);
             if (!isSenderAdmin) {
-                await sock.sendMessage(chatId, { text: 'Hanya admin yang bisa mengubah pengaturan grup.' });
+                await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya admin yang bisa mengubah pengaturan grup. Yuuki mohon maaf~' });
                 return;
             }
         }
@@ -19,8 +19,8 @@ async function groupsetCommand(sock, chatId, senderId, message, args) {
         const setting = args[0]?.toLowerCase();
         const action = args[1]?.toLowerCase();
 
-        if (!setting || !action) {
-            const helpText = `Pengaturan Grup\n\n` +
+        if (!setting) {
+            const helpText = `Tuan~ Berikut pengaturan grup yang tersedia:\n\n` +
                 `.groupset antilink on/off\n` +
                 `.groupset antitoxic on/off\n` +
                 `.groupset antibadword on/off\n` +
@@ -30,7 +30,7 @@ async function groupsetCommand(sock, chatId, senderId, message, args) {
                 `.groupset unmute\n` +
                 `.groupset maxwarn [angka]\n` +
                 `.groupset status\n\n` +
-                `Gunakan .groupset status untuk melihat pengaturan saat ini.`;
+                `Gunakan .groupset status untuk melihat pengaturan saat ini. Yuuki siap membantu~`;
 
             await sock.sendMessage(chatId, { text: helpText });
             return;
@@ -38,14 +38,15 @@ async function groupsetCommand(sock, chatId, senderId, message, args) {
 
         if (setting === 'status') {
             const settings = await getGroupSettings(chatId);
-            const statusText = `Status Pengaturan Grup:\n\n` +
+            const statusText = `Tuan~ Berikut status pengaturan grup:\n\n` +
                 `Antilink: ${settings.antilink ? 'ON' : 'OFF'}\n` +
                 `Antitoxic: ${settings.antitoxic ? 'ON' : 'OFF'}\n` +
                 `Antibadword: ${settings.antibadword ? 'ON' : 'OFF'}\n` +
                 `Max Warning: ${settings.maxWarnLevel}\n` +
                 `Mute Sampai: ${settings.muteUntil ? settings.muteUntil.toLocaleString() : 'Tidak ada'}\n` +
                 `Pesan Welcome: ${settings.welcomeMsg || 'Default'}\n` +
-                `Pesan Goodbye: ${settings.goodbyeMsg || 'Default'}`;
+                `Pesan Goodbye: ${settings.goodbyeMsg || 'Default'}\n\n` +
+                `Yuuki harap informasi ini membantu Tuan~`;
 
             await sock.sendMessage(chatId, { text: statusText });
             return;
@@ -54,58 +55,58 @@ async function groupsetCommand(sock, chatId, senderId, message, args) {
         if (setting === 'welcomemsg' || setting === 'goodbyemsg') {
             const text = args.slice(1).join(' ');
             if (!text) {
-                await sock.sendMessage(chatId, { text: `Masukkan teks untuk ${setting}. Gunakan {user} sebagai placeholder nama.` });
+                await sock.sendMessage(chatId, { text: `Tuan~ Masukkan teks untuk ${setting}. Gunakan {user} sebagai placeholder nama. Yuuki menunggu~` });
                 return;
             }
             await updateGroupSetting(chatId, setting === 'welcomemsg' ? 'welcomeMsg' : 'goodbyeMsg', text);
-            await sock.sendMessage(chatId, { text: `${setting === 'welcomemsg' ? 'Pesan Welcome' : 'Pesan Goodbye'} berhasil diubah.` });
+            await sock.sendMessage(chatId, { text: `Tuan~ ${setting === 'welcomemsg' ? 'Pesan Welcome' : 'Pesan Goodbye'} telah Yuuki ubah. Sesuai perintah Tuan~` });
             return;
         }
 
         if (setting === 'mute') {
             const minutes = parseInt(args[1]);
             if (isNaN(minutes)) {
-                await sock.sendMessage(chatId, { text: 'Masukkan durasi mute dalam menit.' });
+                await sock.sendMessage(chatId, { text: 'Tuan~ Masukkan durasi mute dalam menit. Yuuki butuh angka yang jelas~' });
                 return;
             }
             const muteUntil = new Date(Date.now() + minutes * 60 * 1000);
             await updateGroupSetting(chatId, 'muteUntil', muteUntil);
-            await sock.sendMessage(chatId, { text: `Grup di-mute selama ${minutes} menit.` });
+            await sock.sendMessage(chatId, { text: `Tuan~ Grup akan Yuuki mute selama ${minutes} menit. Tenang saja~` });
             return;
         }
 
         if (setting === 'unmute') {
             await updateGroupSetting(chatId, 'muteUntil', null);
-            await sock.sendMessage(chatId, { text: 'Grup berhasil di-unmute.' });
+            await sock.sendMessage(chatId, { text: 'Tuan~ Grup telah Yuuki unmute. Silakan berbicara kembali~' });
             return;
         }
 
         if (setting === 'maxwarn') {
             const max = parseInt(args[1]);
             if (isNaN(max) || max < 1) {
-                await sock.sendMessage(chatId, { text: 'Masukkan angka maksimal warning (minimal 1).' });
+                await sock.sendMessage(chatId, { text: 'Tuan~ Masukkan angka maksimal warning (minimal 1). Yuuki harap Tuan lebih teliti~' });
                 return;
             }
             await updateGroupSetting(chatId, 'maxWarnLevel', max);
-            await sock.sendMessage(chatId, { text: `Maksimal warning diubah menjadi ${max}.` });
+            await sock.sendMessage(chatId, { text: `Tuan~ Maksimal warning telah Yuuki ubah menjadi ${max}. Waspadalah~` });
             return;
         }
 
         if (['antilink', 'antitoxic', 'antibadword'].includes(setting)) {
             if (action !== 'on' && action !== 'off') {
-                await sock.sendMessage(chatId, { text: 'Gunakan on atau off.' });
+                await sock.sendMessage(chatId, { text: 'Tuan~ Gunakan on atau off. Yuuki tidak mengerti perintah lain~' });
                 return;
             }
             const value = action === 'on';
             await updateGroupSetting(chatId, setting, value);
-            await sock.sendMessage(chatId, { text: `${setting} berhasil di-${action}.` });
+            await sock.sendMessage(chatId, { text: `Tuan~ ${setting} telah Yuuki set ke ${action}. Sesuai keinginan Tuan~` });
             return;
         }
 
-        await sock.sendMessage(chatId, { text: 'Pengaturan tidak dikenal. Ketik .groupset untuk melihat daftar pengaturan.' });
+        await sock.sendMessage(chatId, { text: 'Tuan~ Pengaturan tidak dikenal. Ketik .groupset untuk melihat daftar pengaturan. Yuuki bingung~' });
     } catch (error) {
         console.error('Error in groupset command:', error);
-        await sock.sendMessage(chatId, { text: 'Gagal mengubah pengaturan grup.' });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal mengubah pengaturan grup. Mungkin ada gangguan~' });
     }
 }
 

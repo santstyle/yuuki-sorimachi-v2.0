@@ -56,7 +56,7 @@ async function hidetagCommand(sock, m, prefix) {
             await handleQuotedMessage(sock, m.key.remoteJid, quotedMessage, textAfterCommand, participants, title);
         } else {
             console.log("Processing DIRECT message");
-            const finalText = textAfterCommand || `Dengan hormat, Yuuki mohon izin untuk memanggil semua ${title} di sini~`;
+            const finalText = textAfterCommand || `Dengan hormat, Yuuki meminta izin untuk memanggil semua anggota di sini`;
 
             await sock.sendMessage(m.key.remoteJid, {
                 text: finalText,

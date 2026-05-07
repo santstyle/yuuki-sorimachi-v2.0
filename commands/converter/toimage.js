@@ -27,7 +27,7 @@ const convertSticker = async (sock, quotedMessage, chatId, sender, args) => {
         const stickerMessage = quotedMessage?.stickerMessage || quotedMessage?.message?.stickerMessage;
         if (!stickerMessage) {
             await sock.sendMessage(chatId, {
-                text: 'Balas pesan stiker dengan perintah *.toimage* atau *.tovideo* untuk mengonversi.'
+                text: 'Tuan~ Balas stiker dengan *.toimage* atau *.tovideo* untuk Yuuki konversi~'
             });
             return;
         }
@@ -46,13 +46,13 @@ const convertSticker = async (sock, quotedMessage, chatId, sender, args) => {
             await convertToImage(sock, chatId, stickerFilePath, isAnimated);
         } else if (command === 'tovideo' || command === '.tovideo') {
             await sock.sendMessage(chatId, {
-                text: 'Fitur konversi ke video sedang tidak tersedia. Gunakan *.toimage* untuk mengonversi stiker ke gambar.'
+                text: 'Maaf, Tuan~ Fitur konversi ke video sedang tidak tersedia. Gunakan *.toimage* untuk Yuuki konversi ke gambar~'
             });
             scheduleFileDeletion(stickerFilePath);
             return;
         } else {
             await sock.sendMessage(chatId, {
-                text: 'Perintah tidak valid. Gunakan:\n*.toimage* - Konversi ke gambar\n*.tovideo* - Konversi ke video (untuk stiker GIF)'
+                text: 'Tuan~ Perintah tidak valid. Gunakan:\n*.toimage* - Konversi ke gambar\n*.tovideo* - Konversi ke video'
             });
             scheduleFileDeletion(stickerFilePath);
         }
@@ -60,7 +60,7 @@ const convertSticker = async (sock, quotedMessage, chatId, sender, args) => {
     } catch (error) {
         console.error('Error converting sticker:', error);
         await sock.sendMessage(chatId, {
-            text: 'Terjadi kesalahan saat mengonversi stiker. Pastikan stiker valid.'
+            text: 'Maaf, Tuan~ Yuuki gagal mengonversi stiker. Pastikan stikernya valid~'
         });
     }
 };
@@ -77,7 +77,7 @@ const convertToImage = async (sock, chatId, stickerFilePath, isAnimated) => {
             const imageBuffer = await fsPromises.readFile(outputImagePath);
             await sock.sendMessage(chatId, {
                 image: imageBuffer,
-                caption: 'Stiker GIF berhasil dikonversi ke gambar (frame pertama)!'
+                caption: 'Tuan~ Stiker GIF berhasil Yuuki konversi ke gambar (frame pertama)!'
             });
         } else {
             await sharp(stickerFilePath)
@@ -87,7 +87,7 @@ const convertToImage = async (sock, chatId, stickerFilePath, isAnimated) => {
             const imageBuffer = await fsPromises.readFile(outputImagePath);
             await sock.sendMessage(chatId, {
                 image: imageBuffer,
-                caption: 'Stiker berhasil dikonversi ke gambar!'
+                caption: 'Tuan~ Stiker berhasil Yuuki konversi ke gambar!'
             });
         }
 
@@ -96,7 +96,7 @@ const convertToImage = async (sock, chatId, stickerFilePath, isAnimated) => {
     } catch (error) {
         console.error('Error converting to image:', error);
         await sock.sendMessage(chatId, {
-            text: 'Gagal mengonversi ke gambar. Pastikan stiker tidak rusak.'
+            text: 'Maaf, Tuan~ Yuuki gagal mengonversi ke gambar. Pastikan stikernya tidak rusak~'
         });
         scheduleFileDeletion(stickerFilePath);
     }

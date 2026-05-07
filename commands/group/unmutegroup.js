@@ -1,6 +1,6 @@
 async function unmuteCommand(sock, chatId) {
     await sock.groupSettingUpdate(chatId, 'not_announcement'); 
-    await sock.sendMessage(chatId, { text: 'The group has been unmuted.' });
+    await sock.sendMessage(chatId, { text: 'Tuan~ Grup telah Yuuki buka kembali. Silakan berbicara dengan bebas~' });
 }
 
 module.exports = unmuteCommand;

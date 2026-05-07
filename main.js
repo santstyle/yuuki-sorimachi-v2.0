@@ -34,8 +34,8 @@ const { hidetagCommand } = require('./commands/group/hidetag');
 const menuCommand = require('./commands/main/menu');
 const helpCommand = require('./commands/main/help');
 const banCommand = require('./commands/group/ban');
-const muteCommand = require('./commands/group/mute');
-const unmuteCommand = require('./commands/group/unmute');
+const muteCommand = require('./commands/group/mutegroup');
+const unmuteCommand = require('./commands/group/unmutegroup');
 const stickerCommand = require('./commands/converter/sticker');
 const isAdmin = require('./lib/isAdmin');
 const warnCommand = require('./commands/group/warn');
@@ -253,7 +253,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                     }
 
                     const levelUpMessage = {
-                        text: `LEVEL UP!\n\nSelamat @${pushName}!\nKamu naik ke Level ${xpResult.level}\nTerus aktif untuk naik level lagi!`,
+                        text: `LEVEL UP, Tuan!\n\n✨ *Sorak sorai bergema di seluruh penjuru ruangan~* ✨\n@${pushName} baru saja naik ke *Level ${xpResult.level}*\nYuuki sangat bangga! Teruslah bercakap-cakap agar Tuan semakin perkasa!`,
                         mentions: [senderId]
                     };
 
@@ -265,13 +265,13 @@ async function handleMessages(sock, messageUpdate, printLog) {
                                 mediaType: 1,
                                 thumbnail: thumbBuffer,
                                 renderLargerThumbnail: true,
-                                showAdAttribution: true,
+                                showAdAttribution: false,
                                 sourceUrl: `https://wa.me/${sock.user.id.split(':')[0]}`
                             }
                         };
                     }
 
-                    await sock.sendMessage(chatId, levelUpMessage, { quoted: message });
+                    await sock.sendMessage(chatId, levelUpMessage);
                 }
             }
         } catch (dbError) {
@@ -280,11 +280,10 @@ async function handleMessages(sock, messageUpdate, printLog) {
 
         const isUserBanned = await isBanned(senderId);
         if (isUserBanned && !userMessage.startsWith('.unban')) {
-            if (Math.random() < 0.1) {
-                await sock.sendMessage(chatId, {
-                    text: 'Anda dibanned dari penggunaan bot. Hubungi admin untuk dibuka.'
-                });
-            }
+            await sock.sendMessage(chatId, {
+                text: `Maaf, Tuan @${senderId.split('@')[0]}~ Yuuki sangat berterima kasih atas perhatian Tuan, tetapi... Yuuki tidak diizinkan berbicara dengan Tuan saat ini. *Keputusan ini di luar kendali Yuuki.* Mohon hubungi pemilik Yuuki jika Tuan merasa ada kekeliruan. Yuuki tetap menanti dengan hormat~`,
+                mentions: [senderId]
+            });
             return;
         }
 
@@ -301,10 +300,10 @@ async function handleMessages(sock, messageUpdate, printLog) {
             return;
         }
 
-        const adminCommands = ['.mute', '.unmute', '.ban', '.unban', '.kick', '.tagall', '.hidetag', '.antilink', '.antitag'];
+        const adminCommands = ['.mutegroup', '.unmutegroup', '.kick', '.tagall', '.hidetag', '.antilink', '.antitag'];
         const isAdminCommand = adminCommands.some(cmd => userMessage.startsWith(cmd));
 
-        const ownerCommands = ['.mode', '.autostatus', '.antidelete', '.cleartmp', '.setpp', '.clearsession', '.areact', '.autoreact'];
+        const ownerCommands = ['.mode', '.autostatus', '.antidelete', '.cleartmp', '.setpp', '.clearsession', '.areact', '.autoreact', '.ban', '.unban'];
         const isOwnerCommand = ownerCommands.some(cmd => userMessage.startsWith(cmd));
 
         let isSenderAdmin = false;
@@ -316,19 +315,17 @@ async function handleMessages(sock, messageUpdate, printLog) {
             isBotAdmin = adminStatus.isBotAdmin;
 
             if (!isBotAdmin) {
-                await sock.sendMessage(chatId, { text: 'Mohon jadikan bot sebagai admin untuk menggunakan command admin.' }, { quoted: message });
+                await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki mohon dengan sangat, berilah Yuuki jabatan *admin* di grup ini agar Yuuki bisa bertindak. Saat ini tangan Yuuki terikat~' }, { quoted: message });
                 return;
             }
 
             if (
-                userMessage.startsWith('.mute') ||
-                userMessage === '.unmute' ||
-                userMessage.startsWith('.ban') ||
-                userMessage.startsWith('.unban')
+                userMessage.startsWith('.mutegroup') ||
+                userMessage === '.unmutegroup'
             ) {
                 if (!isSenderAdmin && !message.key.fromMe) {
                     await sock.sendMessage(chatId, {
-                        text: 'Maaf, hanya admin grup yang bisa menggunakan command ini.'
+                        text: 'Maaf, Tuan~ Hanya admin grup yang memiliki wewenang untuk menggunakan command ini. Yuuki tidak bisa melanggar aturan, meskipun Yuuki sangat ingin membantu~'
                     });
                     return;
                 }
@@ -337,7 +334,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
 
         if (isOwnerCommand) {
             if (!message.key.fromMe && !senderIsSudo) {
-                await sock.sendMessage(chatId, { text: 'Command ini hanya tersedia untuk owner atau sudo!' });
+                await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Command ini hanya diperuntukkan bagi pemilik Yuuki. Yuuki tidak bisa memberikan akses ini kepada siapa pun tanpa izin~' });
                 return;
             }
         }
@@ -359,7 +356,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 if (quotedMessage?.stickerMessage) {
                     await toimageCommand(sock, quotedMessage, chatId, senderId, ['toimage']);
                 } else {
-                    await sock.sendMessage(chatId, { text: 'Balas stiker dengan command .toimage untuk mengonversinya.' });
+                    await sock.sendMessage(chatId, { text: 'Tuan~ Yuuki memohon dengan hormat, balaslah sebuah *stiker* dengan command *.toimage* agar Yuuki bisa mengubahnya menjadi gambar~' });
                 }
                 commandExecuted = true;
                 break;
@@ -369,7 +366,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 if (quotedMessage?.stickerMessage) {
                     await tovideoCommand(sock, message, chatId, senderId, ['tovideo']);
                 } else {
-                    await sock.sendMessage(chatId, { text: 'Balas stiker dengan command .tovideo untuk mengonversinya.' });
+                    await sock.sendMessage(chatId, { text: 'Tuan~ Yuuki dengan rendah hati memohon, balaslah sebuah *stiker* dengan command *.tovideo* agar Yuuki bisa menyulapnya menjadi video~' });
                 }
                 commandExecuted = true;
                 break;
@@ -387,12 +384,16 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 commandExecuted = true;
                 break;
             }
-            case userMessage === '.startabsen':
+            case userMessage.startsWith('.startabsen'):
                 const startAbsenText = rawText.slice(12).trim();
                 await startAbsen(sock, message, startAbsenText);
                 commandExecuted = true;
                 break;
-            case userMessage.startsWith('.absen'):
+            case userMessage === '.absen':
+                await addAbsen(sock, message, '');
+                commandExecuted = true;
+                break;
+            case userMessage.startsWith('.absen ') || userMessage.startsWith('.absen\t'):
                 const absenText = rawText.replace(/^\.?\s*absen\s*/i, '').trim();
                 await addAbsen(sock, message, absenText);
                 commandExecuted = true;
@@ -405,15 +406,15 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 const mentionedJidListKick = message.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
                 await kickCommand(sock, chatId, senderId, mentionedJidListKick, message);
                 break;
-            case userMessage.startsWith('.mute'):
+            case userMessage.startsWith('.mutegroup'):
                 const muteDuration = parseInt(userMessage.split(' ')[1]);
                 if (isNaN(muteDuration)) {
-                    await sock.sendMessage(chatId, { text: 'Mohon berikan jumlah menit yang valid.\ncontoh untuk mute 10 menit\n.mute 10' });
+                    await sock.sendMessage(chatId, { text: 'Tuan~ Mohon berikan jumlah menit yang valid. Contoh: .mutegroup 10' });
                 } else {
                     await muteCommand(sock, chatId, senderId, muteDuration);
                 }
                 break;
-            case userMessage === '.unmute':
+            case userMessage === '.unmutegroup':
                 await unmuteCommand(sock, chatId, senderId);
                 break;
             case userMessage.startsWith('.ban'):
@@ -450,7 +451,14 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage.startsWith('.warn'):
                 const mentionedJidListWarn = message.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
-                await warnCommand(sock, chatId, senderId, mentionedJidListWarn, message);
+                const warnText = rawText.slice(6).trim();
+                const warnReason = warnText.replace(/@\S+\s*/g, '').trim();
+                await warnCommand(sock, chatId, senderId, mentionedJidListWarn, message, warnReason);
+                break;
+            case userMessage.startsWith('.resetwarn'):
+                const resetWarnJids = message.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
+                const { resetWarnCommand } = require('./commands/group/resetwarn');
+                await resetWarnCommand(sock, chatId, senderId, resetWarnJids, message);
                 break;
             case userMessage === '.delete' || userMessage === '.del':
                 await deleteCommand(sock, chatId, message, senderId);
@@ -468,7 +476,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage === '.ownermenu' || userMessage === '.om':
                 if (!message.key.fromMe && !senderIsSudo) {
-                    await sock.sendMessage(chatId, { text: 'Command ini hanya untuk Owner!' }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya pemilik Yuuki yang boleh mengakses command ini. Yuuki sangat taat pada aturan~' }, { quoted: message });
                     return;
                 }
                 await ownermenuCommand(sock, chatId, message);
@@ -478,26 +486,26 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 if (isSenderAdmin || message.key.fromMe) {
                     await tagAllCommand(sock, chatId, senderId, message);
                 } else {
-                    await sock.sendMessage(chatId, { text: 'Maaf, hanya admin grup yang bisa menggunakan command .tagall.' }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya admin grup yang memiliki wewenang untuk menggunakan .tagall. Yuuki tidak bisa melanggar hierarki~' }, { quoted: message });
                 }
                 break;
             case userMessage.startsWith('.hidetag'):
                 if (isSenderAdmin || message.key.fromMe) {
                     await hidetagCommand(sock, message, '.');
                 } else {
-                    await sock.sendMessage(chatId, { text: 'Fitur ini hanya bisa digunakan oleh admin grup.' }, { quoted: message });
+                    await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Fitur ini hanya bisa digunakan oleh *admin grup*. Yuuki sangat menyesal~' }, { quoted: message });
                 }
                 break;
             case userMessage.startsWith('.antilink'):
                 if (!isGroup) {
                     await sock.sendMessage(chatId, {
-                        text: 'Command ini hanya bisa digunakan di grup.'
+                        text: 'Tuan~ Command ini hanya bisa digunakan di dalam *grup*, bukan di pesan pribadi. Mari Yuuki temani Tuan di grup~'
                     });
                     return;
                 }
                 if (!isBotAdmin) {
                     await sock.sendMessage(chatId, {
-                        text: 'Mohon jadikan bot sebagai admin terlebih dahulu.'
+                        text: 'Tuan~ Demi kelancaran tugas, Yuuki perlu menjadi *admin* grup terlebih dahulu. Angkatlah Yuuki, maka Yuuki akan bekerja dengan maksimal~'
                     });
                     return;
                 }
@@ -506,13 +514,13 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage.startsWith('.antitag'):
                 if (!isGroup) {
                     await sock.sendMessage(chatId, {
-                        text: 'Command ini hanya bisa digunakan di grup.'
+                        text: 'Tuan~ Command ini hanya bisa digunakan di dalam *grup*, bukan di pesan pribadi. Ayo bawa Yuuki ke grup~'
                     });
                     return;
                 }
                 if (!isBotAdmin) {
                     await sock.sendMessage(chatId, {
-                        text: 'Mohon jadikan bot sebagai admin terlebih dahulu.'
+                        text: 'Tuan~ Demi keamanan, Yuuki perlu menjadi *admin* grup terlebih dahulu. Dengan kekuasaan, Yuuki bisa melindungi Tuan~'
                     });
                     return;
                 }
@@ -535,7 +543,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 if (city) {
                     await weatherCommand(sock, chatId, city);
                 } else {
-                    await sock.sendMessage(chatId, { text: 'Mohon tentukan kota, contoh: .weather London' });
+                    await sock.sendMessage(chatId, { text: 'Tuan~ Yuuki mohon tentukan *kota* yang ingin Tuan ketahui cuacanya.\nContoh: .weather London\nYuuki akan mencari tahu~' });
                 }
                 break;
             case userMessage === '.news':
@@ -569,10 +577,10 @@ async function handleMessages(sock, messageUpdate, printLog) {
                     if (isSenderAdmin || message.key.fromMe) {
                         await welcomeCommand(sock, chatId, message);
                     } else {
-                        await sock.sendMessage(chatId, { text: 'Maaf, hanya admin grup yang bisa menggunakan command ini.' });
+                        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya admin grup yang berwenang mengatur *welcome* di sini. Yuuki mohon pengertian~' });
                     }
                 } else {
-                    await sock.sendMessage(chatId, { text: 'Command ini hanya bisa digunakan di grup.' });
+                    await sock.sendMessage(chatId, { text: 'Tuan~ Command .welcome hanya bisa digunakan di dalam grup. Yuuki tidak bisa menyambut tamu di ruang pribadi~' });
                 }
                 break;
             case userMessage.startsWith('.goodbye'):
@@ -585,10 +593,10 @@ async function handleMessages(sock, messageUpdate, printLog) {
                     if (isSenderAdmin || message.key.fromMe) {
                         await goodbyeCommand(sock, chatId, message);
                     } else {
-                        await sock.sendMessage(chatId, { text: 'Maaf, hanya admin grup yang bisa menggunakan command ini.' });
+                        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya admin grup yang berwenang mengatur *goodbye* di sini. Yuuki mohon pengertian~' });
                     }
                 } else {
-                    await sock.sendMessage(chatId, { text: 'Command ini hanya bisa digunakan di grup.' });
+                    await sock.sendMessage(chatId, { text: 'Tuan~ Command .goodbye hanya bisa digunakan di dalam grup. Yuuki tidak bisa mengucapkan selamat tinggal di ruang pribadi~' });
                 }
                 break;
             case userMessage === '.git':
@@ -600,7 +608,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage.startsWith('.antibadword'):
                 if (!isGroup) {
-                    await sock.sendMessage(chatId, { text: 'Command ini hanya bisa digunakan di grup.' });
+                    await sock.sendMessage(chatId, { text: 'Tuan~ Command .antibadword hanya bisa digunakan di dalam grup. Di luar grup, kata-kata kasar adalah kebebasan~' });
                     return;
                 }
 
@@ -609,7 +617,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 isBotAdmin = adminStatus.isBotAdmin;
 
                 if (!isBotAdmin) {
-                    await sock.sendMessage(chatId, { text: 'Bot harus menjadi admin untuk menggunakan fitur ini' });
+                    await sock.sendMessage(chatId, { text: 'Tuan~ Yuuki harus menjadi *admin* grup untuk menggunakan fitur antibadword. Beri Yuuki kekuasaan, maka Yuuki akan menjaga kesopanan~' });
                     return;
                 }
 
@@ -617,13 +625,13 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage.startsWith('.yuuki'):
                 if (!isGroup) {
-                    await sock.sendMessage(chatId, { text: 'Command ini hanya bisa digunakan di grup.' });
+                    await sock.sendMessage(chatId, { text: 'Tuan~ Command .yuuki hanya bisa digunakan di dalam grup. Di sini terlalu sepi untuk Yuuki bermain~' });
                     return;
                 }
 
                 const yuukiAdminStatus = await isAdmin(sock, chatId, senderId);
                 if (!yuukiAdminStatus.isSenderAdmin && !message.key.fromMe) {
-                    await sock.sendMessage(chatId, { text: 'Maaf Tuan, hanya admin yang boleh mengaktifkan atau menonaktifkan Yuuki di sini. Yuuki menunggu perintah dengan sabar~' });
+                    await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya admin grup yang berwenang menghidupkan atau mematikan Yuuki di sini. Yuuki hanya bisa pasrah menunggu keputusan~ Tapi... Yuuki harap Tuan tidak mematikannya~' });
                     return;
                 }
 
@@ -642,28 +650,28 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage === '.ship':
                 if (!isGroup) {
-                    await sock.sendMessage(chatId, { text: 'Command ini hanya bisa digunakan di grup!' });
+                    await sock.sendMessage(chatId, { text: 'Tuan~ Command .ship hanya bisa digunakan di dalam grup! Yuuki ingin melihat drama percintaan di grup~' });
                     return;
                 }
                 await shipCommand(sock, chatId, message);
                 break;
             case userMessage === '.groupinfo' || userMessage === '.infogp' || userMessage === '.infogrupo':
                 if (!isGroup) {
-                    await sock.sendMessage(chatId, { text: 'Command ini hanya bisa digunakan di grup!' });
+                    await sock.sendMessage(chatId, { text: 'Tuan~ Command .groupinfo hanya bisa digunakan di dalam grup! Di luar grup, tidak ada informasi yang bisa Yuuki bagikan~' });
                     return;
                 }
                 await groupInfoCommand(sock, chatId, message);
                 break;
             case userMessage === '.resetlink' || userMessage === '.revoke' || userMessage === '.anularlink':
                 if (!isGroup) {
-                    await sock.sendMessage(chatId, { text: 'Command ini hanya bisa digunakan di grup!' });
+                    await sock.sendMessage(chatId, { text: 'Tuan~ Command .resetlink hanya bisa digunakan di dalam grup! Tidak ada tautan yang bisa Yuuki atur ulang di sini~' });
                     return;
                 }
                 await resetlinkCommand(sock, chatId, senderId);
                 break;
             case userMessage === '.staff' || userMessage === '.admins' || userMessage === '.listadmin':
                 if (!isGroup) {
-                    await sock.sendMessage(chatId, { text: 'Command ini hanya bisa digunakan di grup!' });
+                    await sock.sendMessage(chatId, { text: 'Tuan~ Command .staff hanya bisa digunakan di dalam grup! Di sini tidak ada staf yang bisa Yuuki perkenalkan~' });
                     return;
                 }
                 await staffCommand(sock, chatId, message);
@@ -678,14 +686,14 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage === '.clearsession' || userMessage === '.clearsesi':
                 if (!message.key.fromMe && !senderIsSudo) {
-                    await sock.sendMessage(chatId, { text: 'Hanya owner yang bisa menggunakan command ini!' });
+                    await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya pemilik Yuuki yang berhak menggunakan command ini. Yuuki tidak bisa membiarkan sembarang orang membersihkan sesi~' });
                     return;
                 }
                 await clearSessionCommand(sock, chatId, message);
                 break;
             case userMessage.startsWith('.autostatus'):
                 if (!message.key.fromMe && !senderIsSudo) {
-                    await sock.sendMessage(chatId, { text: 'Hanya owner yang bisa menggunakan command ini!' });
+                    await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Command ini hanya untuk pemilik Yuuki. Yuuki tidak bisa mengizinkan orang lain mengatur status~' });
                     return;
                 }
                 const autoStatusArgs = userMessage.split(' ').slice(1);
@@ -693,7 +701,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage.startsWith('.antidelete'):
                 if (!message.key.fromMe && !senderIsSudo) {
-                    await sock.sendMessage(chatId, { text: 'Hanya owner yang bisa menggunakan command ini!' });
+                    await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya pemilik Yuuki yang bisa menggunakan command ini. Rahasia grup tidak boleh sembarangan diungkap~' });
                     return;
                 }
                 const antideleteMatch = userMessage.slice(11).trim();
@@ -704,7 +712,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage === '.debuglevelup':
                 if (!message.key.fromMe && !senderIsSudo) {
-                    await sock.sendMessage(chatId, { text: 'Hanya owner/sudo yang bisa pakai command debug!' });
+                    await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya pemilik dan sudo yang berhak menggunakan command debug. Ini menyangkut rahasia terdalam Yuuki~' });
                     return;
                 }
                 await debugLevelUp(sock, message, chatId, senderId, pushName);
@@ -712,14 +720,14 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage === '.cleartmp':
                 if (!message.key.fromMe && !senderIsSudo) {
-                    await sock.sendMessage(chatId, { text: 'Hanya owner yang bisa menggunakan command ini!' });
+                    await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya pemilik Yuuki yang berhak membersihkan ruang sementara Yuuki. Orang lain tidak boleh ikut campur~' });
                     return;
                 }
                 await clearTmpCommand(sock, chatId, message);
                 break;
             case userMessage === '.setpp':
                 if (!message.key.fromMe && !senderIsSudo) {
-                    await sock.sendMessage(chatId, { text: 'Hanya owner yang bisa menggunakan command ini!' });
+                    await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya pemilik Yuuki yang bisa mengganti wajah Yuuki. Ini masalah harga diri~' });
                     return;
                 }
                 await setProfilePicture(sock, chatId, message);
@@ -736,7 +744,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage.startsWith('.cleanup'):
                 if (!message.key.fromMe && !senderIsSudo) {
-                    await sock.sendMessage(chatId, { text: 'Hanya owner yang bisa menggunakan command ini!' });
+                    await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya pemilik Yuuki yang berwenang membereskan kekacauan. Biarkan Yuuki yang membereskannya untuk Tuan~' });
                     return;
                 }
                 const cleanupArgs = rawText.slice(9).trim().split(' ');
@@ -851,7 +859,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                         }
                     } else {
                         await sock.sendMessage(chatId, {
-                            text: `Masukkan URL atau Judul Lagu\n\nContoh:\n${prefix} https://youtube.com/watch?v=...\n${prefix} Alan Walker Faded`
+                            text: `Tuan~ Mohon berikan *URL* atau *judul lagu* yang ingin Yuuki unduh.\n\nContoh:\n${prefix} https://youtube.com/watch?v=...\n${prefix} Alan Walker Faded\n\nYuuki akan mencarikan untuk Tuan~`
                         }, { quoted: message });
                     }
                 }
@@ -859,7 +867,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             default:
                 if (userMessage.startsWith('.') && !userMessage.includes(' ')) {
                     await sock.sendMessage(chatId, {
-                        text: 'Perintah yang Anda masukkan tidak dikenali. Ketik .menu untuk melihat semua fitur yang tersedia.'
+                        text: 'Maaf, Tuan~ Perintah yang Tuan masukkan tidak Yuuki kenali. Yuuki mohon Tuan mengetik *.menu* untuk melihat semua fitur yang Yuuki miliki~'
                     }, { quoted: message });
                     commandExecuted = true;
                     break;
@@ -885,12 +893,12 @@ async function handleMessages(sock, messageUpdate, printLog) {
 
             if (!groupJid.endsWith('@g.us')) {
                 return await sock.sendMessage(chatId, {
-                    text: "Command ini hanya bisa digunakan di grup."
+                    text: "Tuan~ Command ini hanya bisa digunakan di dalam grup. Yuuki tidak bisa memberikan informasi grup di luar sana~"
                 });
             }
 
             await sock.sendMessage(chatId, {
-                text: `Group JID: ${groupJid}`
+                text: `Tuan~ Berikut adalah *Group JID* yang Tuan minta: ${groupJid}\nSimak baik-baik, ya~ Ini adalah identitas rahasia grup ini~`
             }, {
                 quoted: message
             });
@@ -905,7 +913,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             console.error('Error dalam penangan pesan:', error);
             if (chatId) {
                 await sock.sendMessage(chatId, {
-                    text: 'Gagal memproses command!'
+                    text: 'Maaf, Tuan~ Yuuki mengalami sedikit gangguan dalam memproses perintah Tuan. Mohon Tuan bersabar dan mencoba lagi~ Yuuki akan berusaha lebih baik~'
                 }).catch(() => { });
             }
         }
@@ -995,7 +1003,7 @@ async function handleMessageRevocation(sock, message) {
 
         if (originalMessage) {
             await sock.sendMessage(chatId, {
-                text: `*Message Deleted*\n\nFrom: @${message.key.participant?.split('@')[0] || 'unknown'}\n\n*Original Message:*\n${originalMessage.message?.conversation || originalMessage.message?.extendedTextMessage?.text || 'Media message'}`,
+                text: `🔮 *Pesan Telah Dihapus* 🔮\n\n*Pengirim:* @${message.key.participant?.split('@')[0] || 'unknown'}\n\n*Isi Pesan:*\n${originalMessage.message?.conversation || originalMessage.message?.extendedTextMessage?.text || 'Media message'}\n\n*--- Yuuki melihat semuanya ---*`,
                 mentions: [message.key.participant]
             });
         }
@@ -1027,18 +1035,18 @@ function incrementMessageCount(chatId, senderId) {
 async function unbanCommand(sock, chatId, message) {
     try {
         const mentionedJidList = message.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
-        const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+        const quotedParticipant = message.message?.extendedTextMessage?.contextInfo?.participant;
 
         let targetJid = null;
 
         if (mentionedJidList.length > 0) {
             targetJid = mentionedJidList[0];
-        } else if (quotedMessage) {
-            targetJid = quotedMessage.participant || quotedMessage.key.participant;
+        } else if (quotedParticipant) {
+            targetJid = quotedParticipant;
         }
 
         if (!targetJid) {
-            await sock.sendMessage(chatId, { text: 'Tag atau reply pesan pengguna yang ingin di-unban.' });
+            await sock.sendMessage(chatId, { text: 'Tuan, sebutkan user yang ingin di-unban~ Mention atau reply chatnya, ya.' });
             return;
         }
 
@@ -1048,10 +1056,10 @@ async function unbanCommand(sock, chatId, message) {
             create: { id: targetJid, isBanned: false }
         });
 
-        await sock.sendMessage(chatId, { text: `✅ Pengguna @${targetJid.split('@')[0]} telah di-unban.`, mentions: [targetJid] });
+        await sock.sendMessage(chatId, { text: `Baik, Tuan~ @${targetJid.split('@')[0]} sudah Yuuki buka blokirnya~`, mentions: [targetJid] });
     } catch (error) {
         console.error('Error in unban command:', error);
-        await sock.sendMessage(chatId, { text: 'Terjadi kesalahan saat unban pengguna.' });
+        await sock.sendMessage(chatId, { text: 'Mohon maaf, Tuan~ Hamba tidak berhasil melaksanakan perintah Tuan untuk membuka blokir. Sudilah kiranya Tuan mencoba kembali~' });
     }
 }
 
@@ -1061,24 +1069,24 @@ async function handleAntideleteCommand(sock, chatId, message, match) {
 
         if (!match || match.toLowerCase() === 'status') {
             const status = antideleteData.enabled ? 'aktif' : 'nonaktif';
-            await sock.sendMessage(chatId, { text: `Antidelete saat ini: *${status}*` });
+            await sock.sendMessage(chatId, { text: `Tuan~ Status Antidelete saat ini: *${status}*\nYuuki akan tetap mengawasi, apa pun yang terjadi~` });
             return;
         }
 
         if (match.toLowerCase() === 'on') {
             antideleteData.enabled = true;
             fs.writeFileSync('./data/antidelete.json', JSON.stringify(antideleteData, null, 2));
-            await sock.sendMessage(chatId, { text: 'Antidelete diaktifkan.' });
+            await sock.sendMessage(chatId, { text: 'Baik, Tuan~ Antidelete telah Yuuki aktifkan. Kini tidak ada pesan yang bisa disembunyikan dari Yuuki~ Hehe~' });
         } else if (match.toLowerCase() === 'off') {
             antideleteData.enabled = false;
             fs.writeFileSync('./data/antidelete.json', JSON.stringify(antideleteData, null, 2));
-            await sock.sendMessage(chatId, { text: 'Antidelete dinonaktifkan.' });
+            await sock.sendMessage(chatId, { text: 'Baik, Tuan~ Antidelete telah Yuuki nonaktifkan. Pesan-pesan akan kembali menjadi misteri~ Yuuki suka misteri~' });
         } else {
-            await sock.sendMessage(chatId, { text: 'Penggunaan: .antidelete on/off/status' });
+            await sock.sendMessage(chatId, { text: 'Tuan~ Cara menggunakan Antidelete:\n.antidelete on — untuk mengaktifkan\n.antidelete off — untuk menonaktifkan\n.antidelete status — untuk melihat status\nYuuki menunggu perintah Tuan~' });
         }
     } catch (error) {
         console.error('Error in antidelete command:', error);
-        await sock.sendMessage(chatId, { text: 'Terjadi kesalahan saat mengelola antidelete.' });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki menemui kesalahan saat mengelola Antidelete. Mungkin ada yang tidak beres dengan sistem Yuuki~ Mohon periksa kembali~' });
     }
 }
 

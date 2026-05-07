@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 async function handleSsCommand(sock, chatId, message, match) {
     if (!match) {
         await sock.sendMessage(chatId, {
-            text: `Fitur Screenshot\n\n.ss <url>\n.ssweb <url>\n.screenshot <url>\n\nBuat screenshot website apapun\n\nContoh:\n.ss https://google.com\n.ssweb https://google.com\n.screenshot https://google.com`,
+            text: `Tuan~ Fitur Screenshot\n\n.ss <url>\n.ssweb <url>\n.screenshot <url>\n\nBuat screenshot website apapun\n\nContoh:\n.ss https://google.com\n.ssweb https://google.com\n.screenshot https://google.com`,
             quoted: message
         });
         return;
@@ -14,7 +14,7 @@ async function handleSsCommand(sock, chatId, message, match) {
         await sock.sendPresenceUpdate('composing', chatId);
 
         await sock.sendMessage(chatId, {
-            text: 'Bentar ya, lagi aku ambil screenshotnya',
+            text: 'Tuan~ Mohon tunggu, Yuuki sedang mengambil screenshot~',
             quoted: message
         });
 
@@ -22,7 +22,7 @@ async function handleSsCommand(sock, chatId, message, match) {
 
         if (!url.startsWith('http://') && !url.startsWith('https://')) {
             return sock.sendMessage(chatId, {
-                text: 'Wah, URL nya harus dimulai dari http:// atau https:// nih',
+                text: 'Tuan~ URL harus dimulai dari http:// atau https://~',
                 quoted: message
             });
         }
@@ -38,7 +38,7 @@ async function handleSsCommand(sock, chatId, message, match) {
 
         await sock.sendMessage(chatId, {
             image: imageBuffer,
-            caption: 'Ini screenshotnya'
+            caption: 'Tuan~ Ini screenshotnya~'
         }, {
             quoted: message
         });
@@ -46,7 +46,7 @@ async function handleSsCommand(sock, chatId, message, match) {
     } catch (error) {
         console.error('Error di ss command:', error);
         await sock.sendMessage(chatId, {
-            text: 'Yah, gagal ambil screenshot nih. Coba lagi ya nanti\n\nMungkin karena:\n• URL nya ga bener\n• Websitenya ga mau di-screenshot\n• Lagi down\n• API nya lagi istirahat',
+                text: 'Maaf, Tuan~ Yuuki gagal mengambil screenshot. Mungkin lain kali~\n\nKemungkinan:\n• URL tidak valid\n• Website tidak bisa di-screenshot\n• Sedang down\n• API sedang istirahat~',
             quoted: message
         });
     }

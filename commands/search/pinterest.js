@@ -5,7 +5,7 @@ async function pinterestCommand(sock, chatId, message, input) {
     try {
         if (!input) {
             await sock.sendMessage(chatId, {
-                text: `Gunakan: .pinterest <kata kunci>\nAlias: .pin\n\nContoh: .pinterest Rei Ayanami`
+                text: `Tuan~ Gunakan: .pinterest <kata kunci>\nAlias: .pin\n\nContoh: .pinterest Rei Ayanami`
             }, { quoted: message });
             return;
         }
@@ -29,7 +29,7 @@ async function pinterestCommand(sock, chatId, message, input) {
 
         if (!results || results.length === 0) {
             await sock.sendMessage(chatId, {
-                text: `Tidak ditemukan gambar untuk "${input}"`
+                text: `Maaf, Tuan~ Yuuki tidak menemukan gambar untuk "${input}"`
             }, { quoted: message });
             return;
         }
@@ -39,7 +39,7 @@ async function pinterestCommand(sock, chatId, message, input) {
 
         if (!imageUrl) {
             await sock.sendMessage(chatId, {
-                text: `Gagal mendapatkan gambar dari Pinterest untuk "${input}"`
+                text: `Maaf, Tuan~ Yuuki gagal mendapatkan gambar dari Pinterest untuk "${input}"`
             }, { quoted: message });
             return;
         }
@@ -51,7 +51,7 @@ async function pinterestCommand(sock, chatId, message, input) {
     } catch (error) {
         console.error('Pinterest error:', error.message);
         await sock.sendMessage(chatId, {
-            text: 'Gagal mencari gambar dari Pinterest. Coba lagi nanti.'
+            text: 'Maaf, Tuan~ Yuuki gagal mencari gambar. Mungkin lain kali~'
         }, { quoted: message });
     }
 }

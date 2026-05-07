@@ -9,7 +9,7 @@ async function setWmCommand(sock, chatId, message, args, senderId) {
         const packname = args.join(' ');
 
         if (!packname) {
-            await sock.sendMessage(chatId, { text: 'Format: .setwm [Nama Pack]\nAtau reply stiker untuk mengubah WM.' }, { quoted: message });
+            await sock.sendMessage(chatId, { text: 'Tuan~ Format: .setwm [Nama Pack]\nAtau reply stiker untuk mengubah WM~' }, { quoted: message });
             return;
         }
 
@@ -63,14 +63,14 @@ async function setWmCommand(sock, chatId, message, args, senderId) {
                 await sock.sendMessage(chatId, { sticker: finalBuffer }, { quoted: message });
             } catch (error) {
                 console.error('Sticker modification error:', error);
-                await sock.sendMessage(chatId, { text: 'Gagal mengubah watermark stiker.' });
+                await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal mengubah watermark stiker~' });
             }
         } else {
-            await sock.sendMessage(chatId, { text: `✅ Watermark stiker default berhasil disimpan!\n\n*Packname:* ${packname}` }, { quoted: message });
+            await sock.sendMessage(chatId, { text: `Tuan~ Watermark stiker berhasil Yuuki simpan!\n\n*Packname:* ${packname}` }, { quoted: message });
         }
     } catch (error) {
         console.error('Error in setwm command:', error);
-        await sock.sendMessage(chatId, { text: 'Terjadi kesalahan saat memproses watermark.' });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki mengalami kesalahan saat memproses watermark~' });
     }
 }
 

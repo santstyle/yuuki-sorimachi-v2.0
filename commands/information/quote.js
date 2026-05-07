@@ -6,20 +6,20 @@ module.exports = async function quoteCommand(sock, chatId, message, args) {
         if (args[0]) url += `?category=${args[0]}`; // contoh: .quote motivasi
 
         await sock.sendMessage(chatId, {
-            text: 'Bentar ya, lagi aku cariin quote yang bagus~'
+            text: 'Tuan~ Mohon tunggu, Yuuki sedang mencari quote yang bagus~'
         }, { quoted: message });
 
         const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
         const q = json.data;
-        const quoteMsg = `"${q.quote}"\n— ${q.source || 'Tidak diketahui'} (${q.category || 'Umum'})\n\nSemoga bikin hari kamu lebih baik ya~`;
+        const quoteMsg = `"${q.quote}"\n— ${q.source || 'Tidak diketahui'} (${q.category || 'Umum'})\n\nSemoga membuat hari Tuan lebih baik~`;
 
         await sock.sendMessage(chatId, { text: quoteMsg }, { quoted: message });
     } catch (error) {
         console.error('Error di quote command:', error);
         await sock.sendMessage(chatId, {
-            text: 'Yah, gagal ambil quote nih. Coba lagi ya~ Formatnya: .quote [kategori]'
+            text: 'Maaf, Tuan~ Yuuki gagal mengambil quote. Mungkin lain kali~ Format: .quote [kategori]'
         }, { quoted: message });
     }
 };

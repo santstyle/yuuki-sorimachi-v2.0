@@ -5,14 +5,14 @@ async function deleteCommand(sock, chatId, message, senderId) {
 
     if (!isBotAdmin) {
         await sock.sendMessage(chatId, {
-            text: 'Yuuki saat ini belum jadi admin grup jadi tidak bisa memproses command'
+            text: 'Maaf, Tuan~ Yuuki belum memiliki kekuatan sebagai admin di grup ini. Yuuki tidak bisa berbuat banyak tanpa restu dari Tuan... sedih sekali.'
         });
         return;
     }
 
     if (!isSenderAdmin) {
         await sock.sendMessage(chatId, {
-            text: 'Cuma admin yang bisa menggunakan command ini'
+            text: 'Wah, Tuan~ Sepertinya Tuan bukan admin di sini. Yuuki mohon maaf, tapi Yuuki hanya bisa mematuhi perintah para admin. Atau... Tuan ingin Yuuki membantu dengan cara lain? Lebih... gelap?'
         });
         return;
     }

@@ -4,7 +4,7 @@ async function gptCommand(sock, chatId, message, input) {
     try {
         if (!input) {
             await sock.sendMessage(chatId, {
-                text: `Gunakan: .gpt <pertanyaan>\n\nContoh: .gpt siapa Yuuki Sorimachi?`
+                text: `Tuan~ Gunakan: .gpt <pertanyaan>\n\nContoh: .gpt siapa Yuuki Sorimachi?`
             }, { quoted: message });
             return;
         }
@@ -31,7 +31,7 @@ async function gptCommand(sock, chatId, message, input) {
     } catch (error) {
         console.error('GPT error:', error.response?.data || error.message);
         await sock.sendMessage(chatId, { 
-            text: 'Gagal memproses permintaan. Coba lagi nanti.'
+            text: 'Maaf, Tuan~ Yuuki gagal memprosesnya. Mungkin lain kali~'
         }, { quoted: message });
     }
 }

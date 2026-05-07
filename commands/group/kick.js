@@ -7,14 +7,14 @@ async function kickCommand(sock, chatId, senderId, mentionedJids, message) {
 
         if (!isBotAdmin) {
             await sock.sendMessage(chatId, {
-                text: 'Aku harus jadi admin dulu biar bisa kick member'
+                text: 'Maaf, Tuan~ Yuuki harus menjadi admin dulu agar bisa mengeluarkan member. Bisakah Tuan mengangkat Yuuki?~'
             }, { quoted: message });
             return;
         }
 
         if (!isSenderAdmin) {
             await sock.sendMessage(chatId, {
-                text: 'kamu gaboleh, cuma admin yang bisa kick member'
+                text: 'Maaf, Tuan~ Hanya admin yang bisa mengeluarkan member. Yuuki mohon maaf, aturan tetap aturan~'
             }, { quoted: message });
             return;
         }
@@ -31,7 +31,7 @@ async function kickCommand(sock, chatId, senderId, mentionedJids, message) {
 
     if (usersToKick.length === 0) {
         await sock.sendMessage(chatId, {
-            text: 'Sebutin dong usernya yang mau di-kick? Mention atau reply chatnya'
+            text: 'Tuan~ Sebutkan siapa yang ingin dikeluarkan? Mention atau reply chatnya, ya. Yuuki menunggu~'
         }, { quoted: message });
         return;
     }
@@ -40,7 +40,7 @@ async function kickCommand(sock, chatId, senderId, mentionedJids, message) {
 
     if (usersToKick.includes(botId)) {
         await sock.sendMessage(chatId, {
-            text: "Wah, aku ga bisa kick diri sendiri dong"
+            text: "Tuan~ Yuuki tidak bisa mengeluarkan diri sendiri. Itu akan menyedihkan~"
         }, { quoted: message });
         return;
     }
@@ -53,13 +53,13 @@ async function kickCommand(sock, chatId, senderId, mentionedJids, message) {
         }));
 
         await sock.sendMessage(chatId, {
-            text: `${usernames.join(', ')} udah di-kick dari grup ya`,
+            text: `Tuan~ ${usernames.join(', ')} telah Yuuki keluarkan dari grup. Semoga mereka bahagia di luar sana~`,
             mentions: usersToKick
         });
     } catch (error) {
         console.error('Error di kick command:', error);
         await sock.sendMessage(chatId, {
-            text: 'Gagal kick member nih, manual aja yah'
+            text: 'Maaf, Tuan~ Yuuki gagal mengeluarkan member. Mungkin Tuan bisa melakukannya secara manual? Yuuki minta maaf~'
         });
     }
 }

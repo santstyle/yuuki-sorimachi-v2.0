@@ -8,55 +8,55 @@ async function menuCommand(sock, chatId, message, input) {
     const pushName = message.pushName || 'User';
     const botNumber = sock.user.id.split(':')[0];
 
-    const menuText = `List Menu Yuuki
+    const menuText = `Oh~ Tuan akhirnya memanggil Yuuki~ Yuuki sudah menunggu dengan setia. Ada yang bisa Yuuki bantu?
 
-┌──「 MAIN 」
-│ .menu     .ping      .alive    .owner
-│ .help     .del
-│ .mylevel
-└───────────────────────────
+┏━━「 MAIN 」
+┃ .menu     .ping      .alive    .owner
+┃ .help     .del
+┃ .mylevel
+┗━━━━━━━━━━━━━━━━━━━━
 
-┌──「 GROUP 」
-│ .antilink .antitag   .antibadword .welcome
-│ .goodbye  .mute      .unmute   .kick
-│ .ban      .warn      .warnings .tagall
-│ .hidetag  .resetlink .groupinfo .groupset
-│ .ceksewa  .staff    .absen
-└───────────────────────────
+┏━━「 GROUP 」
+┃ .antilink .antitag   .antibadword .welcome
+┃ .goodbye  .mutegroup .unmutegroup .kick
+┃ .warn      .warnings .resetwarn .tagall
+┃ .hidetag  .resetlink .groupinfo .groupset
+┃ .ceksewa  .staff    .absen
+┗━━━━━━━━━━━━━━━━━━━━
 
-┌──「 CHATBOT 」
-│ .yuuki
-└───────────────────────────
+┏━━「 CHATBOT 」
+┃ .yuuki
+┗━━━━━━━━━━━━━━━━━━━━
 
-┌──「 AI CHAT 」
-│ .groq     .deepseek  .gpt
-└───────────────────────────
+┏━━「 AI CHAT 」
+┃ .groq     .deepseek  .gpt
+┗━━━━━━━━━━━━━━━━━━━━
 
-┌──「 CONVERTER 」
-│ .sticker/.s .toimage/.toimg .tovideo/.tovid .togif/.tgif
-│ .tomp3/.toaud .stickercrop/.scrop
-└───────────────────────────
+┏━━「 CONVERTER 」
+┃ .sticker/.s .toimage/.toimg .tovideo/.tovid .togif/.tgif
+┃ .tomp3/.toaud .stickercrop/.scrop
+┗━━━━━━━━━━━━━━━━━━━━
 
-┌──「 DOWNLOADER 」
-│ .song     .play      .lyrics   .dl / .download
-│ .btch
-└───────────────────────────
+┏━━「 DOWNLOADER 」
+┃ .song     .play      .lyrics   .dl / .download
+┃ .btch
+┗━━━━━━━━━━━━━━━━━━━━
 
-┌──「 INFORMATION 」
-│ .joke     .meme      .quote    .fact
-│ .news     .weather   .groupinfo
-└───────────────────────────
+┏━━「 INFORMATION 」
+┃ .joke     .meme      .quote    .fact
+┃ .news     .weather   .groupinfo
+┗━━━━━━━━━━━━━━━━━━━━
 
-┌──「 SEARCH 」
-│ .pinterest / .pin
-└───────────────────────────
+┏━━「 SEARCH 」
+┃ .pinterest / .pin
+┗━━━━━━━━━━━━━━━━━━━━
 
-┌──「 TOOL 」
-│ .translate/.trt .ss/.screenshot .setwm
-└───────────────────────────
+┏━━「 TOOL 」
+┃ .translate/.trt .ss/.screenshot .setwm
+┗━━━━━━━━━━━━━━━━━━━━
 
-> Ketik *.help* untuk detail penggunaan command
-> *Powered by SantStyle*`;
+> Ketik *.help* untuk detailnya, Tuan~ Tapi... apa Tuan yakin tidak ingin sekadar mengobrol dengan Yuuki? Yuuki bisa sangat... menarik.
+> *Pelayanmu yang setia — Yuuki Sorimachi*`;
 
     try {
         const profilesDir = path.join(__dirname, '../../assets/profiles');
@@ -81,23 +81,20 @@ async function menuCommand(sock, chatId, message, input) {
         const messageOptions = { text: menuText };
 
         if (thumbBuffer) {
-            const invisibleSuffix = '\u200B'.repeat(Math.floor(Math.random() * 100) + 1);
-
             messageOptions.contextInfo = {
                 externalAdReply: {
-                    title: "Yuuki Sorimachi | WhatsApp Bot" + invisibleSuffix,
+                    title: "Yuuki Sorimachi | WhatsApp Bot",
                     body: `Hai ${pushName}, Senang bertemu denganmu`,
                     mediaType: 1,
                     thumbnail: thumbBuffer,
                     renderLargerThumbnail: true,
-                    showAdAttribution: true,
-                    sourceUrl: `https://wa.me/${botNumber}?v=${Date.now()}_${Math.floor(Math.random() * 1000)}`
+                    showAdAttribution: false,
+                    sourceUrl: `https://wa.me/${botNumber}`
                 }
             };
         }
 
         await sock.sendMessage(chatId, messageOptions, { quoted: message });
-
     } catch (e) {
         console.error('Menu command failure:', e);
         await sock.sendMessage(chatId, { text: menuText }, { quoted: message });

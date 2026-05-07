@@ -6,7 +6,7 @@ async function warnCommand(sock, chatId, senderId, mentionedJids, message, reaso
     try {
         if (!chatId.endsWith('@g.us')) {
             await sock.sendMessage(chatId, {
-                text: 'Command warn hanya bisa dipakai di grup.'
+                text: 'Maaf, Tuan~ Command warn hanya bisa dipakai di grup. Yuuki tidak bisa melayaninya di sini~'
             });
             return;
         }
@@ -15,14 +15,14 @@ async function warnCommand(sock, chatId, senderId, mentionedJids, message, reaso
 
         if (!isBotAdmin) {
             await sock.sendMessage(chatId, {
-                text: 'Bot harus menjadi admin untuk menggunakan fitur warning.'
+                text: 'Maaf, Tuan~ Yuuki harus menjadi admin untuk menggunakan fitur warning. Bisakah Tuan mengangkat Yuuki?~'
             });
             return;
         }
 
         if (!isSenderAdmin) {
             await sock.sendMessage(chatId, {
-                text: 'Hanya admin grup yang bisa memberikan warning.'
+                text: 'Maaf, Tuan~ Hanya admin grup yang bisa memberikan warning. Yuuki mohon pengertian Tuan~'
             });
             return;
         }
@@ -37,7 +37,14 @@ async function warnCommand(sock, chatId, senderId, mentionedJids, message, reaso
 
         if (!userToWarn) {
             await sock.sendMessage(chatId, {
-                text: 'Tag user atau reply pesan yang ingin diberi warning.'
+                text: 'Tuan~ *Panduan Penggunaan Warning*\n\n' +
+                    '`.warn @user [alasan]` — Beri peringatan ke member\n' +
+                    '`.warnings @user` — Lihat daftar warning user\n' +
+                    '`.resetwarn @user` — Hapus semua warning user\n\n' +
+                    '*Contoh:*\n' +
+                    '`.warn @user Spam berlebihan`\n' +
+                    '`.warn @user` (reply pesan)\n\n' +
+                    'Yuuki akan mencatat setiap pelanggaran dengan setia~ Apakah Tuan ingin memberikan peringatan sekarang?'
             });
             return;
         }
@@ -50,12 +57,12 @@ async function warnCommand(sock, chatId, senderId, mentionedJids, message, reaso
         const warnCount = await getWarningCount(userToWarn, chatId);
         const maxWarn = await getMaxWarnLevel(chatId);
 
-        const warningText = `PERINGATAN\n\n` +
+        const warningText = `Tuan~ PERINGATAN telah Yuuki catat:\n\n` +
             `User: @${userToWarn.split('@')[0]}\n` +
             `Warning ke: ${warnCount}/${maxWarn}\n` +
             `Oleh: @${senderId.split('@')[0]}\n` +
             `Alasan: ${reason}\n\n` +
-            `Hai @${userToWarn.split('@')[0]}, jangan diulangi lagi ya.`;
+            `@${userToWarn.split('@')[0]}, jangan diulangi lagi~ Yuuki mengawasi.`;
 
         await sock.sendMessage(chatId, {
             text: warningText,
@@ -65,8 +72,8 @@ async function warnCommand(sock, chatId, senderId, mentionedJids, message, reaso
         if (warnCount >= maxWarn) {
             await sock.groupParticipantsUpdate(chatId, [userToWarn], "remove");
 
-            const kickText = `AUTO-KICK\n\n` +
-                `@${userToWarn.split('@')[0]} telah mencapai batas maksimal warning (${maxWarn}) dan dikeluarkan dari grup.`;
+            const kickText = `Tuan~ AUTO-KICK!\n\n` +
+                `@${userToWarn.split('@')[0]} telah mencapai batas maksimal warning (${maxWarn}) dan Yuuki keluarkan dari grup. Semoga bertemu di lain waktu~`;
 
             await sock.sendMessage(chatId, {
                 text: kickText,
@@ -76,7 +83,7 @@ async function warnCommand(sock, chatId, senderId, mentionedJids, message, reaso
     } catch (error) {
         console.error('Error in warn command:', error);
         await sock.sendMessage(chatId, {
-            text: 'Gagal memberikan warning. Coba lagi.'
+            text: 'Maaf, Tuan~ Yuuki gagal memberikan warning. Coba lagi, ya~'
         });
     }
 }

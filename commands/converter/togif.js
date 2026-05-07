@@ -7,14 +7,14 @@ async function toGif(sock, message, chatId) {
         const quotedMsg = contextInfo?.quotedMessage;
 
         if (!contextInfo || !contextInfo.stanzaId) {
-            return sock.sendMessage(chatId, { text: 'Reply stiker animasi dengan .togif untuk mengubahnya jadi GIF.' });
+            return sock.sendMessage(chatId, { text: 'Tuan~ Reply stiker animasi dengan .togif untuk Yuuki ubah jadi GIF~' });
         }
 
         if (!quotedMsg || !quotedMsg.stickerMessage) {
-            return sock.sendMessage(chatId, { text: 'Yang kamu reply bukan stiker! Reply stiker animasi ya.' });
+            return sock.sendMessage(chatId, { text: 'Tuan~ Yang Tuan reply bukan stiker! Reply stiker animasi ya~' });
         }
 
-        await sock.sendMessage(chatId, { text: 'Sedang mengonversi stiker ke GIF...' }, { quoted: message });
+        await sock.sendMessage(chatId, { text: 'Mohon tunggu, Tuan~ Yuuki sedang mengonversi stiker ke GIF~' }, { quoted: message });
 
         const msgToDownload = {
             key: {
@@ -64,12 +64,12 @@ async function toGif(sock, message, chatId) {
             video: { url: resultUrl },
             mimetype: 'video/mp4',
             gifPlayback: true,
-            caption: 'Stiker berhasil dikonversi ke GIF!'
+            caption: 'Tuan~ Stiker berhasil Yuuki konversi ke GIF!'
         }, { quoted: message });
 
     } catch (error) {
         console.error('Error togif:', error);
-        await sock.sendMessage(chatId, { text: 'Gagal mengonversi stiker ke GIF.' });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal mengonversi stiker ke GIF. Mungkin lain kali~' });
     }
 }
 

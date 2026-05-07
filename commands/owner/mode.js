@@ -2,7 +2,7 @@ const fs = require('fs');
 
 async function modeCommand(sock, chatId, message, senderIsSudo) {
     if (!message.key.fromMe && !senderIsSudo) {
-        await sock.sendMessage(chatId, { text: 'Hanya owner bot yang bisa menggunakan command ini!' });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya pemilik Yuuki yang bisa mengubah mode. Yuuki tidak mau sembarangan memberikan kekuatan ini pada sembarang orang~' });
         return;
     }
 
@@ -11,7 +11,7 @@ async function modeCommand(sock, chatId, message, senderIsSudo) {
         data = JSON.parse(fs.readFileSync('./data/messageCount.json'));
     } catch (error) {
         console.error('Error membaca mode akses:', error);
-        await sock.sendMessage(chatId, { text: 'Gagal membaca status mode bot' });
+        await sock.sendMessage(chatId, { text: 'Tuan~ Yuuki tidak bisa membaca status mode. Mungkin buku sihir Yuuki basah kena hujan? Ah, sedih sekali~' });
         return;
     }
 
@@ -21,14 +21,14 @@ async function modeCommand(sock, chatId, message, senderIsSudo) {
     if (!action) {
         const currentMode = data.isPublic ? 'publik' : 'privat';
         await sock.sendMessage(chatId, {
-            text: `Mode bot saat ini: *${currentMode}*\n\nPenggunaan: .mode publik/privat\n\nContoh:\n.mode publik - Izinkan semua orang menggunakan bot\n.mode privat - Batasi hanya untuk owner`
+            text: `Tuan~ Mode Yuuki saat ini: *${currentMode}*\n\nYuuki bingung, Tuan mau Yuuki terbuka untuk semua orang atau hanya untuk Tuan? Terserah Tuan~ Yuuki patuh.\n\nPenggunaan: .mode public/private\n.mode public - Yuuki terbuka untuk semua\n.mode private - Yuuki milik Tuan seorang~`
         });
         return;
     }
 
     if (action !== 'public' && action !== 'private') {
         await sock.sendMessage(chatId, {
-            text: 'Penggunaan: .mode public/private\n\nContoh:\n.mode public - Izinkan semua orang menggunakan bot\n.mode private - Batasi hanya untuk owner'
+            text: 'Tuan~ Yang benar saja. .mode public atau .mode private. Sederhana, kan? Yuuki tahu Tuan bisa~ Atau... jangan-jangan Tuan sengaja ingin Yuuki mengulangi perintah? Manis sekali~'
         });
         return;
     }
@@ -36,10 +36,10 @@ async function modeCommand(sock, chatId, message, senderIsSudo) {
     try {
         data.isPublic = action === 'public';
         fs.writeFileSync('./data/messageCount.json', JSON.stringify(data, null, 2));
-        await sock.sendMessage(chatId, { text: `Bot sekarang dalam mode *${action}*` });
+        await sock.sendMessage(chatId, { text: `Tuan~ Mode Yuuki telah berubah menjadi *${action}*. Yuuki menyesuaikan diri dengan keinginan Tuan~ Apa Tuan puas dengan Yuuki? Atau perlu Yuuki melakukan... lebih?` });
     } catch (error) {
         console.error('Error memperbarui mode akses:', error);
-        await sock.sendMessage(chatId, { text: 'Gagal memperbarui mode akses bot' });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal mengubah mode. Mungkin alam semesta sedang tidak setuju dengan keputusan Tuan. Tapi Yuuki akan terus mencoba~ demi Tuan.' });
     }
 }
 

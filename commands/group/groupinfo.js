@@ -15,7 +15,7 @@ async function groupInfoCommand(sock, chatId, msg) {
 
         const owner = groupMetadata.owner || groupAdmins.find(p => p.admin === 'superadmin')?.id || chatId.split('-')[0] + '@s.whatsapp.net';
 
-        const text = `Info grup ${groupMetadata.subject} 
+        const text = `Tuan~ Berikut informasi grup ${groupMetadata.subject} yang Yuuki kumpulkan:
 
 ID grup: ${groupMetadata.id}
 Jumlah member: ${participants.length}
@@ -27,7 +27,7 @@ ${listAdmin}
 Deskripsi:
 ${groupMetadata.desc?.toString() || 'Belum ada deskripsi'}
 
-`.trim();
+Yuuki harap informasi ini bermanfaat untuk Tuan~`.trim();
 
         await sock.sendMessage(chatId, {
             image: { url: pp },
@@ -40,7 +40,7 @@ ${groupMetadata.desc?.toString() || 'Belum ada deskripsi'}
         if (!errMsg.includes('Connection Closed') && !errMsg.includes('Connection Terminated')) {
             console.error('Error di groupinfo command:', error);
             await sock.sendMessage(chatId, {
-                text: 'Wah, gagal ambil info grup nih. Coba lagi ya'
+                text: 'Maaf, Tuan~ Yuuki gagal mengambil informasi grup. Mungkin ada yang menghalangi Yuuki~'
             }).catch(() => {});
         }
     }

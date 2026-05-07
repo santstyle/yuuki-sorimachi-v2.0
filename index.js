@@ -177,7 +177,7 @@ async function startXeonBotInc() {
                     console.error("Error in handleMessages:", err);
                     if (mek.key && mek.key.remoteJid) {
                         await XeonBotInc.sendMessage(mek.key.remoteJid, {
-                            text: 'An error occurred while processing your message.'
+                            text: 'Maaf, Tuan~ Yuuki mengalami error saat memproses pesan Tuan.'
                         }).catch(() => { });
                     }
                 }
@@ -312,7 +312,7 @@ async function startXeonBotInc() {
 
             for (const group of expiredGroups) {
                 try {
-                    await XeonBotInc.sendMessage(group.id, { text: 'Waktu sewa bot di grup ini telah habis. Terima kasih telah menggunakan bot ini!' });
+                    await XeonBotInc.sendMessage(group.id, { text: 'Tuan~ Waktu kebersamaan Yuuki dengan Tuan semua di grup ini telah berakhir. Terima kasih atas kesempatan yang telah diberikan kepada Yuuki untuk melayani. Yuuki mohon diri dan sampai jumpa di lain waktu, Tuan~ 🫶' });
                     await delay(2000);
                     await XeonBotInc.groupLeave(group.id);
                     await prisma.group.delete({ where: { id: group.id } });

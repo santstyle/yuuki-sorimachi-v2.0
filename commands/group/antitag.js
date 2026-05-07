@@ -17,7 +17,7 @@ async function handleAntitagCommand(sock, chatId, userMessage, senderId, isSende
     try {
         if (!isSenderAdmin) {
             await sock.sendMessage(chatId, {
-                text: 'Cuma admin grup yang bisa atur antitag'
+                text: 'Maaf, Tuan~ Hanya admin grup yang bisa mengatur antitag. Yuuki mohon pengertian Tuan~'
             });
             return;
         }
@@ -45,13 +45,13 @@ Antitag akan merespon jika ada yang tag member di grup`;
                 const existingConfig = await getAntitag(chatId, 'on');
                 if (existingConfig?.enabled) {
                     await sock.sendMessage(chatId, {
-                        text: 'Antitag sudah aktif di grup ini'
+                        text: 'Tuan~ Antitag sudah aktif di grup ini. Yuuki sudah menjaganya~'
                     });
                     return;
                 }
                 await setAntitag(chatId, 'on', 'delete');
                 await sock.sendMessage(chatId, {
-                    text: `FITUR ANTITAG DIAKTIFKAN\n\nPerhatian untuk seluruh member:\nFitur Antitag telah diaktifkan di grup ini.\nDilarang men-tag member secara sembarangan.\nPelanggaran akan dihapus dan mendapat peringatan.`
+                    text: `Tuan~ FITUR ANTITAG telah Yuuki aktifkan!\n\nPerhatian untuk seluruh member:\nDilarang men-tag member secara sembarangan.\nPelanggaran akan dihapus dan mendapat peringatan.\n\nYuuki tidak suka tag yang tidak perlu~`
                 });
                 break;
             }
@@ -59,7 +59,7 @@ Antitag akan merespon jika ada yang tag member di grup`;
             case 'off': {
                 await removeAntitag(chatId, 'on');
                 await sock.sendMessage(chatId, {
-                    text: 'Antitag berhasil dinonaktifkan'
+                    text: 'Tuan~ Antitag telah Yuuki nonaktifkan. Silakan tag dengan bijak~'
                 });
                 break;
             }
@@ -67,20 +67,20 @@ Antitag akan merespon jika ada yang tag member di grup`;
             case 'set': {
                 if (args.length < 2) {
                     await sock.sendMessage(chatId, {
-                        text: 'Mode belum dipilih. Pilih: delete / kick / warn'
+                        text: 'Tuan~ Mode belum dipilih. Pilih: delete / kick / warn. Yuuki menunggu petunjuk Tuan~'
                     });
                     return;
                 }
                 const mode = args[1];
                 if (!['delete', 'kick', 'warn'].includes(mode)) {
                     await sock.sendMessage(chatId, {
-                        text: 'Mode tidak valid. Pilih: delete / kick / warn'
+                        text: 'Tuan~ Mode tidak valid. Pilih: delete / kick / warn. Yuuki harap Tuan lebih cermat~'
                     });
                     return;
                 }
                 await setAntitag(chatId, 'on', mode);
                 await sock.sendMessage(chatId, {
-                    text: `Mode antitag berhasil diatur ke: ${mode}`
+                    text: `Tuan~ Mode antitag telah Yuuki atur ke: ${mode}. Sesuai perintah Tuan~`
                 });
                 break;
             }
@@ -89,17 +89,14 @@ Antitag akan merespon jika ada yang tag member di grup`;
                 const config = await getAntitag(chatId, 'on');
                 const status = config?.enabled ? 'AKTIF' : 'NONAKTIF';
                 const mode = config?.action || 'Belum diatur';
-                const statusMsg = `ANTITAG STATUS
-
-Status : ${status}
-Mode   : ${mode}`;
+                const statusMsg = `Tuan~ Berikut status antitag:\n\nStatus : ${status}\nMode   : ${mode}\n\nYuuki siap melaporkan~`;
                 await sock.sendMessage(chatId, { text: statusMsg });
                 break;
             }
 
             default: {
                 await sock.sendMessage(chatId, {
-                    text: 'Perintah tidak dikenal. Ketik .antitag untuk melihat daftar perintah'
+                    text: 'Tuan~ Perintah tidak dikenal. Ketik .antitag untuk melihat daftar perintah. Yuuki bingung~'
                 });
                 break;
             }
@@ -107,7 +104,7 @@ Mode   : ${mode}`;
     } catch (error) {
         console.error('Error di antitag command:', error);
         await sock.sendMessage(chatId, {
-            text: 'Gagal memproses perintah antitag'
+            text: 'Maaf, Tuan~ Yuuki gagal memproses perintah antitag. Ada yang tidak beres~'
         });
     }
 }
@@ -165,36 +162,36 @@ async function handleTagDetection(sock, chatId, message, senderId) {
                 try {
                     await sock.groupParticipantsUpdate(chatId, [senderId], 'remove');
                     await resetWarningCount(chatId, senderId);
-                    warningText = `@${senderNum} telah dikeluarkan karena tag member (${WARN_COUNT}/${WARN_COUNT} warning)`;
+                    warningText = `@${senderNum} telah Yuuki keluarkan karena tag member (${WARN_COUNT}/${WARN_COUNT} warning). Semoga lain kali lebih bijak~`;
 
                     await sock.sendMessage(senderId, {
                         text: formatPrivateWarning(`Kamu baru saja dikeluarkan dari grup "${groupName}" karena melanggar aturan (tag member).\n\nLain kali tolong patuhi aturan yang berlaku ya. Kalau merasa ada kesalahan atau ingin bertanya, silakan hubungi admin grup.\n\nSampai jumpa.`)
                     });
                 } catch (kickError) {
                     console.error('Gagal kick user:', kickError);
-                    warningText = `@${senderNum} jangan tag member di grup ini (${warningCount}/${WARN_COUNT} warning)`;
+                    warningText = `@${senderNum} jangan tag member di grup ini (${warningCount}/${WARN_COUNT} warning). Yuuki mengawasi~`;
                 }
             } else {
-                warningText = `@${senderNum} peringatan ${warningCount}/${WARN_COUNT} untuk tag member`;
+                warningText = `@${senderNum} peringatan ${warningCount}/${WARN_COUNT} untuk tag member. Berhati-hatilah~`;
             }
         } else if (action === 'kick') {
             try {
                 await sock.groupParticipantsUpdate(chatId, [senderId], 'remove');
-                warningText = `@${senderNum} telah dikeluarkan karena tag member`;
+                warningText = `@${senderNum} telah Yuuki keluarkan karena tag member. Semoga harimu menyenangkan~`;
 
                 await sock.sendMessage(senderId, {
                     text: formatPrivateWarning(`Kamu baru saja dikeluarkan dari grup "${groupName}" karena melanggar aturan (tag member).\n\nLain kali tolong patuhi aturan yang berlaku ya. Kalau merasa ada kesalahan atau ingin bertanya, silakan hubungi admin grup.\n\nSampai jumpa.`)
                 });
             } catch (kickError) {
                 console.error('Gagal kick user:', kickError);
-                warningText = `@${senderNum} jangan tag member di grup ini`;
+                warningText = `@${senderNum} jangan tag member di grup ini. Yuuki tidak suka tag sembarangan~`;
             }
         } else {
-            warningText = `@${senderNum} jangan tag member di grup ini`;
+            warningText = `@${senderNum} jangan tag member di grup ini. Yuuki mohon jaga ketertiban~`;
         }
 
         await sock.sendMessage(chatId, {
-            text: `${warningText}\n\nPerhatian: Fitur antitag sedang aktif.`,
+            text: `${warningText}\n\nPerhatian: Fitur antitag sedang aktif. Yuuki terus mengawasi~`,
             mentions: [senderId]
         });
     } catch (error) {

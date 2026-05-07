@@ -16,7 +16,7 @@ async function autoStatusCommand(sock, chatId, message, args) {
         if (!action || action === 'status') {
             const status = data.enabled ? 'aktif' : 'nonaktif';
             await sock.sendMessage(chatId, { 
-                text: `Auto-status view saat ini: *${status}*` 
+                text: `Tuan~ Auto-status view saat ini sedang *${status}*. Yuuki akan mengintip status orang-orang untuk Tuan~ Atau tidak? Terserah Tuan~` 
             });
             return;
         }
@@ -24,17 +24,17 @@ async function autoStatusCommand(sock, chatId, message, args) {
         if (action === 'on') {
             data.enabled = true;
             fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
-            await sock.sendMessage(chatId, { text: 'Auto-status view diaktifkan.' });
+            await sock.sendMessage(chatId, { text: 'Baik, Tuan~ Yuuki akan mengintip status satu per satu dengan diam-diam. Seperti pengintai di bayang-bayang, Yuuki akan melihat semuanya~' });
         } else if (action === 'off') {
             data.enabled = false;
             fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
-            await sock.sendMessage(chatId, { text: 'Auto-status view dinonaktifkan.' });
+            await sock.sendMessage(chatId, { text: 'Baik, Tuan~ Yuuki berhenti mengintip. Tapi Tangan Yuuki masih bisa saja... tidak, Yuuki patuh pada Tuan~' });
         } else {
-            await sock.sendMessage(chatId, { text: 'Penggunaan: .autostatus on/off/status' });
+            await sock.sendMessage(chatId, { text: 'Tuan~ Yuuki tidak mengerti perintah Tuan. Coba .autostatus on / off / status ya~ Yuuki menunggu dengan sabar~' });
         }
     } catch (error) {
         console.error('Error in autostatus command:', error);
-        await sock.sendMessage(chatId, { text: 'Terjadi kesalahan saat mengelola auto-status.' });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Ada yang kacau di sistem Yuuki. Yuuki tidak sengaja melakukan kesalahan. Hukumlah Yuuki jika Tuan mau~' });
     }
 }
 

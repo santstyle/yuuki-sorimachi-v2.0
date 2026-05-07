@@ -121,14 +121,14 @@ async function btchCommand(sock, chatId, message, url) {
 
     try {
         statusMessage = await sendMessageWithRetry(sock, chatId, {
-            text: 'Memproses link downloader...\n\nMohon tunggu sebentar...'
+            text: 'Tuan~ Yuuki sedang memproses link downloader... Mohon tunggu sebentar~'
         }, { quoted: message });
 
         const result = await btch(url, 'video');
 
         if (!result.status || !result.result || result.result.length === 0) {
             await sock.sendMessage(chatId, {
-                text: `❌ Gagal memproses link\n\nError: ${result.message || 'Media tidak ditemukan'}`,
+                text: `Maaf, Tuan~ Yuuki gagal memproses link\n\nError: ${result.message || 'Media tidak ditemukan'}`,
                 edit: statusMessage.key
             });
             return;
@@ -142,7 +142,7 @@ async function btchCommand(sock, chatId, message, url) {
         // Jika ini adalah hasil pencarian lagu (biasanya 1 hasil), kirim info dulu
         // Langsung tampilkan status mendownload di pesan status (edit message)
         await sock.sendMessage(chatId, {
-            text: `🎵 *Downloading Audio:* ${result.result[0].title || 'Processing...'}\n\nMohon tunggu sebentar...`,
+                text: `Tuan~ Yuuki sedang mengunduh audio: ${result.result[0].title || 'Processing...'}\nMohon tunggu~`,
             edit: statusMessage.key
         }).catch(() => {});
 
@@ -174,7 +174,7 @@ async function btchCommand(sock, chatId, message, url) {
 
             try {
                 await sock.sendMessage(chatId, {
-                    text: `Downloading ${i + 1}/${result.result.length}...`,
+                    text: `Tuan~ Yuuki sedang mengunduh ${i + 1}/${result.result.length}...`,
                     edit: statusMessage.key
                 });
 
@@ -298,7 +298,7 @@ async function btchCommand(sock, chatId, message, url) {
                 const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
 
                 await sock.sendMessage(chatId, {
-                    text: `Sending ${i + 1}/${result.result.length}...\nSize: ${fileSizeMB} MB`,
+                    text: `Tuan~ Yuuki sedang mengirim ${i + 1}/${result.result.length}...\nUkuran: ${fileSizeMB} MB`,
                     edit: statusMessage.key
                 });
 
@@ -309,14 +309,14 @@ async function btchCommand(sock, chatId, message, url) {
                 if (actualMediaType === 'image') {
                     await sendMessageWithRetry(sock, chatId, {
                         image: finalBuffer,
-                        caption: `✅ *Media Downloaded*`
+                        caption: `Tuan~ Media berhasil Yuuki unduh~`
                     }, { quoted: message });
                 } else if (actualMediaType === 'video') {
                     console.log('[DEBUG] Sending video, size:', fileSizeMB, 'MB');
                     await sendMessageWithRetry(sock, chatId, {
                         video: finalBuffer,
                         mimetype: actualMimeType,
-                        caption: `✅ *Video Downloaded*`
+                        caption: `Tuan~ Video berhasil Yuuki unduh~`
                     }, { quoted: message });
                 } else if (actualMediaType === 'audio') {
                     await sendMessageWithRetry(sock, chatId, {
@@ -344,14 +344,14 @@ async function btchCommand(sock, chatId, message, url) {
                         document: finalBuffer,
                         mimetype: actualMimeType || 'application/octet-stream',
                         fileName: fileName,
-                        caption: `✅ *File Downloaded*`
+                        caption: `Tuan~ File berhasil Yuuki unduh~`
                     }, { quoted: message });
                 }
 
             } catch (downloadError) {
                 console.error(`Download failed for item ${i + 1}:`, downloadError);
                 await sendMessageWithRetry(sock, chatId, {
-                    text: `Gagal download media ${i + 1}: ${downloadError.message}`
+                    text: `Maaf, Tuan~ Yuuki gagal mengunduh media ${i + 1}: ${downloadError.message}`
                 }, { quoted: message });
             }
 
@@ -361,7 +361,7 @@ async function btchCommand(sock, chatId, message, url) {
         }
 
         await sock.sendMessage(chatId, {
-            text: `✅ Proses selesai! Semua media telah dikirim.`,
+            text: `Tuan~ Proses selesai! Semua media telah Yuuki kirim~`,
             edit: statusMessage.key
         });
 
@@ -369,12 +369,12 @@ async function btchCommand(sock, chatId, message, url) {
         console.error('Error in btch command:', error);
         if (statusMessage) {
             await sock.sendMessage(chatId, {
-                text: `Terjadi kesalahan saat memproses downloader\n\nError: ${error.message}`,
+                text: `Maaf, Tuan~ Yuuki mengalami kesalahan saat memproses downloader\n\nError: ${error.message}`,
                 edit: statusMessage.key
             });
         } else {
             await sendMessageWithRetry(sock, chatId, {
-                text: `Terjadi kesalahan saat memproses downloader\n\nError: ${error.message}`
+                text: `Maaf, Tuan~ Yuuki mengalami kesalahan saat memproses downloader\n\nError: ${error.message}`
             }, { quoted: message });
         }
     } finally {

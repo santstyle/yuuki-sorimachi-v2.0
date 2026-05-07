@@ -32,7 +32,7 @@ async function handleAntiBadwordCommand(sock, chatId, userMessage, senderId, isS
     try {
         if (!isSenderAdmin) {
             await sock.sendMessage(chatId, {
-                text: 'Cuma admin grup yang bisa atur antibadword'
+                text: 'Maaf, Tuan~ Hanya admin grup yang bisa mengatur antibadword. Yuuki mohon pengertian Tuan~'
             });
             return;
         }
@@ -64,13 +64,13 @@ Antibadword akan merespon jika ada yang kirim kata terlarang`;
                 const existingConfig = await getAntiBadword(chatId, 'on');
                 if (existingConfig?.enabled) {
                     await sock.sendMessage(chatId, {
-                        text: 'Antibadword sudah aktif di grup ini'
+                        text: 'Tuan~ Antibadword sudah aktif di grup ini, lho. Yuuki sudah menjaganya~'
                     });
                     return;
                 }
                 await setAntiBadword(chatId, 'on', 'delete');
                 await sock.sendMessage(chatId, {
-                    text: `FITUR ANTIBADWORD DIAKTIFKAN\n\nPerhatian untuk seluruh member:\nFitur Antibadword telah diaktifkan di grup ini.\nDilarang mengirim kata-kata kasar atau terlarang.\nPelanggaran akan dihapus dan mendapat peringatan.`
+                    text: `Tuan~ FITUR ANTIBADWORD telah Yuuki aktifkan!\n\nPerhatian untuk seluruh member:\nDilarang mengirim kata-kata kasar atau terlarang.\nPelanggaran akan dihapus dan mendapat peringatan.\n\nJangan coba-coba ya, Yuuki mengawasi~`
                 });
                 break;
             }
@@ -78,7 +78,7 @@ Antibadword akan merespon jika ada yang kirim kata terlarang`;
             case 'off': {
                 await removeAntiBadword(chatId, 'on');
                 await sock.sendMessage(chatId, {
-                    text: 'Antibadword berhasil dinonaktifkan'
+                    text: 'Tuan~ Antibadword telah Yuuki nonaktifkan. Silakan bebas bicara~ Tapi tetap sopan, ya~'
                 });
                 break;
             }
@@ -86,20 +86,20 @@ Antibadword akan merespon jika ada yang kirim kata terlarang`;
             case 'set': {
                 if (args.length < 2) {
                     await sock.sendMessage(chatId, {
-                        text: 'Mode belum dipilih. Pilih: delete / kick / warn'
+                        text: 'Tuan~ Mode belum dipilih. Pilih salah satu: delete / kick / warn. Yuuki menunggu perintah Tuan~'
                     });
                     return;
                 }
                 const mode = args[1];
                 if (!['delete', 'kick', 'warn'].includes(mode)) {
                     await sock.sendMessage(chatId, {
-                        text: 'Mode tidak valid. Pilih: delete / kick / warn'
+                        text: 'Tuan~ Mode tidak valid. Pilih: delete / kick / warn. Yuuki harap Tuan lebih teliti~'
                     });
                     return;
                 }
                 await setAntiBadword(chatId, 'on', mode);
                 await sock.sendMessage(chatId, {
-                    text: `Mode antibadword berhasil diatur ke: ${mode}`
+                    text: `Tuan~ Mode antibadword telah Yuuki atur ke: ${mode}. Sesuai perintah Tuan~`
                 });
                 break;
             }
@@ -110,11 +110,7 @@ Antibadword akan merespon jika ada yang kirim kata terlarang`;
                 const mode = configData?.action || 'Belum diatur';
                 const badwords = await getBadwords(chatId);
                 const totalBadwords = badwords.length;
-                const statusMsg = `ANTIBADWORD STATUS
-
-Status     : ${status}
-Mode       : ${mode}
-Kata terlarang: ${totalBadwords} kata`;
+                const statusMsg = `Tuan~ Berikut status antibadword:\n\nStatus     : ${status}\nMode       : ${mode}\nKata terlarang: ${totalBadwords} kata\n\nYuuki siap melayani~`;
                 await sock.sendMessage(chatId, { text: statusMsg });
                 break;
             }
@@ -122,7 +118,7 @@ Kata terlarang: ${totalBadwords} kata`;
             case 'add': {
                 if (args.length < 2) {
                     await sock.sendMessage(chatId, {
-                        text: 'Kata belum dimasukkan. Contoh: .antibadword add anjing bangsat'
+                        text: 'Tuan~ Kata belum dimasukkan. Contoh: .antibadword add anjing bangsat. Yuuki tunggu input dari Tuan~'
                     });
                     return;
                 }
@@ -135,7 +131,7 @@ Kata terlarang: ${totalBadwords} kata`;
                     else alreadyExists++;
                 }
                 await sock.sendMessage(chatId, {
-                    text: `Berhasil menambah ${added} kata terlarang${alreadyExists > 0 ? `, ${alreadyExists} kata sudah ada` : ''}`
+                    text: `Tuan~ Berhasil menambah ${added} kata terlarang${alreadyExists > 0 ? `, ${alreadyExists} kata sudah ada sebelumnya` : ''}. Yuuki catat semuanya~`
                 });
                 break;
             }
@@ -143,7 +139,7 @@ Kata terlarang: ${totalBadwords} kata`;
             case 'del': {
                 if (args.length < 2) {
                     await sock.sendMessage(chatId, {
-                        text: 'Kata belum dimasukkan. Contoh: .antibadword del anjing'
+                        text: 'Tuan~ Kata belum dimasukkan. Contoh: .antibadword del anjing. Yuuki harap Tuan lebih spesifik~'
                     });
                     return;
                 }
@@ -154,7 +150,7 @@ Kata terlarang: ${totalBadwords} kata`;
                     if (result) removed++;
                 }
                 await sock.sendMessage(chatId, {
-                    text: `Berhasil menghapus ${removed} kata terlarang`
+                    text: `Tuan~ Berhasil menghapus ${removed} kata terlarang. Kata-kata itu telah Yuuki lupakan~`
                 });
                 break;
             }
@@ -162,7 +158,7 @@ Kata terlarang: ${totalBadwords} kata`;
             case 'reset': {
                 await clearBadwords(chatId);
                 await sock.sendMessage(chatId, {
-                    text: 'Berhasil menghapus semua kata terlarang custom. Sekarang menggunakan kata default.'
+                    text: 'Tuan~ Semua kata terlarang custom telah Yuuki hapus. Sekarang hanya menggunakan kata default. Bersih kembali~'
                 });
                 break;
             }
@@ -171,19 +167,19 @@ Kata terlarang: ${totalBadwords} kata`;
                 const badwords = await getBadwords(chatId);
                 if (badwords.length === 0) {
                     await sock.sendMessage(chatId, {
-                        text: 'Belum ada kata terlarang custom.'
+                        text: 'Tuan~ Belum ada kata terlarang custom. Bersih sekali grup ini~'
                     });
                     return;
                 }
                 await sock.sendMessage(chatId, {
-                    text: `DAFTAR KATA TERLARANG\n\nTotal: ${badwords.length} kata\n\n${badwords.map((w, i) => `${i + 1}. ${w}`).join('\n')}`
+                    text: `Tuan~ Berikut daftar kata terlarang:\n\nTotal: ${badwords.length} kata\n\n${badwords.map((w, i) => `${i + 1}. ${w}`).join('\n')}\n\nYuuki mengawasi semuanya~`
                 });
                 break;
             }
 
             default: {
                 await sock.sendMessage(chatId, {
-                    text: 'Perintah tidak dikenal. Ketik .antibadword untuk melihat daftar perintah'
+                    text: 'Tuan~ Perintah tidak dikenal. Ketik .antibadword untuk melihat daftar perintah. Yuuki bingung~'
                 });
                 break;
             }
@@ -191,7 +187,7 @@ Kata terlarang: ${totalBadwords} kata`;
     } catch (error) {
         console.error('Error di antibadword command:', error);
         await sock.sendMessage(chatId, {
-            text: 'Gagal memproses perintah antibadword'
+            text: 'Maaf, Tuan~ Yuuki gagal memproses perintah antibadword. Mungkin ada yang mengganggu Yuuki~'
         });
     }
 }
@@ -254,36 +250,36 @@ async function handleBadwordDetection(sock, chatId, message, userMessage, sender
                 try {
                     await sock.groupParticipantsUpdate(chatId, [senderId], 'remove');
                     await resetWarningCount(chatId, senderId);
-                    warningText = `@${senderNum} telah dikeluarkan karena mengirim kata terlarang (${WARN_COUNT}/${WARN_COUNT} warning)`;
+                    warningText = `@${senderNum} telah Yuuki keluarkan karena melanggar aturan kata terlarang (${WARN_COUNT}/${WARN_COUNT} warning). Selamat tinggal~`;
 
                     await sock.sendMessage(senderId, {
                         text: formatPrivateWarning(`Kamu baru saja dikeluarkan dari grup "${groupName}" karena melanggar aturan (mengirim kata terlarang).\n\nLain kali tolong patuhi aturan yang berlaku ya. Kalau merasa ada kesalahan atau ingin bertanya, silakan hubungi admin grup.\n\nSampai jumpa.`)
                     });
                 } catch (kickError) {
                     console.error('Gagal kick user:', kickError);
-                    warningText = `@${senderNum} jangan kirim kata terlarang di grup ini (${warningCount}/${WARN_COUNT} warning)`;
+                    warningText = `@${senderNum} jangan kirim kata terlarang di grup ini (${warningCount}/${WARN_COUNT} warning). Yuuki mengawasi~`;
                 }
             } else {
-                warningText = `@${senderNum} peringatan ${warningCount}/${WARN_COUNT} untuk mengirim kata terlarang`;
+                warningText = `@${senderNum} peringatan ${warningCount}/${WARN_COUNT} untuk mengirim kata terlarang. Berhati-hatilah~`;
             }
         } else if (action === 'kick') {
             try {
                 await sock.groupParticipantsUpdate(chatId, [senderId], 'remove');
-                warningText = `@${senderNum} telah dikeluarkan karena mengirim kata terlarang`;
+                warningText = `@${senderNum} telah Yuuki keluarkan karena mengirim kata terlarang. Semoga hari-harimu menyenangkan~`;
 
                 await sock.sendMessage(senderId, {
                     text: formatPrivateWarning(`Kamu baru saja dikeluarkan dari grup "${groupName}" karena melanggar aturan (mengirim kata terlarang).\n\nLain kali tolong patuhi aturan yang berlaku ya. Kalau merasa ada kesalahan atau ingin bertanya, silakan hubungi admin grup.\n\nSampai jumpa.`)
                 });
             } catch (kickError) {
                 console.error('Gagal kick user:', kickError);
-                warningText = `@${senderNum} jangan kirim kata terlarang di grup ini`;
+                warningText = `@${senderNum} jangan kirim kata terlarang di grup ini. Yuuki tidak suka kata-kata kotor~`;
             }
         } else {
-            warningText = `@${senderNum} jangan kirim kata terlarang di grup ini`;
+            warningText = `@${senderNum} jangan kirim kata terlarang di grup ini. Yuuki mohon jaga kesopanan~`;
         }
 
         await sock.sendMessage(chatId, {
-            text: `${warningText}\n\nPerhatian: Fitur antibadword sedang aktif.`,
+            text: `${warningText}\n\nPerhatian: Fitur antibadword sedang aktif. Yuuki mengawasi~`,
             mentions: [senderId]
         });
     } catch (error) {

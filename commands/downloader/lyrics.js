@@ -275,9 +275,9 @@ async function lyricsCommand(sock, chatId, songTitle, message) {
     try {
         if (!songTitlse || songTitle.trim() === '') {
             await sock.sendMessage(chatId, {
-                text: `Fitur .lyrics digunakan untuk mencari lirik lagu.
+                text: `Tuan~ Fitur .lyrics digunakan untuk mencari lirik lagu.
 
-Cara penggunaan: ketik \`.lyrics <judul lagu>\``
+Caranya: ketik \`.lyrics <judul lagu>\``
             }, { quoted: message });
             return;
         }
@@ -295,11 +295,11 @@ Cara penggunaan: ketik \`.lyrics <judul lagu>\``
 
             if (!lyricsData.success) {
                 await sock.sendMessage(chatId, {
-                    text: `Lirik Tidak Ditemukan
+                    text: `Tuan~ Lirik tidak Yuuki temukan
 
 "${songTitle}" tidak ditemukan.
 
-Anda dapat mencari manual di:
+Tuan bisa mencari manual di:
 ${lyricsData.searchUrl}
 
 Tips untuk pencarian berikutnya:
@@ -346,9 +346,7 @@ Atau coba lagu populer:
             console.error('Lyrics processing error:', error);
 
             await sock.sendMessage(chatId, {
-                text: `Terjadi Kesalahan
-
-Gagal memproses permintaan lirik.
+                text: `Maaf, Tuan~ Yuuki gagal memproses lirik.
 
 Error: ${error.message || 'Tidak diketahui'}
 
@@ -361,10 +359,9 @@ Contoh: .lyrics faded - alan walker`
         console.error('Error in lyrics command:', error);
 
         await sock.sendMessage(chatId, {
-            text: `Error Sistem
+            text: `Tuan~ Maaf, Yuuki mengalami error sistem.
 
-Maaf, terjadi error.
-Silakan coba lagi nanti.
+Coba lagi nanti, Tuan.
 
 Error: ${error.message || "Tidak diketahui"}`
         }, { quoted: message });
@@ -375,7 +372,7 @@ async function quickLyricsCommand(sock, chatId, songTitle, message) {
     try {
         if (!songTitle) {
             return await sock.sendMessage(chatId, {
-                text: `Cari Lirik Cepat
+                text: `Tuan~ Cari Lirik Cepat
 
 Gunakan:
 • .lyrics <judul> - <artis>
@@ -387,7 +384,7 @@ Contoh:
         }
 
         await sock.sendMessage(chatId, {
-            text: `Mencari: ${songTitle}...`
+            text: `Tuan~ Yuuki sedang mencari: ${songTitle}...`
         }, { quoted: message });
 
         const parsed = parseSongQuery(songTitle);
@@ -398,9 +395,7 @@ Contoh:
 
         if (!lyricsData.success) {
             await sock.sendMessage(chatId, {
-                text: `Tidak ditemukan
-
-"${songTitle}" tidak ditemukan.
+                text: `Tuan~ "${songTitle}" tidak Yuuki temukan.
 
 Gunakan format: Judul - Artis
 Contoh: faded - alan walker`
@@ -419,7 +414,7 @@ Contoh: faded - alan walker`
     } catch (error) {
         console.error('Quick lyrics error:', error);
         await sock.sendMessage(chatId, {
-            text: 'Gagal mencari lirik. Gunakan format: Judul - Artis'
+            text: 'Maaf, Tuan~ Yuuki gagal mencari lirik. Gunakan format: Judul - Artis'
         }, { quoted: message });
     }
 }

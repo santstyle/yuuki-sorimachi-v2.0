@@ -21,7 +21,7 @@ async function mylevelCommand(sock, chatId, message, args) {
         });
 
         if (!user) {
-            await sock.sendMessage(chatId, { text: 'User belum terdaftar di database.' }, { quoted: message });
+            await sock.sendMessage(chatId, { text: 'Tuan~ User belum terdaftar di database Yuuki~' }, { quoted: message });
             return;
         }
 
@@ -47,12 +47,12 @@ Level: ${progress.level}
 XP: ${progress.xp} / ${requiredXP}
 Progress: [${progressBar}] ${percentage}%
 
-Terus aktif menggunakan bot untuk naik level!`;
+Terus aktif menggunakan Yuuki untuk naik level, Tuan~`;
 
         await sock.sendMessage(chatId, { text }, { quoted: message });
     } catch (error) {
         console.error('Error in mylevel command:', error);
-        await sock.sendMessage(chatId, { text: 'Gagal mengambil data level.' }, { quoted: message });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal mengambil data level~' }, { quoted: message });
     }
 }
 

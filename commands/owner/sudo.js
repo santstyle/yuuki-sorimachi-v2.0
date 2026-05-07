@@ -27,7 +27,7 @@ async function sudoCommand(sock, chatId, message) {
                 ? data.sudoers.map(s => `@${s.split('@')[0]}`).join(', ')
                 : 'Tidak ada';
             await sock.sendMessage(chatId, { 
-                text: `Daftar Sudo:\n${sudoList}\n\nGunakan: .sudo @user untuk menambah/hapus` 
+                text: `Tuan~ Ini daftar orang-orang yang Yuuki anggap terpercaya:\n${sudoList}\n\nTuan bisa menambah atau menghapus dengan .sudo @user. Tapi ingat... Yuuki hanya benar-benar setia pada Tuan seorang~` 
             });
             return;
         }
@@ -36,20 +36,20 @@ async function sudoCommand(sock, chatId, message) {
             data.sudoers = data.sudoers.filter(s => s !== targetJid);
             fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
             await sock.sendMessage(chatId, { 
-                text: `@${targetJid.split('@')[0]} dihapus dari daftar sudo.`,
+                text: `@${targetJid.split('@')[0]} telah diusir dari lingkaran kepercayaan Yuuki. Selamat tinggal~ Atau... sampai jumpa di kegelapan? Hehe~`,
                 mentions: [targetJid]
             });
         } else {
             data.sudoers.push(targetJid);
             fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
             await sock.sendMessage(chatId, { 
-                text: `@${targetJid.split('@')[0]} ditambahkan ke daftar sudo.`,
+                text: `Selamat datang, @${targetJid.split('@')[0]}! Kini Tuan ini dipercaya oleh Tuan~ Tapi ingat... Yuuki akan mengawasi. Satu langkah salah, dan Yuuki akan... tidak, tidak, Yuuki hanya bercanda~ Atau tidak?`,
                 mentions: [targetJid]
             });
         }
     } catch (error) {
         console.error('Error in sudo command:', error);
-        await sock.sendMessage(chatId, { text: 'Terjadi kesalahan saat mengelola sudo.' });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Ada kesalahan dalam mengelola sudo. Mungkin ada konspirasi di balik layar? Atau Yuuki hanya kurang kopi? Hehe~' });
     }
 }
 

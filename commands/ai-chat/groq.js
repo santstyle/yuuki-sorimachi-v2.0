@@ -5,12 +5,12 @@ async function groqCommand(sock, chatId, message, input) {
     try {
         if (!input) {
             await sock.sendMessage(chatId, {
-                text: `Gunakan: .groq <pertanyaan>\n\nContoh: .groq apa itu JavaScript?`
+                text: `Tuan~ Gunakan: .groq <pertanyaan>\n\nContoh: .groq apa itu JavaScript?`
             }, { quoted: message });
             return;
         }
 
-        await sock.sendMessage(chatId, { text: 'Sedang berpikir...' }, { quoted: message });
+        await sock.sendMessage(chatId, { text: 'Tuan~ Yuuki sedang berpikir... Mohon tunggu~' }, { quoted: message });
 
         const GROQ_API_KEY = process.env.GROQ_API_KEY;
         if (!GROQ_API_KEY) {
@@ -52,7 +52,7 @@ async function groqCommand(sock, chatId, message, input) {
 
     } catch (error) {
         console.error('GROQ error:', error.response?.data || error.message);
-        await sock.sendMessage(chatId, { text: 'Gagal memproses permintaan. Coba lagi nanti.' }, { quoted: message });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal memprosesnya. Mungkin lain kali~' }, { quoted: message });
     }
 }
 

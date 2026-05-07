@@ -16,12 +16,12 @@ async function staffCommand(sock, chatId, msg) {
         const owner = groupMetadata.owner || groupAdmins.find(p => p.admin === 'superadmin')?.id || chatId.split('-')[0] + '@s.whatsapp.net';
 
         const text = `
-≡ *GROUP*  _${groupMetadata.subject}_
+Tuan~ Berikut daftar admin grup *${groupMetadata.subject}* yang Yuuki kenal:
 
 *ADMINS*
 ${listAdmin}
 
-`.trim();
+Merekalah yang bisa diandalkan~`.trim();
 
         await sock.sendMessage(chatId, {
             image: { url: pp },
@@ -31,11 +31,13 @@ ${listAdmin}
 
     } catch (error) {
         console.error('Error in staff command:', error);
-        await sock.sendMessage(chatId, { text: 'Failed to get admin list!' });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal mengambil daftar admin. Ada yang mengganggu Yuuki~' });
     }
 }
 
-module.exports = staffCommand; async function staffCommand(sock, chatId, msg) {
+module.exports = staffCommand;
+
+async function staffCommand(sock, chatId, msg) {
     try {
         const groupMetadata = await sock.groupMetadata(chatId);
 
@@ -51,7 +53,7 @@ module.exports = staffCommand; async function staffCommand(sock, chatId, msg) {
 
         if (groupAdmins.length === 0) {
             await sock.sendMessage(chatId, {
-                text: 'Wah, grup ini belum ada admin nih'
+                text: 'Tuan~ Grup ini belum memiliki admin. Sepi sekali~ Yuuki sedih~'
             });
             return;
         }
@@ -60,7 +62,7 @@ module.exports = staffCommand; async function staffCommand(sock, chatId, msg) {
 
         const owner = groupMetadata.owner || groupAdmins.find(p => p.admin === 'superadmin')?.id || chatId.split('-')[0] + '@s.whatsapp.net';
 
-        const text = `Daftar admin grup ${groupMetadata.subject} \n\nYang bisa diandalkan:\n${listAdmin}\n\nKalau butuh bantuan, bisa tanya mereka ya!`;
+        const text = `Tuan~ Berikut admin grup ${groupMetadata.subject} yang Yuuki kenal:\n\n${listAdmin}\n\nJika butuh bantuan, mereka adalah orang yang tepat~`;
 
         await sock.sendMessage(chatId, {
             image: { url: pp },
@@ -69,9 +71,9 @@ module.exports = staffCommand; async function staffCommand(sock, chatId, msg) {
         });
 
     } catch (error) {
-        console.error('Wah, error di staff command nih:', error);
+        console.error('Error di staff command:', error);
         await sock.sendMessage(chatId, {
-            text: 'Aduh, gagal ambil daftar admin nih. Coba lagi ya'
+            text: 'Maaf, Tuan~ Yuuki gagal mengambil daftar admin. Mungkin lain kali~'
         });
     }
 }

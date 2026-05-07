@@ -11,10 +11,10 @@ async function toAudio(sock, message, chatId, sender) {
         }
 
         if (!quotedMessage) {
-            return sock.sendMessage(chatId, { text: 'Reply video yang mau diubah ke audio dengan .toaudio atau .tomp3' });
+            return sock.sendMessage(chatId, { text: 'Tuan~ Reply video yang mau Yuuki ubah jadi audio dengan .toaudio atau .tomp3~' });
         }
 
-        await sock.sendMessage(chatId, { text: 'Sedang mengonversi video ke audio...' }, { quoted: message });
+        await sock.sendMessage(chatId, { text: 'Mohon tunggu, Tuan~ Yuuki sedang mengonversi video ke audio~' }, { quoted: message });
 
         let msgToDownload;
 
@@ -70,7 +70,7 @@ async function toAudio(sock, message, chatId, sender) {
 
     } catch (error) {
         console.error('Error toaudio:', error);
-        await sock.sendMessage(chatId, { text: 'Gagal mengonversi video ke audio.' });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal mengonversi video ke audio. Mungkin lain kali~' });
     }
 }
 

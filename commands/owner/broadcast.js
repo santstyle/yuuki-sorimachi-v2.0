@@ -7,7 +7,7 @@ async function broadcastCommand(sock, chatId, message, args) {
     const ownerJid = settings.ownerNumber + '@s.whatsapp.net';
 
     if (sender !== ownerJid) {
-        return sock.sendMessage(chatId, { text: 'Kamu tidak punya akses untuk broadcast!' }, { quoted: message });
+        return sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya pemilik Yuuki yang bisa menggunakan kekuatan broadcast ini. Yuuki tidak ingin dimarahi Tuan, jadi Yuuki patuh~' }, { quoted: message });
     }
 
     let bcText = args.join(' ') || '';
@@ -79,7 +79,7 @@ async function broadcastCommand(sock, chatId, message, args) {
     }
 
     await sock.sendMessage(chatId, {
-        text: `✅ Broadcast selesai!\nSukses: ${success}, Gagal: ${failed}`
+        text: `Tuan~ Broadcast telah Yuuki selesaikan!\nSukses: ${success}, Gagal: ${failed}\n\nYuuki berharap semua pesan Tuan sampai dengan indah~ Tapi Yuuki penasaran, apa isi pesannya? Ah, Yuuki terlalu kepo~`
     }, { quoted: message });
 }
 

@@ -4,12 +4,12 @@ async function deepseekCommand(sock, chatId, message, input) {
     try {
         if (!input) {
             await sock.sendMessage(chatId, {
-                text: `Gunakan: .deepseek <pertanyaan>\n\nContoh: .deepseek apa itu Artificial Intelligence?`
+                text: `Tuan~ Gunakan: .deepseek <pertanyaan>\n\nContoh: .deepseek apa itu Artificial Intelligence?`
             }, { quoted: message });
             return;
         }
 
-        await sock.sendMessage(chatId, { text: 'Sedang berpikir...' }, { quoted: message });
+        await sock.sendMessage(chatId, { text: 'Tuan~ Yuuki sedang berpikir... Mohon tunggu~' }, { quoted: message });
 
         const currentYear = new Date().getFullYear();
         const currentDate = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -22,7 +22,7 @@ async function deepseekCommand(sock, chatId, message, input) {
 
     } catch (error) {
         console.error('Deepseek error:', error.response?.data || error.message);
-        await sock.sendMessage(chatId, { text: 'Gagal memproses permintaan. Coba lagi nanti.' }, { quoted: message });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal memprosesnya. Mungkin lain kali~' }, { quoted: message });
     }
 }
 

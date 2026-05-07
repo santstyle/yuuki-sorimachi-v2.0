@@ -3,7 +3,7 @@ const { handleWelcome } = require('../../lib/welcome');
 async function welcomeCommand(sock, chatId, message, match) {
     if (!chatId.endsWith('@g.us')) {
         await sock.sendMessage(chatId, {
-            text: 'Hmm, command ini cuma bisa dipakai di grup, Kirim ke grup ya biar bisa dipakai'
+            text: 'Maaf, Tuan~ Command ini hanya bisa dipakai di grup. Kirim ke grup, ya, biar Yuuki bisa melayaninya~'
         });
         return;
     }

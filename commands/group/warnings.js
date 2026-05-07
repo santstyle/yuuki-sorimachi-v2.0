@@ -4,7 +4,7 @@ async function warningsCommand(sock, chatId, mentionedJidList) {
     try {
         if (mentionedJidList.length === 0) {
             await sock.sendMessage(chatId, {
-                text: 'Tag user yang ingin dicek warningnya.\nContoh: .warnings @username'
+                text: 'Tuan~ Tag user yang ingin dicek warningnya.\nContoh: .warnings @username\n\nYuuki menunggu~'
             });
             return;
         }
@@ -15,11 +15,11 @@ async function warningsCommand(sock, chatId, mentionedJidList) {
 
         if (warnCount === 0) {
             await sock.sendMessage(chatId, {
-                text: `User @${userToCheck.split('@')[0]} belum pernah mendapat warning.`,
+                text: `Tuan~ User @${userToCheck.split('@')[0]} belum pernah mendapat warning. Bersih, ya~`,
                 mentions: [userToCheck]
             });
         } else {
-            let detailList = `User @${userToCheck.split('@')[0]} memiliki ${warnCount} warning:\n\n`;
+            let detailList = `Tuan~ User @${userToCheck.split('@')[0]} memiliki ${warnCount} warning:\n\n`;
             
             warnings.slice(0, 10).forEach((w, i) => {
                 detailList += `${i + 1}. Alasan: ${w.reason}\n`;
@@ -35,7 +35,7 @@ async function warningsCommand(sock, chatId, mentionedJidList) {
     } catch (error) {
         console.error('Error in warnings command:', error);
         await sock.sendMessage(chatId, {
-            text: 'Gagal mengambil data warning.'
+            text: 'Maaf, Tuan~ Yuuki gagal mengambil data warning. Mungkin ada gangguan~'
         });
     }
 }
