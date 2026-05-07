@@ -933,7 +933,7 @@ async function handleGroupParticipantUpdate(sock, update) {
                 const isNewAdmin = groupMetadata.participants.some(p => p.id === participant && (p.admin === 'admin' || p.admin === 'superadmin'));
                 const title = isNewAdmin ? 'Tuan Besar' : 'Tuan';
                 const savedMessage = await getWelcomeMessage(id);
-                const welcomeMessage = savedMessage || `${title} {user} telah tiba di {group}. Yuuki sambut dengan penuh penghormatan~`;
+                const welcomeMessage = savedMessage || `Selamat Datang Tuan {user}, Pelayanmu yang setia dan rendah hati,Yuuki siap melayani mu`;
 
                 const formattedMessage = welcomeMessage
                     .replace('{user}', `@${user}`)
@@ -959,7 +959,7 @@ async function handleGroupParticipantUpdate(sock, update) {
                 const isLeavingAdmin = groupMetadata.participants.some(p => p.id === participant && (p.admin === 'admin' || p.admin === 'superadmin'));
                 const title = isLeavingAdmin ? 'Tuan Besar' : 'Tuan';
                 const savedMessage = await getGoodbyeMessage(id);
-                const goodbyeMessage = savedMessage || `${title} {user} telah pergi dari {group}. Yuuki doakan yang terbaik~`;
+                const goodbyeMessage = savedMessage || `Pelayanmu yang setia dan rendah hati ,Yuuki menantikan kedatanganmu selanjutnya tuan {user}`;
 
                 const formattedMessage = goodbyeMessage
                     .replace('{user}', `@${user}`)
