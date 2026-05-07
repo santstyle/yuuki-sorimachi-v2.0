@@ -12,8 +12,8 @@ async function menuCommand(sock, chatId, message, input) {
 
 ┌──「 MAIN 」
 │ .menu     .ping      .alive    .owner
-│ .help     .del       .clear
-│ .tag      .mylevel
+│ .help     .del
+│ .mylevel
 └───────────────────────────
 
 ┌──「 GROUP 」
@@ -25,7 +25,7 @@ async function menuCommand(sock, chatId, message, input) {
 └───────────────────────────
 
 ┌──「 CHATBOT 」
-│ .chatbot
+│ .yuuki
 └───────────────────────────
 
 ┌──「 AI CHAT 」

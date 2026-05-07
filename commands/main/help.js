@@ -17,8 +17,6 @@ async function helpCommand(sock, chatId, message, input) {
 │ > .help            → Tampilkan bantuan ini
 │ > .del             → Hapus pesan bot
 │   alias: .delete
-│ > .clear           → Bersihkan log chat
-│ > .tag             → Tambah tag khusus pada pesan
 │ > .mylevel         → Cek level & XP kamu
 └───────────────────────────
 
@@ -26,15 +24,15 @@ async function helpCommand(sock, chatId, message, input) {
 │ > .antilink        → Blokir link grup lain
 │ > .antitag         → Blokir tag massal/hidetag
 │ > .antibadword     → Sensor kata kasar otomatis
-│ > .welcome         → Toggle pesan welcome member baru
-│ > .goodbye         → Toggle pesan perpisahan member
+│ > .welcome         → Toggle pesan sambutan ala Yuuki
+│ > .goodbye         → Toggle pesan perpisahan ala Yuuki
 │ > .ban @user       → Blokir user dari bot
 │ > .mute / .unmute  → Matikan/aktifkan chat di grup
 │ > .kick @user      → Keluarkan member dari grup
 │ > .warn @user      → Beri peringatan ke member
 │ > .warnings @user  → Cek total warn member
-│ > .tagall          → Tag semua member sekaligus
-│ > .hidetag teks    → Tag semua tanpa notifikasi
+│ > .tagall          → Yuuki tag semua member sekaligus
+│ > .hidetag teks    → Yuuki tag semua tanpa notifikasi
 │ > .resetlink       → Reset link undangan grup
 │ > .groupinfo       → Info lengkap grup ini
 │ > .groupset        → Pengaturan grup
@@ -44,7 +42,8 @@ async function helpCommand(sock, chatId, message, input) {
 └───────────────────────────
 
 ┌──「 CHATBOT 」
-│ > .chatbot         → Ngobrol langsung sama Yuuki (mention/sebut nama)
+│ > .yuuki           → Ngobrol langsung sama Yuuki (mention/sebut nama)
+│                      Yuuki pelayan setia Tuan~ Tapi siap-siap dikepin~
 └───────────────────────────
 
 ┌──「 AI CHAT 」

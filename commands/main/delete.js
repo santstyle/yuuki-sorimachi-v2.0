@@ -5,35 +5,41 @@ async function deleteCommand(sock, chatId, message, senderId) {
 
     if (!isBotAdmin) {
         await sock.sendMessage(chatId, {
-            text: 'Aku harus jadi admin dulu biar bisa hapus pesan'
+            text: 'Yuuki saat ini belum jadi admin grup jadi tidak bisa memproses command'
         });
         return;
     }
 
     if (!isSenderAdmin) {
         await sock.sendMessage(chatId, {
-            text: 'Wah, cuma admin yang bisa hapus pesan nih'
+            text: 'Cuma admin yang bisa menggunakan command ini'
         });
         return;
     }
 
-    const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.stanzaId;
-    const quotedParticipant = message.message?.extendedTextMessage?.contextInfo?.participant;
+    const extMsg = message.message?.extendedTextMessage;
+    const quotedId = extMsg?.contextInfo?.stanzaId;
+    const quotedParticipant = extMsg?.contextInfo?.participant;
 
-    if (quotedMessage) {
+    if (quotedId) {
         await sock.sendMessage(chatId, {
             delete: {
                 remoteJid: chatId,
                 fromMe: false,
-                id: quotedMessage,
+                id: quotedId,
                 participant: quotedParticipant
             }
         });
-    } else {
-        await sock.sendMessage(chatId, {
-            text: 'Reply pesan yang mau dihapus dong'
-        });
     }
+
+    await sock.sendMessage(chatId, {
+        delete: {
+            remoteJid: chatId,
+            fromMe: message.key.fromMe,
+            id: message.key.id,
+            participant: message.key.participant || undefined
+        }
+    });
 }
 
 module.exports = deleteCommand;

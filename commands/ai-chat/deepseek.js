@@ -13,7 +13,7 @@ async function deepseekCommand(sock, chatId, message, input) {
 
         const currentYear = new Date().getFullYear();
         const currentDate = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
-        const apiUrl = `https://api.cuki.biz.id/api/ai/deepseek?question=${encodeURIComponent(input)}&apikey=cuki-x&context=Sekarang tanggal ${currentDate} (${currentYear}). Jawab dengan bahasa Indonesia yang santai dan informatif. ${input}`;
+        const apiUrl = `https://api.cuki.biz.id/api/ai/deepseek?question=${encodeURIComponent(input)}&apikey=${process.env.CUKI_API_KEY || 'cuki-x'}&context=Sekarang tanggal ${currentDate} (${currentYear}). Jawab dengan bahasa Indonesia yang santai dan informatif. ${input}`;
 
         const response = await axios.get(apiUrl, { timeout: 60000 });
         let result = response.data.data.response;

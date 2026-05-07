@@ -16,7 +16,7 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 const ffmpeg = require('fluent-ffmpeg');
-const { addWelcome, delWelcome, isWelcomeOn, addGoodbye, delGoodBye, isGoodByeOn, isSudo } = require('./lib/index');
+const { addWelcome, delWelcome, isWelcomeOn, getWelcomeMessage, addGoodbye, delGoodBye, isGoodByeOn, getGoodbyeMessage, isSudo } = require('./lib/index');
 const chalk = require('chalk');
 const moment = require('moment-timezone');
 
@@ -52,9 +52,7 @@ const { sudoCommand } = require('./commands/owner/sudo');
 const { updateCommand } = require('./commands/owner/update');
 const { handleAntilinkCommand, handleLinkDetection } = require('./commands/group/antilink');
 const { handleAntitagCommand, handleTagDetection } = require('./commands/group/antitag');
-const { Antilink } = require('./lib/antilink');
 const memeCommand = require('./commands/information/meme');
-const tagCommand = require('./commands/main/tag');
 const jokeCommand = require('./commands/information/joke');
 const quoteCommand = require('./commands/information/quote');
 const factCommand = require('./commands/information/fact');
@@ -68,14 +66,13 @@ const toGifCommand = require('./commands/converter/togif');
 const toAudioCommand = require('./commands/converter/toaudio');
 const { debugLevelUp } = require('./commands/debug/debuglevelup');
 const { lyrics: lyricsCommand } = require('./commands/downloader/lyrics');
-const { clearCommand } = require('./commands/main/clear');
 const pingCommand = require('./commands/main/ping');
 const aliveCommand = require('./commands/main/alive');
 const welcomeCommand = require('./commands/group/welcome');
 const goodbyeCommand = require('./commands/group/goodbye');
-const { handleAntiBadwordCommand, handleBadwordDetection } = require('./lib/antibadword');
 const antibadwordCommand = require('./commands/group/antibadword');
-const { handleChatbotCommand, handleChatbotResponse } = require('./commands/chatbot/chatbot');
+const { handleBadwordDetection } = require('./commands/group/antibadword');
+const { handleYuukiCommand, handleYuukiResponse } = require('./commands/chatbot/yuuki');
 const { groqCommand } = require('./commands/ai-chat/groq');
 const { deepseekCommand } = require('./commands/ai-chat/deepseek');
 const { gptCommand } = require('./commands/ai-chat/gpt');
@@ -294,14 +291,10 @@ async function handleMessages(sock, messageUpdate, printLog) {
 
         if (!message.key.fromMe) incrementMessageCount(chatId, senderId);
 
-        if (isGroup && userMessage) {
-            await handleBadwordDetection(sock, chatId, message, userMessage, senderId);
-        }
-
         if (!userMessage.startsWith('.')) {
             if (isGroup) {
-                await handleChatbotResponse(sock, chatId, message, rawText, senderId);
-                await Antilink(message, sock);
+                await handleYuukiResponse(sock, chatId, message, rawText, senderId);
+                await handleLinkDetection(sock, chatId, message, userMessage, senderId);
                 await handleBadwordDetection(sock, chatId, message, userMessage, senderId);
                 await handleTagDetection(sock, chatId, message, senderId);
             }
@@ -495,11 +488,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
                     await sock.sendMessage(chatId, { text: 'Fitur ini hanya bisa digunakan oleh admin grup.' }, { quoted: message });
                 }
                 break;
-            case userMessage.startsWith('.tag'):
-                const messageText = rawText.slice(4).trim();
-                const replyMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage || null;
-                await tagCommand(sock, chatId, senderId, messageText, replyMessage);
-                break;
             case userMessage.startsWith('.antilink'):
                 if (!isGroup) {
                     await sock.sendMessage(chatId, {
@@ -559,9 +547,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage.startsWith('.lyrics'):
                 const songTitle = userMessage.split(' ').slice(1).join(' ');
                 await lyricsCommand(sock, chatId, songTitle, message);
-                break;
-            case userMessage === '.clear':
-                if (isGroup) await clearCommand(sock, chatId);
                 break;
 
             case userMessage === '.ping':
@@ -630,20 +615,20 @@ async function handleMessages(sock, messageUpdate, printLog) {
 
                 await antibadwordCommand(sock, chatId, message, senderId, isSenderAdmin);
                 break;
-            case userMessage.startsWith('.chatbot'):
+            case userMessage.startsWith('.yuuki'):
                 if (!isGroup) {
                     await sock.sendMessage(chatId, { text: 'Command ini hanya bisa digunakan di grup.' });
                     return;
                 }
 
-                const chatbotAdminStatus = await isAdmin(sock, chatId, senderId);
-                if (!chatbotAdminStatus.isSenderAdmin && !message.key.fromMe) {
-                    await sock.sendMessage(chatId, { text: 'Hanya admin atau owner bot yang bisa menggunakan command ini' });
+                const yuukiAdminStatus = await isAdmin(sock, chatId, senderId);
+                if (!yuukiAdminStatus.isSenderAdmin && !message.key.fromMe) {
+                    await sock.sendMessage(chatId, { text: 'Maaf Tuan, hanya admin yang boleh mengaktifkan atau menonaktifkan Yuuki di sini. Yuuki menunggu perintah dengan sabar~' });
                     return;
                 }
 
-                const match = userMessage.slice(8).trim();
-                await handleChatbotCommand(sock, chatId, message, match);
+                const match = userMessage.slice(6).trim();
+                await handleYuukiCommand(sock, chatId, message, match);
                 break;
 
             case userMessage === '.flirt':
@@ -882,9 +867,9 @@ async function handleMessages(sock, messageUpdate, printLog) {
 
                 if (isGroup) {
                     if (userMessage) {
-                        await handleChatbotResponse(sock, chatId, message, userMessage, senderId);
+                        await handleYuukiResponse(sock, chatId, message, userMessage, senderId);
                     }
-                    await Antilink(message, sock);
+                    await handleLinkDetection(sock, chatId, message, userMessage, senderId);
                     await handleTagDetection(sock, chatId, message, senderId);
                 }
                 commandExecuted = false;
@@ -943,10 +928,13 @@ async function handleGroupParticipantUpdate(sock, update) {
             const groupName = groupMetadata.subject;
             const groupDesc = groupMetadata.desc || 'Tidak ada deskripsi tersedia';
 
-            const welcomeMessage = 'Selamat datang {user} di {group}!';
-
             for (const participant of participants) {
                 const user = participant.split('@')[0];
+                const isNewAdmin = groupMetadata.participants.some(p => p.id === participant && (p.admin === 'admin' || p.admin === 'superadmin'));
+                const title = isNewAdmin ? 'Tuan Besar' : 'Tuan';
+                const savedMessage = await getWelcomeMessage(id);
+                const welcomeMessage = savedMessage || `${title} {user} telah tiba di {group}. Yuuki sambut dengan penuh penghormatan~`;
+
                 const formattedMessage = welcomeMessage
                     .replace('{user}', `@${user}`)
                     .replace('{group}', groupName)
@@ -966,10 +954,13 @@ async function handleGroupParticipantUpdate(sock, update) {
             const groupMetadata = await sock.groupMetadata(id);
             const groupName = groupMetadata.subject;
 
-            const goodbyeMessage = 'Selamat tinggal {user}';
-
             for (const participant of participants) {
                 const user = participant.split('@')[0];
+                const isLeavingAdmin = groupMetadata.participants.some(p => p.id === participant && (p.admin === 'admin' || p.admin === 'superadmin'));
+                const title = isLeavingAdmin ? 'Tuan Besar' : 'Tuan';
+                const savedMessage = await getGoodbyeMessage(id);
+                const goodbyeMessage = savedMessage || `${title} {user} telah pergi dari {group}. Yuuki doakan yang terbaik~`;
+
                 const formattedMessage = goodbyeMessage
                     .replace('{user}', `@${user}`)
                     .replace('{group}', groupName);

@@ -1,12 +1,18 @@
 const isAdmin = require('../../lib/isAdmin');
 
+async function getUserTitle(sock, chatId, senderId) {
+    const { isSenderAdmin } = await isAdmin(sock, chatId, senderId);
+    return isSenderAdmin ? 'Tuan Besar' : 'Tuan';
+}
+
 async function tagAllCommand(sock, chatId, senderId) {
     try {
         const { isSenderAdmin, isBotAdmin } = await isAdmin(sock, chatId, senderId);
 
         if (!isSenderAdmin && !isBotAdmin) {
+            const title = await getUserTitle(sock, chatId, senderId);
             await sock.sendMessage(chatId, {
-                text: 'Wah, cuma admin yang bisa pake command tagall nih'
+                text: `Maaf ${title}, hanya admin yang bisa menggunakan tagall. Yuuki mohon maaf, tapi aturan tetap aturan~`
             });
             return;
         }
@@ -15,13 +21,15 @@ async function tagAllCommand(sock, chatId, senderId) {
         const participants = groupMetadata.participants;
 
         if (!participants || participants.length === 0) {
+            const title = await getUserTitle(sock, chatId, senderId);
             await sock.sendMessage(chatId, {
-                text: 'Grupnya kosong nih, ga ada yang bisa di-tag'
+                text: `${title}... grup ini kosong. Yuuki bisa merasakan kehampaannya~ Tidak ada yang bisa di-tag.`
             });
             return;
         }
 
-        let message = 'Tag buat semua member grup:\n\n';
+        const title = await getUserTitle(sock, chatId, senderId);
+        let message = `Dengan hormat, ${title}, Yuuki panggil semua yang ada di sini:\n\n`;
         participants.forEach((participant, index) => {
             message += `${index + 1}. @${participant.id.split('@')[0]}\n`;
         });
@@ -33,8 +41,9 @@ async function tagAllCommand(sock, chatId, senderId) {
 
     } catch (error) {
         console.error('Error di tagall:', error);
+        const title = await getUserTitle(sock, chatId, senderId);
         await sock.sendMessage(chatId, {
-            text: 'Gagal nge-tag member, coba lagi ya'
+            text: `Maaf ${title}, Yuuki gagal memanggil semua orang. Sepertinya ada yang menghalangi Yuuki... atau mungkin Yuuki yang tidak kompeten?`
         });
     }
 }

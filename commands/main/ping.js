@@ -21,7 +21,6 @@ function formatTime(seconds) {
 async function pingCommand(sock, chatId, message) {
     try {
         const start = Date.now();
-        await sock.sendMessage(chatId, { text: 'Cek ping dulu ya~' }, { quoted: message });
         const end = Date.now();
         const ping = Math.round(end - start);
 
@@ -30,15 +29,14 @@ async function pingCommand(sock, chatId, message) {
         const usedMemory = (process.memoryUsage().rss / 1024 / 1024).toFixed(2);
         const totalMemory = (os.totalmem() / 1024 / 1024).toFixed(2);
 
-        const botInfo = `
-Status Yuuki
-
-Ping     : ${ping} ms
-Uptime   : ${uptimeFormatted}
-Memory   : ${usedMemory} MB / ${totalMemory} MB
-Version  : v${settings.version}
-
-Aku masih sehat dan siap bantu!`.trim();
+        const botInfo = `┌── 「 Status Yuuki 」
+│
+│  Ping     : ${ping} ms
+│  Uptime   : ${uptimeFormatted}
+│  Memory   : ${usedMemory} MB / ${totalMemory} MB
+│  Version  : v${settings.version}
+│
+└───────────────`;
 
         await sock.sendMessage(chatId, { text: botInfo }, { quoted: message });
     } catch (error) {

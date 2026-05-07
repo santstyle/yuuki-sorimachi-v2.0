@@ -1,11 +1,27 @@
 const { downloadContentFromMessage } = require("@whiskeysockets/baileys");
 
+async function getUserTitle(sock, chatId, senderId) {
+    try {
+        const metadata = await sock.groupMetadata(chatId);
+        const participant = metadata.participants.find(p => p.id === senderId);
+        if (participant?.admin === 'admin' || participant?.admin === 'superadmin') {
+            return 'Tuan Besar';
+        }
+    } catch (error) {
+        console.log('Tidak bisa cek admin status di hidetag');
+    }
+    return 'Tuan';
+}
+
 async function hidetagCommand(sock, m, prefix) {
     try {
         console.log("HIDETAG FITURE");
 
+        const senderId = m.key.participant || m.key.remoteJid;
+        const title = await getUserTitle(sock, m.key.remoteJid, senderId);
+
         if (!m.key.remoteJid.endsWith("@g.us")) {
-            await sock.sendMessage(m.key.remoteJid, { text: "Hanya untuk grup!" });
+            await sock.sendMessage(m.key.remoteJid, { text: `Maaf ${title}, command ini hanya bisa digunakan di grup. Yuuki menunggu dengan sabar~` });
             return;
         }
 
@@ -37,10 +53,10 @@ async function hidetagCommand(sock, m, prefix) {
 
         if (isReply) {
             console.log("Processing REPLY message");
-            await handleQuotedMessage(sock, m.key.remoteJid, quotedMessage, textAfterCommand, participants);
+            await handleQuotedMessage(sock, m.key.remoteJid, quotedMessage, textAfterCommand, participants, title);
         } else {
             console.log("Processing DIRECT message");
-            const finalText = textAfterCommand || "Haiiii izin tag semua member yaaa!";
+            const finalText = textAfterCommand || `Dengan hormat, Yuuki mohon izin untuk memanggil semua ${title} di sini~`;
 
             await sock.sendMessage(m.key.remoteJid, {
                 text: finalText,
@@ -49,13 +65,15 @@ async function hidetagCommand(sock, m, prefix) {
         }
 
     } catch (error) {
-        console.error("Error in hidetag:", error);
+        console.error("Error di hidetag:", error);
         try {
+            const senderId = m.key.participant || m.key.remoteJid;
+            const title = await getUserTitle(sock, m.key.remoteJid, senderId);
             const groupMetadata = await sock.groupMetadata(m.key.remoteJid);
             const participants = groupMetadata.participants.map(p => p.id);
 
             await sock.sendMessage(m.key.remoteJid, {
-                text: "Error: " + error.message,
+                text: `Maaf ${title}, Yuuki mengalami kesalahan. Sepertinya ada yang mengganggu Yuuki... ` + error.message,
                 mentions: participants
             });
         } catch (e) {
@@ -66,7 +84,7 @@ async function hidetagCommand(sock, m, prefix) {
 
 /**
  */
-async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterCommand, participants) {
+async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterCommand, participants, title) {
     const messageType = Object.keys(quotedMessage)[0];
 
     console.log("Quoted message type:", messageType);
@@ -76,7 +94,7 @@ async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterComm
         switch (messageType) {
             case "conversation":
                 const quotedText = quotedMessage.conversation;
-                const messageText = textAfterCommand || quotedText || "Hidetag semua member!";
+                const messageText = textAfterCommand || quotedText || `Dengan hormat, Yuuki sampaikan pesan ini kepada semua ${title}~`;
                 await sock.sendMessage(remoteJid, {
                     text: messageText,
                     mentions: participants
@@ -85,7 +103,7 @@ async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterComm
 
             case "extendedTextMessage":
                 const extendedText = quotedMessage.extendedTextMessage.text;
-                const extendedMessageText = textAfterCommand || extendedText || "Hidetag semua member!";
+                const extendedMessageText = textAfterCommand || extendedText || `Dengan hormat, Yuuki sampaikan pesan ini kepada semua ${title}~`;
                 await sock.sendMessage(remoteJid, {
                     text: extendedMessageText,
                     mentions: participants
@@ -206,19 +224,19 @@ async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterComm
             case "ephemeralMessage":
                 console.log("Processing ephemeral message");
                 const ephemeralContent = quotedMessage.ephemeralMessage.message;
-                await handleQuotedMessage(sock, remoteJid, ephemeralContent, textAfterCommand, participants);
+                await handleQuotedMessage(sock, remoteJid, ephemeralContent, textAfterCommand, participants, title);
                 break;
 
             case "viewOnceMessage":
                 console.log("Processing view once message");
                 const viewOnceContent = quotedMessage.viewOnceMessage.message;
-                await handleQuotedMessage(sock, remoteJid, viewOnceContent, textAfterCommand, participants);
+                await handleQuotedMessage(sock, remoteJid, viewOnceContent, textAfterCommand, participants, title);
                 break;
 
             case "buttonsMessage":
                 console.log("Processing buttons message");
                 const buttonsText = quotedMessage.buttonsMessage.text || quotedMessage.buttonsMessage.contentText || "";
-                const finalText = textAfterCommand || buttonsText || "Hidetag semua member!";
+                const finalText = textAfterCommand || buttonsText || `Dengan hormat, Yuuki sampaikan ini kepada semua ${title}~`;
                 await sock.sendMessage(remoteJid, {
                     text: finalText,
                     mentions: participants
@@ -230,7 +248,7 @@ async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterComm
                 const templateContent = quotedMessage.templateMessage?.hydratedTemplate?.hydratedContentText ||
                     quotedMessage.templateMessage?.hydratedTemplate?.hydratedTitle ||
                     "Pesan template";
-                const templateFinalText = textAfterCommand || templateContent || "Hidetag semua member!";
+                const templateFinalText = textAfterCommand || templateContent || `Dengan hormat, Yuuki sampaikan ini kepada semua ${title}~`;
                 await sock.sendMessage(remoteJid, {
                     text: templateFinalText,
                     mentions: participants
@@ -239,7 +257,7 @@ async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterComm
 
             default:
                 console.log("Unsupported message type:", messageType);
-                const fallbackText = textAfterCommand || "Hidetag semua member!";
+                const fallbackText = textAfterCommand || `Dengan hormat, Yuuki sampaikan ini kepada semua ${title}~`;
                 await sock.sendMessage(remoteJid, {
                     text: fallbackText,
                     mentions: participants
@@ -248,7 +266,7 @@ async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterComm
         }
     } catch (error) {
         console.error("Error processing quoted message:", error);
-        const fallbackText = textAfterCommand || "Hidetag semua member!";
+        const fallbackText = textAfterCommand || `Dengan hormat, Yuuki sampaikan ini kepada semua ${title}~`;
         await sock.sendMessage(remoteJid, {
             text: fallbackText,
             mentions: participants
