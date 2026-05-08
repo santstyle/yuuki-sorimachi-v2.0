@@ -1,4 +1,5 @@
 const os = require('os');
+const { performance } = require('perf_hooks');
 const settings = require('../../settings');
 
 function formatTime(seconds) {
@@ -20,14 +21,18 @@ function formatTime(seconds) {
 
 async function pingCommand(sock, chatId, message) {
     try {
-        const start = Date.now();
-        const end = Date.now();
-        const ping = Math.round(end - start);
+        const start = performance.now();
 
         const uptimeFormatted = formatTime(process.uptime());
 
         const usedMemory = (process.memoryUsage().rss / 1024 / 1024).toFixed(2);
         const totalMemory = (os.totalmem() / 1024 / 1024).toFixed(2);
+
+        await sock.sendMessage(chatId, {
+            text: 'Mengukur denyut nadi Yuuki...'
+        }, { quoted: message });
+
+        const ping = Math.round(performance.now() - start);
 
         const botInfo = `┌── 「 Status Yuuki 」
 │
@@ -38,7 +43,7 @@ async function pingCommand(sock, chatId, message) {
 │
 └───────────────`;
 
-        await sock.sendMessage(chatId, { text: botInfo }, { quoted: message });
+        await sock.sendMessage(chatId, { text: botInfo });
     } catch (error) {
         console.error('Error di ping command:', error);
         await sock.sendMessage(chatId, {
