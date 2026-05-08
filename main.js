@@ -291,8 +291,8 @@ async function handleMessages(sock, messageUpdate, printLog) {
         if (!message.key.fromMe) incrementMessageCount(chatId, senderId);
 
         if (!userMessage.startsWith('.')) {
+            await handleYuukiResponse(sock, chatId, message, rawText, senderId);
             if (isGroup) {
-                await handleYuukiResponse(sock, chatId, message, rawText, senderId);
                 await handleLinkDetection(sock, chatId, message, userMessage, senderId);
                 await handleBadwordDetection(sock, chatId, message, userMessage, senderId);
                 await handleTagDetection(sock, chatId, message, senderId);
