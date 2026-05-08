@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 const chalk = require('chalk');
+const store = require('../../lib/lightweight_store');
 
 const USER_GROUP_DATA = path.join(__dirname, '../../data/userGroupData.json');
 const CHATBOT_CONFIG = path.join(__dirname, '../../data/chatbotConfig.json');
@@ -517,8 +518,24 @@ async function handleYuukiResponse(sock, chatId, message, userMessage, senderId)
             return;
         }
 
+        if (!global.__botJidCache) global.__botJidCache = {};
+        if (message.key.fromMe && chatId.endsWith('@g.us')) {
+            const botJid = message.key.participant || message.key.remoteJid;
+            if (botJid && (botJid.endsWith('@s.whatsapp.net') || botJid.endsWith('@lid'))) {
+                global.__botJidCache[chatId] = botJid;
+            }
+            return;
+        }
+
         const botFullId = sock.user.id;
         const botNumber = botFullId ? botFullId.split(':')[0].split('@')[0] : '';
+
+        const botJidVariants = new Set();
+        if (botFullId) {
+            botJidVariants.add(botFullId);
+            botJidVariants.add(botNumber + '@s.whatsapp.net');
+            botJidVariants.add(botNumber + '@lid');
+        }
 
         let isForYuuki = false;
         let cleanedMessage = userMessage;
@@ -541,6 +558,13 @@ async function handleYuukiResponse(sock, chatId, message, userMessage, senderId)
             });
         }
 
+        const allBotJids = new Set(botJidVariants);
+        const cachedJid = global.__botJidCache[chatId];
+        if (cachedJid) allBotJids.add(cachedJid);
+        const chatMessages = store.messages[chatId];
+        const botGroupJid = chatMessages?.find(m => m.key.fromMe && m.key.participant)?.key?.participant;
+        if (botGroupJid) allBotJids.add(botGroupJid);
+
         if (!isForYuuki) {
             const contextInfo = message.message?.extendedTextMessage?.contextInfo
                 || message.message?.contextInfo;
@@ -549,7 +573,7 @@ async function handleYuukiResponse(sock, chatId, message, userMessage, senderId)
                 const mentionedJids = contextInfo.mentionedJid || [];
                 for (const jid of mentionedJids) {
                     const jidNumber = jid.split(':')[0].split('@')[0];
-                    if (jidNumber === botNumber) {
+                    if (jidNumber === botNumber || allBotJids.has(jid)) {
                         isForYuuki = true;
                         triggerReason = 'mentionedJid';
                         break;
@@ -557,9 +581,21 @@ async function handleYuukiResponse(sock, chatId, message, userMessage, senderId)
                 }
 
                 if (!isForYuuki && contextInfo.stanzaId) {
-                    if (contextInfo.participant) {
+                    try {
+                        const quotedMsg = await store.loadMessage(chatId, contextInfo.stanzaId);
+                            if (quotedMsg?.key?.fromMe) {
+                                isForYuuki = true;
+                                triggerReason = 'reply';
+                                if (contextInfo.participant) {
+                                    allBotJids.add(contextInfo.participant);
+                                    global.__botJidCache[chatId] = contextInfo.participant;
+                                }
+                        }
+                    } catch (e) {}
+
+                    if (!isForYuuki && contextInfo.participant) {
                         const quotedNumber = contextInfo.participant.split(':')[0].split('@')[0];
-                        if (quotedNumber === botNumber) {
+                        if (quotedNumber === botNumber || allBotJids.has(contextInfo.participant)) {
                             isForYuuki = true;
                             triggerReason = 'reply';
                         }
@@ -568,11 +604,14 @@ async function handleYuukiResponse(sock, chatId, message, userMessage, senderId)
             }
         }
 
-        console.log(`[YUUKI DEBUG] msg="${userMessage}" botNum="${botNumber}" isForYuuki=${isForYuuki} reason=${triggerReason} ctxInfo=${JSON.stringify({
+        const debugBotJids = JSON.stringify([...allBotJids]).slice(0, 200);
+        console.log(`[YUUKI DEBUG] msg="${userMessage}" botNum="${botNumber}" botJids=${debugBotJids} isForYuuki=${isForYuuki} reason=${triggerReason} ctxInfo=${JSON.stringify({
             stanzaId: message.message?.extendedTextMessage?.contextInfo?.stanzaId,
             participant: message.message?.extendedTextMessage?.contextInfo?.participant,
             mentionedJid: message.message?.extendedTextMessage?.contextInfo?.mentionedJid
         }).slice(0, 200)}`);
+
+        if (!isForYuuki) return;
 
         if (!cleanedMessage.trim()) {
             cleanedMessage = 'Hai';
