@@ -20,7 +20,7 @@ async function groqCommand(sock, chatId, message, input) {
         const response = await axios.post(
             'https://api.groq.com/openai/v1/chat/completions',
             {
-                model: 'llama3-70b-8192',
+                model: 'llama-3.3-70b-versatile',
                 messages: [
                     {
                         role: 'system',
