@@ -38,7 +38,7 @@ async function menuCommand(sock, chatId, message, input) {
 ┗━━━━━━━━━━━━━━━━━━━━
 
 ┏━━「 DOWNLOADER 」
-┃ .song     .play      .lyrics   .dl / .download
+┃ .dl / .download
 ┃ .btch
 ┗━━━━━━━━━━━━━━━━━━━━
 
@@ -49,6 +49,7 @@ async function menuCommand(sock, chatId, message, input) {
 
 ┏━━「 SEARCH 」
 ┃ .pinterest / .pin
+┃ .song      .play      .lyrics
 ┗━━━━━━━━━━━━━━━━━━━━
 
 ┏━━「 TOOL 」

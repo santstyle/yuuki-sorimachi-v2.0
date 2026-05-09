@@ -199,7 +199,7 @@ async function getLyricsFromGenius(artist, title) {
 
         let lyrics = '';
 
-        const lyricsContainersRegex = /<div[^>]*data-lyrics-container="true"[^>]*>([\s\S]*?)<\/div>/g;
+        const lyricsContainerRegex = /<div[^>]*data-lyrics-container="true"[^>]*>([\s\S]*?)<\/div>/g;
         let match;
         while ((match = lyricsContainerRegex.exec(html)) !== null) {
             lyrics += cleanText(match[1]) + '\n\n';
@@ -273,7 +273,7 @@ async function getLyrics(artist, title) {
 
 async function lyricsCommand(sock, chatId, songTitle, message) {
     try {
-        if (!songTitlse || songTitle.trim() === '') {
+        if (!songTitle || songTitle.trim() === '') {
             await sock.sendMessage(chatId, {
                 text: `Tuan~ Fitur .lyrics digunakan untuk mencari lirik lagu.
 

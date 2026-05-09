@@ -15,14 +15,12 @@ async function setWmCommand(sock, chatId, message, args, senderId) {
 
         await prisma.user.upsert({
             where: { id: senderId },
-            update: { 
-                packname: packname || null,
-                author: null
+            update: {
+                packname: packname || null
             },
-            create: { 
-                id: senderId, 
-                packname: packname || null,
-                author: null 
+            create: {
+                id: senderId,
+                packname: packname || null
             }
         });
 

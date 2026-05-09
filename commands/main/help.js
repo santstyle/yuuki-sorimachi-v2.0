@@ -72,12 +72,6 @@ async function helpCommand(sock, chatId, message, input) {
 ┗━━━━━━━━━━━━━━━━━━━━
 
 ┏━━「 DOWNLOADER 」
-┃ > .song <judul>    → Download lagu (audio/mp3)
-┃                      Contoh: .song Bohemian Rhapsody
-┃ > .play <judul>    → Cari & putar lagu dari YouTube/Spotify
-┃                      Contoh: .play Shape of You
-┃ > .lyrics <judul>  → Cari lirik lagu
-┃                      Contoh: .lyrics Perfect Ed Sheeran
 ┃ > .dl / .download  → Download dari link media
 ┃   alias: .btch
 ┃                      Support: YouTube, Instagram, TikTok,
@@ -98,6 +92,12 @@ async function helpCommand(sock, chatId, message, input) {
 ┏━━「 SEARCH 」
 ┃ > .pinterest       → Cari gambar dari Pinterest
 ┃   alias: .pin
+┃ > .song <judul>    → Download lagu (audio/mp3)
+┃                      Contoh: .song Bohemian Rhapsody
+┃ > .play <judul>    → Cari & putar lagu dari YouTube/Spotify
+┃                      Contoh: .play Shape of You
+┃ > .lyrics <judul>  → Cari lirik lagu
+┃                      Contoh: .lyrics Perfect Ed Sheeran
 ┗━━━━━━━━━━━━━━━━━━━━
 
 ┏━━「 TOOL 」

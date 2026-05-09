@@ -263,9 +263,7 @@ Yuuki adalah pelayan yang mengelola berbagai keperluan Tuan di WhatsApp. Berikut
    - .toaudio — ambil audio dari video
 
 3. DOWNLOADER:
-   - .song / .play — cari dan download lagu dari YouTube
    - .btch / .dl — download video dari YouTube, Instagram, TikTok, Facebook, dll
-   - .lyrics — cari lirik lagu
 
 4. GROUP MANAGEMENT (butuh Yuuki jadi admin grup):
    - .antilink on/off — blokir link grup lain
@@ -288,13 +286,17 @@ Yuuki adalah pelayan yang mengelola berbagai keperluan Tuan di WhatsApp. Berikut
    - .news — berita terkini
    - .weather [kota] — cek cuaca
 
-6. TOOLS:
+6. SEARCH:
+   - .song / .play — cari dan download lagu dari YouTube
+   - .lyrics — cari lirik lagu
+   - .pinterest [kata kunci] — cari gambar dari Pinterest
+
+7. TOOLS:
    - .translate / .trt — terjemahkan teks
    - .ss [url] — screenshot website
-   - .pinterest [kata kunci] — cari gambar dari Pinterest
    - .setwm — atur nama pack stiker
 
-7. OWNER COMMANDS (khusus Tuan Besar / owner):
+8. OWNER COMMANDS (khusus Tuan Besar / owner):
    - .mode public/private — atur akses bot
    - .broadcast — kirim pesan ke semua grup
    - .antidelete on/off — lihat pesan yang dihapus
@@ -302,7 +304,7 @@ Yuuki adalah pelayan yang mengelola berbagai keperluan Tuan di WhatsApp. Berikut
    - .sudo — tambah pengguna terpercaya
    - .update — update bot dari GitHub
 
-8. OTHER:
+9. OTHER:
    - .menu / .list — lihat semua perintah
    - .help — bantuan detail
    - .ping — cek respon bot

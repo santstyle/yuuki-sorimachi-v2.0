@@ -1,5 +1,21 @@
 const axios = require('axios');
 const { downloadMediaMessage } = require('@whiskeysockets/baileys');
+const ffmpeg = require('fluent-ffmpeg');
+const path = require('path');
+const fs = require('fs');
+const fse = require('fs-extra');
+const tempDir = './temp';
+if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+
+const scheduleFileDeletion = (filePath) => {
+    setTimeout(async () => {
+        try {
+            await fse.remove(filePath);
+        } catch (error) {
+            console.error(`Failed to delete file:`, error);
+        }
+    }, 300000);
+};
 
 async function toGif(sock, message, chatId) {
     try {
@@ -58,10 +74,35 @@ async function toGif(sock, message, chatId) {
         const resultUrl = response.data?.result;
         if (!resultUrl) throw new Error('API tidak mengembalikan URL GIF');
 
-        // Kirim hasil GIF
-        // Tambahkan mimetype agar lebih kompatibel di WhatsApp
+        // Download hasil dari API (GIF)
+        const gifResponse = await axios.get(resultUrl, { responseType: 'arraybuffer' });
+        const gifBuffer = Buffer.from(gifResponse.data);
+
+        // Konversi GIF ke MP4 dengan ffmpeg
+        const inputPath = path.join(tempDir, `gif_${Date.now()}.gif`);
+        const outputPath = path.join(tempDir, `gif_${Date.now()}.mp4`);
+        await fs.promises.writeFile(inputPath, gifBuffer);
+
+        await new Promise((resolve, reject) => {
+            ffmpeg(inputPath)
+                .outputOptions([
+                    '-movflags faststart',
+                    '-pix_fmt yuv420p',
+                    '-vf scale=trunc(iw/2)*2:trunc(ih/2)*2'
+                ])
+                .toFormat('mp4')
+                .on('end', resolve)
+                .on('error', reject)
+                .save(outputPath);
+        });
+
+        const mp4Buffer = await fs.promises.readFile(outputPath);
+        scheduleFileDeletion(inputPath);
+        scheduleFileDeletion(outputPath);
+
+        // Kirim hasil GIF (sebagai video MP4 dengan gifPlayback)
         await sock.sendMessage(chatId, {
-            video: { url: resultUrl },
+            video: mp4Buffer,
             mimetype: 'video/mp4',
             gifPlayback: true,
             caption: 'Tuan~ Stiker berhasil Yuuki konversi ke GIF!'

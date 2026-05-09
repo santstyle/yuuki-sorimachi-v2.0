@@ -65,7 +65,7 @@ const stickercropCommand = require('./commands/converter/stickercrop');
 const toGifCommand = require('./commands/converter/togif');
 const toAudioCommand = require('./commands/converter/toaudio');
 const { debugLevelUp } = require('./commands/debug/debuglevelup');
-const { lyrics: lyricsCommand } = require('./commands/downloader/lyrics');
+const { lyrics: lyricsCommand } = require('./commands/search/lyrics');
 const pingCommand = require('./commands/main/ping');
 const aliveCommand = require('./commands/main/alive');
 const welcomeCommand = require('./commands/group/welcome');
@@ -851,7 +851,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                     const input = rawText.slice(prefix.length).trim();
                     if (input) {
                         if (prefix === '.song' || prefix === '.play' || prefix === '.music') {
-                            const songCommand = require('./commands/downloader/song');
+                            const songCommand = require('./commands/search/song');
                             await songCommand.song(sock, chatId, message, input);
                         } else {
                             const btchCommand = require('./commands/downloader/btch');
