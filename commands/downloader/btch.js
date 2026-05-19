@@ -293,6 +293,34 @@ async function btchCommand(sock, chatId, message, url) {
                     tempFiles[tempFiles.length - 1] = tempFile;
                 }
 
+                // Embed thumbnail as cover art into audio
+                if (item.thumbnail && (actualMediaType === 'audio' || item.type === 'audio')) {
+                    try {
+                        const thumbRes = await axios.get(item.thumbnail, { responseType: 'arraybuffer', timeout: 10000 });
+                        const thumbBuf = Buffer.from(thumbRes.data);
+                        if (thumbBuf.length <= 60000) {
+                            const thumbFile = path.join(tempDir, `thumb_${timestamp}_${i}.jpg`);
+                            const embeddedFile = path.join(tempDir, `btch_${timestamp}_${i}_embedded${actualExtension}`);
+                            fs.writeFileSync(thumbFile, thumbBuf);
+                            const ffmpegPath = process.env.FFMPEG_PATH || 'ffmpeg';
+                            try {
+                                await execPromise(`"${ffmpegPath}" -version`);
+                                await execPromise(`"${ffmpegPath}" -i "${tempFile}" -i "${thumbFile}" -map 0:a -map 1:v -c:a copy -c:v mjpeg -id3v2_version 3 -disposition:v attached_pic -y "${embeddedFile}"`);
+                                if (fs.existsSync(embeddedFile)) {
+                                    fs.unlinkSync(tempFile);
+                                    tempFile = embeddedFile;
+                                    tempFiles[tempFiles.length - 1] = tempFile;
+                                }
+                            } catch (e) {
+                                console.log('[DEBUG] Gagal embed thumbnail:', e.message);
+                            }
+                            fs.unlinkSync(thumbFile);
+                        }
+                    } catch (e) {
+                        console.log('[DEBUG] Gagal download thumbnail:', e.message);
+                    }
+                }
+
                 // Re-read buffer in case file was converted or renamed
                 const finalBuffer = fs.readFileSync(tempFile);
                 const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
@@ -319,23 +347,14 @@ async function btchCommand(sock, chatId, message, url) {
                         caption: `Tuan~ Video berhasil Yuuki unduh~`
                     }, { quoted: message });
                 } else if (actualMediaType === 'audio') {
-                    await sendMessageWithRetry(sock, chatId, {
+                    const audioMsg = {
                         audio: finalBuffer,
                         mimetype: actualMimeType || 'audio/mp4',
                         ptt: false,
-                        fileName: fileName,
-                        contextInfo: {
-                            externalAdReply: {
-                                title: item.title || 'Yuuki Music Player',
-                                body: 'Klik untuk membuka sumber lagu',
-                                mediaType: 2,
-                                thumbnail: item.thumbnail ? (await axios.get(item.thumbnail, { responseType: 'arraybuffer' }).then(res => Buffer.from(res.data)).catch(() => null)) : null,
-                                mediaUrl: item.url || url,
-                                sourceUrl: item.url || url,
-                                renderLargerThumbnail: true
-                            }
-                        }
-                    }, { quoted: message });
+                        fileName: fileName
+                    };
+
+                    await sendMessageWithRetry(sock, chatId, audioMsg, { quoted: message });
                     
                     // Hapus pesan status setelah berhasil kirim
                     await sock.sendMessage(chatId, { delete: statusMessage.key }).catch(() => {});

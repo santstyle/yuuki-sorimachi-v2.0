@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 const chalk = require('chalk');
+const moment = require('moment-timezone');
 const store = require('../../lib/lightweight_store');
 
 const USER_GROUP_DATA = path.join(__dirname, '../../data/userGroupData.json');
@@ -287,7 +288,7 @@ Yuuki adalah pelayan yang mengelola berbagai keperluan Tuan di WhatsApp. Berikut
    - .weather [kota] — cek cuaca
 
 6. SEARCH:
-   - .song / .play — cari dan download lagu dari YouTube
+   - .song — cari lagu di YouTube
    - .lyrics — cari lirik lagu
    - .pinterest [kata kunci] — cari gambar dari Pinterest
 
@@ -360,7 +361,8 @@ class APIManager {
 
             this.personalityManager.addToHistory(userId, 'user', userMessage);
 
-            console.log(`Mengirim request ke ${ACTIVE_API}...`);
+            const ts = () => chalk.cyan('[' + moment().tz('Asia/Jakarta').format('HH:mm:ss') + ']');
+            console.log(`${ts()} ${chalk.bgBlue(' API  ')} ${ACTIVE_API} -> ${chalk.green('Mengirim request...')}`);
 
             const requestData = {
                 model: this.config.model,
@@ -688,14 +690,18 @@ async function handleYuukiResponse(sock, chatId, message, userMessage, senderId)
             }
         }
 
-        const debugBotJids = JSON.stringify([...allBotJids]).slice(0, 200);
-        console.log(`[YUUKI DEBUG] msg="${userMessage}" botNum="${botNumber}" botJids=${debugBotJids} isForYuuki=${isForYuuki} reason=${triggerReason} ctxInfo=${JSON.stringify({
-            stanzaId: message.message?.extendedTextMessage?.contextInfo?.stanzaId,
-            participant: message.message?.extendedTextMessage?.contextInfo?.participant,
-            mentionedJid: message.message?.extendedTextMessage?.contextInfo?.mentionedJid
-        }).slice(0, 200)}`);
-
         if (!isForYuuki) return;
+
+        const ctxInfo = message.message?.extendedTextMessage?.contextInfo || {};
+        console.log(`\n${chalk.cyan('┌─')} ${chalk.bgMagenta.white(' YUUKI DEBUG ')}`);
+        console.log(`${chalk.cyan('│')} ${chalk.magenta('Msg:')}     ${chalk.white(userMessage)}`);
+        console.log(`${chalk.cyan('│')} ${chalk.magenta('Bot:')}     ${chalk.white(botNumber)}`);
+        console.log(`${chalk.cyan('│')} ${chalk.magenta('Trigger:')} ${chalk.white(triggerReason || 'name_call')}`);
+        console.log(`${chalk.cyan('│')} ${chalk.magenta('Target:')}  ${chalk.white('✅ For Yuuki')}`);
+        if (ctxInfo.stanzaId) {
+            console.log(`${chalk.cyan('│')} ${chalk.magenta('Reply:')}   ${chalk.white(ctxInfo.stanzaId)}`);
+        }
+        console.log(`${chalk.cyan('└─')} ${chalk.dim('botJids:')} ${chalk.dim(JSON.stringify([...allBotJids]).slice(0, 150))}`);
 
         if (!cleanedMessage.trim()) {
             cleanedMessage = 'Hai';

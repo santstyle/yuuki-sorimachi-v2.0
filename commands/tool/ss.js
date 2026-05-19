@@ -1,9 +1,9 @@
-const fetch = require('node-fetch');
+const puppeteer = require('puppeteer');
 
 async function handleSsCommand(sock, chatId, message, match) {
     if (!match) {
         await sock.sendMessage(chatId, {
-            text: `Tuan~ Fitur Screenshot\n\n.ss <url>\n.ssweb <url>\n.screenshot <url>\n\nBuat screenshot website apapun\n\nContoh:\n.ss https://google.com\n.ssweb https://google.com\n.screenshot https://google.com`,
+            text: `Tuan~ Yuuki bisa screenshot website untuk Tuan~\n\nCara pakai:\n.ss <url>\n.ssweb <url>\n.screenshot <url>\n\nContoh:\n.ss https://google.com`,
             quoted: message
         });
         return;
@@ -12,11 +12,6 @@ async function handleSsCommand(sock, chatId, message, match) {
     try {
         await sock.presenceSubscribe(chatId);
         await sock.sendPresenceUpdate('composing', chatId);
-
-        await sock.sendMessage(chatId, {
-            text: 'Tuan~ Mohon tunggu, Yuuki sedang mengambil screenshot~',
-            quoted: message
-        });
 
         const url = match.trim();
 
@@ -27,18 +22,18 @@ async function handleSsCommand(sock, chatId, message, match) {
             });
         }
 
-        const apiUrl = `https://api.siputzx.my.id/api/tools/ssweb?url=${encodeURIComponent(url)}&theme=light&device=desktop`;
-        const response = await fetch(apiUrl, { headers: { 'accept': '*/*' } });
-
-        if (!response.ok) {
-            throw new Error(`API error: ${response.status}`);
-        }
-
-        const imageBuffer = await response.buffer();
+        const browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
+        const page = await browser.newPage();
+        await page.setViewport({ width: 1280, height: 720 });
+        await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+        const imageBuffer = await page.screenshot({ type: 'png' });
+        await browser.close();
 
         await sock.sendMessage(chatId, {
-            image: imageBuffer,
-            caption: 'Tuan~ Ini screenshotnya~'
+            image: imageBuffer
         }, {
             quoted: message
         });
@@ -46,7 +41,7 @@ async function handleSsCommand(sock, chatId, message, match) {
     } catch (error) {
         console.error('Error di ss command:', error);
         await sock.sendMessage(chatId, {
-                text: 'Maaf, Tuan~ Yuuki gagal mengambil screenshot. Mungkin lain kali~\n\nKemungkinan:\n• URL tidak valid\n• Website tidak bisa di-screenshot\n• Sedang down\n• API sedang istirahat~',
+                text: 'Maaf, Tuan~ Yuuki gagal mengambil screenshot. Mungkin lain kali~',
             quoted: message
         });
     }

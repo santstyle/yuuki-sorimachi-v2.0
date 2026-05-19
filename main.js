@@ -15,6 +15,7 @@ const prisma = require('./lib/db');
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
+const sharp = require('sharp');
 const ffmpeg = require('fluent-ffmpeg');
 const { addWelcome, delWelcome, isWelcomeOn, getWelcomeMessage, addGoodbye, delGoodBye, isGoodByeOn, getGoodbyeMessage, isSudo } = require('./lib/index');
 const chalk = require('chalk');
@@ -240,38 +241,34 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 if (xpResult && xpResult.leveledUp) {
                     const levelUpImagePath = path.join(__dirname, 'assets', 'levelup', 'yuuki-uplevel.png');
                     let thumbBuffer = null;
-
                     if (fs.existsSync(levelUpImagePath)) {
                         try {
-                            thumbBuffer = fs.readFileSync(levelUpImagePath);
-                            console.log(`[LEVEL UP] Thumbnail loaded: ${thumbBuffer.length} bytes`);
+                            let buffer = fs.readFileSync(levelUpImagePath);
+                            buffer = await sharp(buffer)
+                                .resize(1140)
+                                .jpeg({ quality: 80 })
+                                .toBuffer();
+                            thumbBuffer = buffer;
                         } catch (e) {
                             console.error('Gagal baca thumbnail level up:', e.message);
                         }
-                    } else {
-                        console.log('[LEVEL UP] Image file not found:', levelUpImagePath);
                     }
 
+                    const mentionNumber = senderId.split('@')[0];
+                    const levelUpText = `✨ Bintang-bintang berbisik... @${mentionNumber} naik ke Level *${xpResult.level}*. Takdir masih menyimpan banyak misteri untuk Tuan~`;
+
                     const levelUpMessage = {
-                        text: `LEVEL UP, Tuan!\n\n✨ *Sorak sorai bergema di seluruh penjuru ruangan~* ✨\n@${pushName} baru saja naik ke *Level ${xpResult.level}*\nYuuki sangat bangga! Teruslah bercakap-cakap agar Tuan semakin perkasa!`,
+                        text: levelUpText,
                         mentions: [senderId]
                     };
 
                     if (thumbBuffer) {
-                        levelUpMessage.contextInfo = {
-                            externalAdReply: {
-                                title: "Yuuki Sorimachi | Level Up!",
-                                body: `Level ${xpResult.level} reached!`,
-                                mediaType: 1,
-                                thumbnail: thumbBuffer,
-                                renderLargerThumbnail: true,
-                                showAdAttribution: false,
-                                sourceUrl: `https://wa.me/${sock.user.id.split(':')[0]}`
-                            }
-                        };
+                        levelUpMessage.image = thumbBuffer;
+                        levelUpMessage.caption = levelUpText;
+                        delete levelUpMessage.text;
                     }
 
-                    await sock.sendMessage(chatId, levelUpMessage);
+                    await sock.sendMessage(chatId, levelUpMessage, { quoted: message });
                 }
             }
         } catch (dbError) {
@@ -842,7 +839,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage.startsWith('.download'):
             case userMessage.startsWith('.dl'):
             case userMessage.startsWith('.song'):
-            case userMessage.startsWith('.play'):
             case userMessage.startsWith('.music'):
             case userMessage.startsWith('.ytdl'):
             case userMessage.startsWith('.youtube'):
@@ -850,7 +846,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                     const prefix = userMessage.split(' ')[0];
                     const input = rawText.slice(prefix.length).trim();
                     if (input) {
-                        if (prefix === '.song' || prefix === '.play' || prefix === '.music') {
+                        if (prefix === '.song' || prefix === '.music') {
                             const songCommand = require('./commands/search/song');
                             await songCommand.song(sock, chatId, message, input);
                         } else {
@@ -859,7 +855,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                         }
                     } else {
                         await sock.sendMessage(chatId, {
-                            text: `Tuan~ Mohon berikan *URL* atau *judul lagu* yang ingin Yuuki unduh.\n\nContoh:\n${prefix} https://youtube.com/watch?v=...\n${prefix} Alan Walker Faded\n\nYuuki akan mencarikan untuk Tuan~`
+                            text: `Tuan~ Yuuki bisa mencarikan lagu untuk Tuan~\n\n\`${prefix} <judul lagu>\`\n\nContoh:\n${prefix} Alan Walker Faded\n\nYuuki akan mencarikan untuk Tuan~`
                         }, { quoted: message });
                     }
                 }

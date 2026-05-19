@@ -17,7 +17,6 @@ async function groupInfoCommand(sock, chatId, msg) {
 
         const text = `Tuan~ Berikut informasi grup ${groupMetadata.subject} yang Yuuki kumpulkan:
 
-ID grup: ${groupMetadata.id}
 Jumlah member: ${participants.length}
 Owner: @${owner.split('@')[0]}
 
@@ -33,7 +32,7 @@ Yuuki harap informasi ini bermanfaat untuk Tuan~`.trim();
             image: { url: pp },
             caption: text,
             mentions: [...groupAdmins.map(v => v.id), owner]
-        });
+        }, { quoted: msg });
 
     } catch (error) {
         const errMsg = error?.message || error?.toString() || '';

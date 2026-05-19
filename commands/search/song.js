@@ -7,7 +7,6 @@ const util = require('util');
 
 const execPromise = util.promisify(exec);
 
-// Path ke yt-dlp.exe di folder root
 const ytdlpPath = path.join(__dirname, '../yt-dlp.exe');
 
 function extractYouTubeId(url) {
@@ -78,7 +77,6 @@ async function getAudioWithYtDlp(youtubeUrl, title) {
         const outputFile = path.join(tempDir, `audio_${timestamp}.mp3`);
 
         console.log('Mendownload dengan yt-dlp...');
-        // Gunakan path absolut ke yt-dlp.exe
         const command = `"${ytdlpPath}" -x --audio-format mp3 --audio-quality 128K -o "${outputFile}" "${youtubeUrl}"`;
 
         try {
@@ -110,7 +108,6 @@ async function getAudioWithYtDlp(youtubeUrl, title) {
 }
 
 async function getAudioUrl(videoInfo) {
-    // 1. Coba API btch-downloader dulu (Paling stabil & tidak butuh FFmpeg lokal)
     const btchLib = require('btch-downloader');
     try {
         console.log('Mencoba API btch-downloader...');
@@ -127,7 +124,6 @@ async function getAudioUrl(videoInfo) {
         console.log('API btch-downloader gagal:', e.message);
     }
 
-    // 2. Coba API loader.to (dengan abaikan SSL error)
     const onlineApis = [
         async () => {
             try {
@@ -140,7 +136,7 @@ async function getAudioUrl(videoInfo) {
                             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
                         },
                         timeout: 15000,
-                        httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false }) // Abaikan sertifikat mati
+                        httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false })
                     }
                 );
 
@@ -213,6 +209,11 @@ async function getAudioUrl(videoInfo) {
         }
     }
 
+    const ytDlpResult = await getAudioWithYtDlp(videoInfo.url, videoInfo.title);
+    if (ytDlpResult) {
+        return ytDlpResult;
+    }
+
     return {
         success: false,
         error: "Semua metode download gagal"
@@ -256,19 +257,18 @@ async function songCommand(sock, chatId, message, input) {
 
         if (!searchQuery) {
             return await sock.sendMessage(chatId, {
-                text: 'Tuan~ Cari lagu?\n\n\`.song <judul lagu>\`'
+                text: 'Tuan~ Yuuki bisa mencarikan lagu untuk Tuan~\n\n\`.song <judul lagu>\`\n\nContoh:\n.song Alan Walker Faded\n\nYuuki akan mencarikan untuk Tuan~'
             }, { quoted: message });
         }
 
         statusMessage = await sock.sendMessage(chatId, {
             text: `Tuan~ Yuuki mencari: ${searchQuery}\nMohon tunggu sebentar~`
-        });
+        }, { quoted: message });
         statusKey = statusMessage.key;
 
         const videoInfo = await getYouTubeInfo(searchQuery);
         console.log(`Video ditemukan: ${videoInfo.title}`);
 
-        // Update status download tanpa kirim gambar (biar ga spam)
         await updateMessage(sock, chatId, statusKey, 
             `Tuan~ Yuuki sedang mengunduh: ${videoInfo.title}\n\n` +
             `Artist: ${videoInfo.artist}\n` +
@@ -293,28 +293,41 @@ async function songCommand(sock, chatId, message, input) {
         const stats = fileBuffer.length;
         const fileSizeMB = (stats / (1024 * 1024)).toFixed(2);
 
-        // Kirim Audio dengan UI Premium
+        let thumbBuffer = null;
+        if (videoInfo.thumbnail) {
+            try {
+                const res = await axios.get(videoInfo.thumbnail, { responseType: 'arraybuffer' });
+                let buffer = Buffer.from(res.data);
+                if (buffer.length < 1000000) {
+                    thumbBuffer = buffer;
+                }
+            } catch (e) {
+                console.log('Gagal unduh thumbnail:', e.message);
+            }
+        }
+
+        if (thumbBuffer) {
+            await sock.sendMessage(chatId, {
+                text: `${videoInfo.title}\nArtist: ${videoInfo.artist}\n\n${videoInfo.url}`,
+                linkPreview: {
+                    title: videoInfo.title,
+                    description: `${videoInfo.artist}`,
+                    jpegThumbnail: thumbBuffer,
+                    'matched-text': videoInfo.url,
+                    'canonical-url': videoInfo.url,
+                    thumbnailDirectly: true
+                }
+            }, { quoted: message });
+        }
+
         await sock.sendMessage(chatId, {
             audio: fileBuffer,
             mimetype: "audio/mpeg",
-            fileName: `${cleanFileName(videoInfo.title)}.mp3`,
-            contextInfo: {
-                externalAdReply: {
-                    title: videoInfo.title,
-                    body: `Yuuki Music Player • ${videoInfo.artist}`,
-                    mediaType: 2,
-                    thumbnail: videoInfo.thumbnail ? (await axios.get(videoInfo.thumbnail, { responseType: 'arraybuffer' }).then(res => Buffer.from(res.data)).catch(() => null)) : null,
-                    mediaUrl: videoInfo.url,
-                    sourceUrl: videoInfo.url,
-                    renderLargerThumbnail: true // Tampilan besar & mewah
-                }
-            }
+            fileName: `${cleanFileName(videoInfo.title)}.mp3`
         }, { quoted: message });
 
-        // Hapus pesan status "Mohon tunggu" agar rapi
         await sock.sendMessage(chatId, { delete: statusKey }).catch(() => {});
 
-        // Bersihkan file temp jika ada
         if (audioData.filePath && fs.existsSync(audioData.filePath)) {
             fs.unlinkSync(audioData.filePath);
         }
@@ -327,6 +340,5 @@ async function songCommand(sock, chatId, message, input) {
 
 module.exports = {
     song: songCommand,
-    play: songCommand,
     music: songCommand
 };

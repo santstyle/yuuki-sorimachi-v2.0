@@ -56,7 +56,6 @@ const NodeCache = require("node-cache")
 const pino = require("pino")
 const readline = require("readline")
 const { parsePhoneNumber } = require("libphonenumber-js")
-const { PHONENUMBER_MCC } = require('@whiskeysockets/baileys/lib/Utils/generics')
 const { join } = require('path')
 
 const store = require('./lib/lightweight_store')
@@ -315,7 +314,7 @@ async function startXeonBotInc() {
                     await XeonBotInc.sendMessage(group.id, { text: 'Tuan~ Waktu kebersamaan Yuuki dengan Tuan semua di grup ini telah berakhir. Terima kasih atas kesempatan yang telah diberikan kepada Yuuki untuk melayani. Yuuki mohon diri dan sampai jumpa di lain waktu, Tuan~ 🫶' });
                     await delay(2000);
                     await XeonBotInc.groupLeave(group.id);
-                    await prisma.group.delete({ where: { id: group.id } });
+                    await prisma.group.update({ where: { id: group.id }, data: { expiredAt: null } });
                     console.log(`Left expired group: ${group.id}`);
                 } catch (e) {
                     console.error(`Gagal keluar dari grup expired ${group.id}:`, e);

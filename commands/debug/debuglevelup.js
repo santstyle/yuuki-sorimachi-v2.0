@@ -1,6 +1,7 @@
 const { addXP, getProgress, getXPForNextLevel } = require('../../lib/xpManager');
 const path = require('path');
 const fs = require('fs');
+const sharp = require('sharp');
 
 async function debugLevelUp(sock, message, chatId, senderId, pushName) {
     try {
@@ -17,37 +18,34 @@ async function debugLevelUp(sock, message, chatId, senderId, pushName) {
         if (result && result.leveledUp) {
             const levelUpImagePath = path.join(__dirname, '../../assets', 'levelup', 'yuuki-uplevel.png');
             let thumbBuffer = null;
-
             if (fs.existsSync(levelUpImagePath)) {
                 try {
                     let buffer = fs.readFileSync(levelUpImagePath);
-                    buffer = Buffer.concat([buffer, Buffer.from(`\n#yuuki_lvl_${Date.now()}_${Math.floor(Math.random() * 999999)}`)]);
+                    buffer = await sharp(buffer)
+                        .resize(1140)
+                        .jpeg({ quality: 80 })
+                        .toBuffer();
                     thumbBuffer = buffer;
                 } catch (e) {
                     console.error('Gagal baca thumbnail level up:', e.message);
                 }
             }
 
-            const levelUpMsg = {
-                text: `LEVEL UP, Tuan!\n\n✨ *Sorak sorai bergema di seluruh penjuru ruangan~* ✨\n@${pushName} baru saja naik ke *Level ${result.level}*\nYuuki sangat bangga! Teruslah bercakap-cakap agar Tuan semakin perkasa!`,
+            const mentionNumber = senderId.split('@')[0];
+            const levelUpText = `✨ Bintang-bintang berbisik... @${mentionNumber} naik ke Level *${result.level}*. Takdir masih menyimpan banyak misteri untuk Tuan~`;
+
+            const levelUpMessage = {
+                text: levelUpText,
                 mentions: [senderId]
             };
 
             if (thumbBuffer) {
-                levelUpMsg.contextInfo = {
-                    externalAdReply: {
-                        title: "Yuuki Sorimachi | Level Up!",
-                        body: `Level ${result.level} reached!`,
-                        mediaType: 1,
-                        thumbnail: thumbBuffer,
-                        renderLargerThumbnail: true,
-                        showAdAttribution: false,
-                        sourceUrl: `https://wa.me/${sock.user.id.split(':')[0]}`
-                    }
-                };
+                levelUpMessage.image = thumbBuffer;
+                levelUpMessage.caption = levelUpText;
+                delete levelUpMessage.text;
             }
-            
-            await sock.sendMessage(chatId, levelUpMsg);
+
+            await sock.sendMessage(chatId, levelUpMessage, { quoted: message });
         } else {
             await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal memicu level up~' });
         }

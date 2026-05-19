@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
 const moment = require('moment-timezone');
+const sharp = require('sharp');
 
 async function menuCommand(sock, chatId, message, input) {
     const pushName = message.pushName || 'User';
@@ -49,7 +50,7 @@ async function menuCommand(sock, chatId, message, input) {
 
 ┏━━「 SEARCH 」
 ┃ .pinterest / .pin
-┃ .song      .play      .lyrics
+┃ .song      .lyrics
 ┗━━━━━━━━━━━━━━━━━━━━
 
 ┏━━「 TOOL 」
@@ -68,34 +69,23 @@ async function menuCommand(sock, chatId, message, input) {
             if (files.length > 0) {
                 const randomFile = files[Math.floor(Math.random() * files.length)];
                 console.log(`${chalk.cyan('[' + moment().tz('Asia/Jakarta').format('HH:mm:ss') + ']')} ${chalk.bgMagenta(' ASSET ')} Picking random thumbnail: ${chalk.yellow(randomFile)}`);
-                let buffer = fs.readFileSync(path.join(profilesDir, randomFile));
-                buffer = Buffer.concat([buffer, Buffer.from(`\n#yuuki_${Date.now()}_${Math.floor(Math.random() * 999999)}`)]);
 
-                if (buffer.length < 400000) {
-                    thumbBuffer = buffer;
-                } else {
-                    console.warn(`Menu thumbnail '${randomFile}' is too large. Skipping.`);
-                }
+                const rawBuffer = fs.readFileSync(path.join(profilesDir, randomFile));
+                thumbBuffer = await sharp(rawBuffer)
+                    .resize(1140, 641, { fit: 'cover', position: 'centre' })
+                    .jpeg({ quality: 80 })
+                    .toBuffer();
             }
         }
 
-        const messageOptions = { text: menuText };
-
         if (thumbBuffer) {
-            messageOptions.contextInfo = {
-                externalAdReply: {
-                    title: "Yuuki Sorimachi | WhatsApp Bot",
-                    body: `Hai ${pushName}, Senang bertemu denganmu`,
-                    mediaType: 1,
-                    thumbnail: thumbBuffer,
-                    renderLargerThumbnail: true,
-                    showAdAttribution: false,
-                    sourceUrl: `https://wa.me/${botNumber}`
-                }
-            };
+            await sock.sendMessage(chatId, {
+                image: thumbBuffer,
+                caption: menuText
+            }, { quoted: message });
+        } else {
+            await sock.sendMessage(chatId, { text: menuText }, { quoted: message });
         }
-
-        await sock.sendMessage(chatId, messageOptions, { quoted: message });
     } catch (e) {
         console.error('Menu command failure:', e);
         await sock.sendMessage(chatId, { text: menuText }, { quoted: message });

@@ -44,6 +44,7 @@ model Group {
 model GroupSettings {
   id              Int      @id @default(autoincrement())
   groupId         String   @unique
+  groupName       String?  // Group name snapshot
   group           Group    @relation(fields: [groupId], references: [id])
   antilink        Boolean  @default(false)
   antitoxic       Boolean  @default(false)
@@ -53,7 +54,6 @@ model GroupSettings {
   muteUntil       DateTime? // Sleep mode until specific time
   banned          Boolean  @default(false) // If bot is banned in this group
   maxWarnLevel    Int      @default(3)     // Max warnings before auto-kick
-  groupName       String?  // Group name snapshot
   
   warnings        WarningRecord[]
 }

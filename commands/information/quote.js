@@ -1,25 +1,47 @@
-const fetch = require('node-fetch');
+const axios = require('axios');
 
-module.exports = async function quoteCommand(sock, chatId, message, args) {
+const FALLBACK_QUOTES = [
+    { quote: 'Hidup itu seperti sepeda. Agar tetap seimbang, kau harus terus bergerak', source: 'Albert Einstein' },
+    { quote: 'Jangan menunggu. Waktu tidak akan pernah tepat', source: 'Napoleon Hill' },
+    { quote: 'Satu-satunya cara melakukan pekerjaan hebat adalah dengan mencintai apa yang kau lakukan', source: 'Steve Jobs' },
+    { quote: 'Kegagalan adalah guru terbaik dalam hidup', source: 'Miyamoto Musashi' },
+    { quote: 'Kesempatan itu seperti matahari terbit. Kalau kau menunggu terlalu lama, kau akan melewatkannya', source: 'William Arthur Ward' },
+    { quote: 'Keyakinan adalah awal dari segalanya', source: 'Robin Sharma' },
+    { quote: 'Dalam hidup, kita tidak harus hebat untuk memulai, tapi kita harus memulai untuk menjadi hebat', source: 'Zig Ziglar' },
+    { quote: 'Bermimpilah seolah kau akan hidup selamanya. Hiduplah seolah kau akan mati hari ini', source: 'James Dean' }
+];
+
+const API_URLS = [
+    { url: 'https://indonesian-quotes-api.vercel.app/api/quotes/random', parser: (r) => r.data.data },
+    { url: 'https://api.quotable.io/random', parser: (r) => ({ quote: r.data.content, source: r.data.author, category: 'Umum' }) },
+    { url: 'https://katanime-api.vercel.app/api/random', parser: (r) => ({ quote: r.data.data.quote, source: r.data.data.karakter || 'Anime' }) }
+];
+
+module.exports = async function quoteCommand(sock, chatId, message) {
     try {
-        let url = 'https://indonesian-quotes-api.vercel.app/api/quotes/random';
-        if (args[0]) url += `?category=${args[0]}`; // contoh: .quote motivasi
+        let q;
+        for (const api of API_URLS) {
+            try {
+                const res = await axios.get(api.url, { timeout: 15000 });
+                q = api.parser(res);
+                break;
+            } catch {
+                continue;
+            }
+        }
 
-        await sock.sendMessage(chatId, {
-            text: 'Tuan~ Mohon tunggu, Yuuki sedang mencari quote yang bagus~'
-        }, { quoted: message });
+        if (!q) {
+            const randomIdx = Math.floor(Math.random() * FALLBACK_QUOTES.length);
+            q = FALLBACK_QUOTES[randomIdx];
+        }
 
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
-        const q = json.data;
         const quoteMsg = `"${q.quote}"\n— ${q.source || 'Tidak diketahui'} (${q.category || 'Umum'})\n\nSemoga membuat hari Tuan lebih baik~`;
-
         await sock.sendMessage(chatId, { text: quoteMsg }, { quoted: message });
     } catch (error) {
         console.error('Error di quote command:', error);
-        await sock.sendMessage(chatId, {
-            text: 'Maaf, Tuan~ Yuuki gagal mengambil quote. Mungkin lain kali~ Format: .quote [kategori]'
-        }, { quoted: message });
+        const randomIdx = Math.floor(Math.random() * FALLBACK_QUOTES.length);
+        const q = FALLBACK_QUOTES[randomIdx];
+        const quoteMsg = `"${q.quote}"\n— ${q.source || 'Tidak diketahui'}\n\nSemoga membuat hari Tuan lebih baik~`;
+        await sock.sendMessage(chatId, { text: quoteMsg }, { quoted: message });
     }
 };

@@ -1,6 +1,9 @@
 const settings = require('../../settings');
 const fs = require('fs');
 const path = require('path');
+const sharp = require('sharp');
+const chalk = require('chalk');
+const moment = require('moment-timezone');
 
 async function helpCommand(sock, chatId, message, input) {
     const pushName = message.pushName || 'User';
@@ -92,10 +95,8 @@ async function helpCommand(sock, chatId, message, input) {
 ┏━━「 SEARCH 」
 ┃ > .pinterest       → Cari gambar dari Pinterest
 ┃   alias: .pin
-┃ > .song <judul>    → Download lagu (audio/mp3)
+┃ > .song <judul>    → Cari lagu di YouTube
 ┃                      Contoh: .song Bohemian Rhapsody
-┃ > .play <judul>    → Cari & putar lagu dari YouTube/Spotify
-┃                      Contoh: .play Shape of You
 ┃ > .lyrics <judul>  → Cari lirik lagu
 ┃                      Contoh: .lyrics Perfect Ed Sheeran
 ┗━━━━━━━━━━━━━━━━━━━━
@@ -105,7 +106,6 @@ async function helpCommand(sock, chatId, message, input) {
 ┃   alias: .trt
 ┃ > .ss              → Screenshot website
 ┃   alias: .ssweb, .screenshot
-┃ > .setwm <author>  → Set author & paket stiker
 ┗━━━━━━━━━━━━━━━━━━━━
 
 ╭───「 TIPS 」───
@@ -120,34 +120,23 @@ async function helpCommand(sock, chatId, message, input) {
         let thumbBuffer = null;
 
         if (fs.existsSync(helpImagePath)) {
-            let buffer = fs.readFileSync(helpImagePath);
-            buffer = Buffer.concat([buffer, Buffer.from(`\n#help_${Date.now()}`)]);
-            if (buffer.length < 1000000) {
-                thumbBuffer = buffer;
-            } else {
-                console.warn(`Help thumbnail is too large. Skipping.`);
-            }
+            const rawBuffer = fs.readFileSync(helpImagePath);
+            thumbBuffer = await sharp(rawBuffer)
+                .resize(1140)
+                .jpeg({ quality: 80 })
+                .toBuffer();
         } else {
             console.warn(`Help thumbnail file 'helpyuuki.png' not found in ${helpDir}`);
         }
 
-        const messageOptions = { text: helpText };
-
         if (thumbBuffer) {
-            messageOptions.contextInfo = {
-                externalAdReply: {
-                    title: "Yuuki Sorimachi | WhatsApp Bot",
-                    body: `Hai ${pushName}, Kamu butuh bantuan?`,
-                    mediaType: 1,
-                    thumbnail: thumbBuffer,
-                    renderLargerThumbnail: true,
-                    showAdAttribution: false,
-                    sourceUrl: `https://wa.me/${botNumber}`
-                }
-            };
+            await sock.sendMessage(chatId, {
+                image: thumbBuffer,
+                caption: helpText
+            }, { quoted: message });
+        } else {
+            await sock.sendMessage(chatId, { text: helpText }, { quoted: message });
         }
-
-        await sock.sendMessage(chatId, messageOptions, { quoted: message });
     } catch (e) {
         console.error('Help command failure:', e);
         await sock.sendMessage(chatId, { text: helpText }, { quoted: message });

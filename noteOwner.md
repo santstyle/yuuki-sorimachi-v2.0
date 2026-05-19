@@ -35,3 +35,7 @@ Files containing "Yuuki Bot":
 • .setwm <pack> | <auth>
 • .sewa <ID/days>
 • .ceksewa
+
+## Next Update
+- Voice Yuuki
+- Screnshoot dari kata tidak hanya url
