@@ -134,7 +134,7 @@ async function btchCommand(sock, chatId, message, url) {
             return;
         }
 
-        const tempDir = path.join(__dirname, '../temp');
+        const tempDir = path.join(__dirname, '../../temp');
         if (!fs.existsSync(tempDir)) {
             fs.mkdirSync(tempDir, { recursive: true });
         }

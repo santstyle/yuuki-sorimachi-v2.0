@@ -224,8 +224,6 @@ async function startXeonBotInc() {
 
     XeonBotInc.public = true
 
-    XeonBotInc.serializeM = (m) => smsg(XeonBotInc, m, store)
-
     const qrcode = require('qrcode-terminal')
     let connectionAttempts = 0
     const maxConnectionAttempts = 5

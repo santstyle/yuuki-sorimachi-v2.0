@@ -1,253 +1,418 @@
-# Yuuki Sorimachi | Bot
+<h1 align="center">Yuuki Sorimachi - WhatsApp Bot</h1>
 
-YuukiBot adalah bot WhatsApp yang dibangun menggunakan Node.js dan Baileys. Bot ini menyediakan berbagai fitur seperti pengelolaan grup, downloader media, dan banyak lagi.
+<p align="center">
+  <strong>Multi-purpose WhatsApp Bot</strong> built with Node.js + Baileys.<br>
+  Group management, media downloader, AI chat, and more.
+</p>
 
-## Fitur Utama
+<p align="center">
+  <img src="https://img.shields.io/badge/Node.js-18%2B-339933?logo=node.js&logoColor=white">
+  <img src="https://img.shields.io/badge/Prisma-SQLite-2D3748?logo=prisma&logoColor=white">
+  <img src="https://img.shields.io/badge/License-MIT-yellow">
+</p>
 
-- **Pengelolaan Grup**: Ban, kick, mute, dan fitur admin lainnya.
-- **Downloader**: Unduh video dari YouTube, Instagram, TikTok, dan Facebook.
-- **Media Tools**: Sticker, gambar, dan konversi media.
-- **Hiburan**: Chatbot, Quote, joke, fact, dan game sederhana.
-- **Lainnya**: Weather, news, translate, dan banyak lagi.
+---
+
+## Daftar Isi
+
+- [Fitur](#fitur)
+- [Persyaratan Sistem](#persyaratan-sistem)
+- [Instalasi di VPS Ubuntu](#instalasi-di-vps-ubuntu)
+- [Konfigurasi](#konfigurasi)
+- [Setup Session WhatsApp](#setup-session-whatsapp)
+- [Update Bot](#update-bot)
+- [Troubleshooting](#troubleshooting)
+- [Lisensi](#lisensi)
+
+---
+
+## Fitur
+
+| Kategori | Fitur |
+|----------|-------|
+| Grup | Kick, ban, warn, mute, tagall, hidetag, antilink, antibadword, antitag, welcome/goodbye, absen, groupinfo, resetlink, staff |
+| Downloader | YouTube (video/audio), TikTok, Instagram, Facebook, Twitter, dll (via btch-downloader & yt-dlp) |
+| Media | Stiker (gambar/video/gif/gabung), toimage, tovideo, toaudio, tomp3, togif, removebg, remini/enhance |
+| AI Chat | Yuuki (built-in character), Groq AI, DeepSeek, OpenAI GPT, obrolan natural |
+| Informasi | Cuaca, berita, meme, joke, quotes, facts, lirik lagu, pencarian lagu |
+| Tools | Translate, screenshot web, setwm (sticker watermark), ssweb |
+| Owner | Broadcast, mode public/private, antidelete, autostatus, setpp, sudo, update, cleanup, sewa grup |
+| Leveling | XP & level system, level-up announcement, leaderboard |
+| Database | SQLite via Prisma ORM - semua data user, grup, XP, warning, history tersimpan rapi |
+
+---
 
 ## Persyaratan Sistem
 
-- Node.js versi 16 atau lebih tinggi
-- FFmpeg (untuk pemrosesan media)
-- Git (untuk cloning repository)
-- PM2 (untuk process management - opsional)
+| Komponen | Minimal | Rekomendasi |
+|----------|---------|-------------|
+| OS | Ubuntu 20.04 | Ubuntu 22.04 / 24.04 |
+| Node.js | 18.x | 20.x LTS |
+| RAM | 256 MB | 512 MB+ |
+| Storage | 500 MB | 1 GB+ |
+| Lainnya | FFmpeg, Git, PM2 | yt-dlp (untuk downloader) |
 
-## Instalasi
+---
 
-### Langkah 1: Clone Repository
+## Instalasi di VPS Ubuntu
 
-Clone repository ini menggunakan Git:
+### 1. Update System
+
+```bash
+sudo apt update && sudo apt upgrade -y
+```
+
+### 2. Install Git
+
+```bash
+sudo apt install git -y
+git --version
+```
+
+Output harus seperti `git version 2.x.x`.
+
+### 3. Install Node.js 20.x LTS
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+node --version
+npm --version
+```
+
+Output `node` harus `v20.x.x`, output `npm` harus `10.x.x` atau lebih baru.
+
+### 4. Install PM2
+
+PM2 digunakan untuk menjalankan bot di background dan auto-restart jika crash atau VPS reboot.
+
+```bash
+npm install -g pm2
+pm2 --version
+```
+
+Output harus menampilkan versi PM2.
+
+### 5. Clone Repository
 
 ```bash
 git clone https://github.com/santstyle/yuukibot-v2.0.git
 cd yuukibot-v2.0
 ```
 
-### Langkah 2: Install Node Modules
+### 6. Install FFmpeg
 
-Install semua dependensi yang diperlukan:
-
-```bash
-npm install
-```
-
-### Langkah 3: Install FFmpeg
-
-FFmpeg diperlukan untuk pemrosesan audio dan video. Instal sesuai sistem operasi Anda:
-
-#### Linux (Ubuntu/Debian)
+FFmpeg diperlukan untuk konversi stiker, video, audio, dan pemrosesan media lainnya.
 
 ```bash
-sudo apt update
 sudo apt install ffmpeg -y
+ffmpeg -version
 ```
 
-#### Windows
+Output harus menampilkan versi FFmpeg.
 
-- Unduh dari situs resmi FFmpeg.
-- Ekstrak dan tambahkan ke PATH sistem.
+### 7. Install yt-dlp
 
-#### macOS
+yt-dlp diperlukan untuk mendownload video/audio dari YouTube dan berbagai platform lain.
 
 ```bash
-brew install ffmpeg
-```
-
-#### Install yt-dlp
-```bash
-sudo apt install python3 python3-pip
+sudo apt install python3 python3-pip -y
 pip3 install yt-dlp
+yt-dlp --version
 ```
-Atau curl langsung 
+
+Atau install via binary langsung:
+
 ```bash
 sudo curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
 sudo chmod a+rx /usr/local/bin/yt-dlp
 yt-dlp --version
 ```
 
-### Downloader 
-```bash
-npm install btch-downloader
-npm install instagram-url-downloader
+Output harus menampilkan versi yt-dlp.
 
+### 8. Install Project Dependencies
+
+```bash
+npm install
 ```
 
-### Langkah 4: Konfigurasi Environment
+> Jika ada error peer dependency, gunakan:
+> ```bash
+> npm install --legacy-peer-deps
+> ```
 
-Salin file environment contoh:
+### 9. Setup Environment Variables
 
 ```bash
 cp .env.example .env
-```
-
-Edit file `.env` untuk mengatur konfigurasi:
-
-```bash
 nano .env
 ```
 
-atau
+Isi minimal yang wajib:
+
+```env
+OWNER_NUMBER=62812xxxxxxx       # Nomor HP owner (pakai kode negara, tanpa +)
+BOT_NUMBER=62889xxxxxxx         # Nomor HP bot
+OWNER_LID=18684xxxxxxxx         # LID owner (bisa dikosongkan dulu)
+```
+
+API key opsional (kosongi jika tidak butuh fitur AI):
+
+```env
+GROQ_API_KEY=your_key_here      # Untuk Groq AI
+DEEPSEEK_API_KEY=your_key_here   # Untuk DeepSeek
+OPENAI_API_KEY=your_key_here     # Untuk ChatGPT
+```
+
+Simpan file dengan `Ctrl + X`, tekan `Y`, lalu `Enter`.
+
+### 10. Generate Database
 
 ```bash
-vim .env
-```
-Create API keys like this
-```env
-DEEPSEEK_API_KEY=
-GROQ_API_KEY=
-OPENAI_API_KEY=
+npx prisma generate
+npx prisma db push
 ```
 
-Isi konfigurasi lainnya yang diperlukan seperti:
+> Perintah ini akan membuat file `prisma/database.db` (SQLite) dan semua tabel yang dibutuhkan.
 
-- Nomor WhatsApp <-- in setting.js
-- Pengaturan database
-- dll
+### 11. Setup Session WhatsApp
 
-### Langkah 5: Generate Session WhatsApp
-
-Jalankan bot untuk pertama kali untuk generate session:
+Jalankan bot untuk scan QR:
 
 ```bash
 npm start
 ```
 
-**Catatan:**
+1. Akan muncul QR code di terminal
+2. Buka WhatsApp > 3 titik > **Perangkat Tertaut** > **Tautkan Perangkat**
+3. Scan QR code
+4. Tunggu hingga muncul pesan `Bot connected successfully!`
+5. Tekan `Ctrl + C` untuk stop
 
-- Buka WhatsApp di HP Anda
-- Scan QR code yang muncul di terminal
-- Tunggu hingga terkoneksi (biasanya muncul pesan "Connected!")
-- Tekan Ctrl + C untuk menghentikan setelah session tersimpan
+> Folder session akan tersimpan di `./session/`. Backup folder ini jika perlu.
 
-### Langkah 6: Jalankan dengan PM2 (Production) jika running bot di linux (Ubuntu)
-
-Untuk menjalankan bot di background dan auto-restart:
+### 12. Jalankan Bot dengan PM2
 
 ```bash
-# Install PM2 global jika belum
-npm install -g pm2
-
-# Jalankan bot dengan PM2
-pm2 start npm --name "yuuki-bot" -- start
-
-# Atau jika menggunakan ecosystem.config.js
 pm2 start ecosystem.config.js
+```
 
-# Simpan konfigurasi PM2 untuk auto start
+Simpan daftar proses PM2 agar aktif terus:
+
+```bash
 pm2 save
+```
+
+Aktifkan auto-start saat VPS reboot:
+
+```bash
 pm2 startup
 ```
 
-### Langkah 7: Verifikasi Status
+Ikuti perintah yang muncul di terminal (biasanya `sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u $USER --hp /home/$USER`).
 
-Cek status bot yang sedang berjalan:
+### 13. Verifikasi
 
 ```bash
 pm2 list
-pm2 status yuuki-bot
-pm2 logs yuuki-bot --lines 50
 ```
+
+Pastikan status bot **online**.
+
+Cek log untuk memastikan tidak ada error:
+
+```bash
+pm2 logs yuuki-bot --lines 20
+```
+
+Kirim pesan `.ping` ke nomor bot - harus reply `Pong!`.
+
+---
+
+## Konfigurasi
+
+### File `.env`
+
+| Variable | Wajib | Deskripsi |
+|----------|-------|-----------|
+| `OWNER_NUMBER` | Ya | Nomor HP owner (628xxx) |
+| `BOT_NUMBER` | Ya | Nomor HP bot |
+| `OWNER_LID` | Tidak | LID owner (untuk WhatsApp baru) |
+| `GROQ_API_KEY` | Tidak | Untuk fitur .groq |
+| `DEEPSEEK_API_KEY` | Tidak | Untuk fitur .deepseek |
+| `OPENAI_API_KEY` | Tidak | Untuk fitur .gpt |
+| `XTEAM_API_KEY` | Tidak | API key external services |
+| `LOLHUMAN_API_KEY` | Tidak | API key external services |
+
+### File `settings.js`
+
+```js
+{
+  packname: 'Yuuki Sorimachi | Bot',  // Nama pack sticker
+  botName: "Yuuki Sorimachi | Bot",
+  botOwner: 'SantStyle',
+  commandMode: "public",              // "public" atau "private"
+  maxStoreMessages: 20,               // Max pesan disimpan di memory
+  storeWriteInterval: 10000,          // Interval simpan store (ms)
+}
+```
+
+### File `prisma/schema.prisma`
+
+Database SQLite dengan model:
+
+- **User** - Data pengguna & status banned
+- **UserProgress** - XP & level
+- **Group** - Data grup & masa sewa
+- **GroupSettings** - Antilink, antibadword, welcome, goodbye, dll
+- **WarningRecord** - Riwayat peringatan
+- **History** - Log command yang dijalankan
+
+---
+
+## Setup Session WhatsApp
+
+### Session Hilang / Expired
+
+```bash
+pm2 stop yuuki-bot
+rm -rf session
+pm2 start yuuki-bot
+# Scan QR lagi
+```
+
+### Backup Session
+
+```bash
+cp -r session session-backup-$(date +%Y%m%d)
+```
+
+### Restore Session
+
+```bash
+pm2 stop yuuki-bot
+rm -rf session
+cp -r session-backup-20250101 session
+pm2 start yuuki-bot
+```
+
+---
 
 ## Update Bot
 
-Untuk memperbarui bot ke versi terbaru:
-
 ```bash
-# Hentikan bot terlebih dahulu
-pm2 stop yuuki-bot
+# Masuk ke directory bot
+cd ~/yuukibot-v2.0
 
-# Backup data penting jika perlu
+# Backup data
 cp -r session session-backup
 cp .env .env-backup
 
-# Pull update terbaru
+# Pull update & install
 git pull origin main
-
-# Install dependencies baru
 npm install
+
+# Update database jika ada perubahan schema
+npx prisma generate
+npx prisma db push
 
 # Restart bot
 pm2 restart yuuki-bot
 ```
 
-## Penggunaan
+> Catatan: Selalu backup `session/` dan `.env` sebelum update!
 
-Setelah bot berjalan, gunakan perintah `.help` atau `!menu` untuk melihat daftar perintah yang tersedia.
+---
 
 ## Troubleshooting
 
-### Bot Tidak Berjalan
-
-Cek log error:
+### Bot Tidak Bisa Connect
 
 ```bash
-pm2 logs yuuki-bot
-```
+# Cek log error
+pm2 logs yuuki-bot --lines 50
 
-Pastikan FFmpeg terinstall:
+# Pastikan session masih valid
+ls -la session/creds.json
 
-```bash
-ffmpeg -version
-```
-
-Cek Node.js version:
-
-```bash
-node --version
+# Hapus session & scan ulang
+pm2 stop yuuki-bot
+rm -rf session
+pm2 start yuuki-bot
 ```
 
 ### QR Code Tidak Muncul
 
-Hapus folder session dan coba lagi:
-
 ```bash
 rm -rf session
-npm start
+npm start   # Harus muncul QR
+```
+
+### FFmpeg Error
+
+```bash
+which ffmpeg || sudo apt install ffmpeg -y
+ffmpeg -version
+```
+
+### yt-dlp Error
+
+```bash
+pip3 install --upgrade yt-dlp
+yt-dlp --version
+```
+
+### Prisma / Database Error
+
+```bash
+npx prisma generate
+npx prisma db push
 ```
 
 ### Permission Denied
 
-Jika ada error permission:
-
 ```bash
-sudo chmod -R 755 .
+sudo chown -R $(whoami):$(whoami) ~/yuukibot-v2.0
+chmod -R 755 ~/yuukibot-v2.0
 ```
 
-## Fitur PM2 yang Berguna
+### RAM Usage Tinggi
 
+Cek monitoring:
 ```bash
-# Monitor bot
 pm2 monit
-
-# Restart bot
-pm2 restart yuuki-bot
-
-# Stop bot
-pm2 stop yuuki-bot
-
-# Hapus dari PM2
-pm2 delete yuuki-bot
-
-# Cek resource usage
 pm2 show yuuki-bot
 ```
 
+Restart jika perlu:
+```bash
+pm2 restart yuuki-bot
+```
+
+---
+
+## Deploy dengan Docker (Alternatif)
+
+> Coming soon - Dockerfile masih dalam pengembangan.
+
+---
+
 ## Lisensi
 
-Proyek ini menggunakan lisensi MIT. Lihat file LICENSE untuk detail lebih lanjut.
+Proyek ini menggunakan lisensi **MIT**.
 
-Modifikasi dari [https://github.com/mruniquehacker/Knightbot-MD](https://github.com/mruniquehacker/Knightbot-MD)
+```
+MIT License
 
-## Dukungan
+Copyright (c) 2024 SantStyle
 
-Jika ada pertanyaan atau masalah:
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files...
+```
 
-- Buat issue di repository GitHub
-- Cek bagian FAQ di dokumentasi
-- Hubungi maintainer melalui kontak yang tersedia
+---
 
+<p align="center">
+  <a href="https://github.com/santstyle/yuukibot-v2.0">GitHub Repository</a>
+</p>

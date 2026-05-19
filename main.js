@@ -99,6 +99,10 @@ const { startAbsen, addAbsen, finishAbsen } = require('./commands/group/absen');
 const sewaCommand = require('./commands/group/sewa');
 const cekSewaCommand = require('./commands/group/ceksewa');
 const setWmCommand = require('./commands/tool/setwm');
+const { resetWarnCommand } = require('./commands/group/resetwarn');
+const { song: songCommand } = require('./commands/search/song');
+const btchCommand = require('./commands/downloader/btch');
+const downloadQueue = require('./lib/downloadQueue');
 
 global.packname = settings.packname;
 global.author = settings.author;
@@ -126,10 +130,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
         if (!message?.message) return;
 
 
-
-        if (message.message) {
-            storeMessage(message);
-        }
 
         if (message.message?.protocolMessage?.type === 0) {
             await handleMessageRevocation(sock, message);
@@ -454,7 +454,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage.startsWith('.resetwarn'):
                 const resetWarnJids = message.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
-                const { resetWarnCommand } = require('./commands/group/resetwarn');
                 await resetWarnCommand(sock, chatId, senderId, resetWarnJids, message);
                 break;
             case userMessage === '.delete' || userMessage === '.del':
@@ -566,10 +565,8 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage.startsWith('.welcome'):
                 if (isGroup) {
-                    if (!isSenderAdmin) {
-                        const adminStatus = await isAdmin(sock, chatId, senderId);
-                        isSenderAdmin = adminStatus.isSenderAdmin;
-                    }
+                    const adminStatus = await isAdmin(sock, chatId, senderId);
+                    isSenderAdmin = adminStatus.isSenderAdmin;
 
                     if (isSenderAdmin || message.key.fromMe) {
                         await welcomeCommand(sock, chatId, message);
@@ -582,10 +579,8 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage.startsWith('.goodbye'):
                 if (isGroup) {
-                    if (!isSenderAdmin) {
-                        const adminStatus = await isAdmin(sock, chatId, senderId);
-                        isSenderAdmin = adminStatus.isSenderAdmin;
-                    }
+                    const adminStatus = await isAdmin(sock, chatId, senderId);
+                    isSenderAdmin = adminStatus.isSenderAdmin;
 
                     if (isSenderAdmin || message.key.fromMe) {
                         await goodbyeCommand(sock, chatId, message);
@@ -751,17 +746,14 @@ async function handleMessages(sock, messageUpdate, printLog) {
             // Commands removed as they are now handled by .btch universal downloader
             case userMessage.startsWith('.groq'):
                 const groqInput = rawText.slice(6).trim();
-                const { groqCommand } = require('./commands/ai-chat/groq');
                 await groqCommand(sock, chatId, message, groqInput, senderId);
                 break;
             case userMessage.startsWith('.deepseek'):
                 const deepseekInput = rawText.slice(10).trim();
-                const { deepseekCommand } = require('./commands/ai-chat/deepseek');
                 await deepseekCommand(sock, chatId, message, deepseekInput);
                 break;
             case userMessage.startsWith('.gpt'):
                 const gptInput = rawText.slice(4).trim();
-                const { gptCommand } = require('./commands/ai-chat/gpt');
                 await gptCommand(sock, chatId, message, gptInput, senderId);
                 break;
             case userMessage.startsWith('.pinterest') || userMessage.startsWith('.pin'):
@@ -847,11 +839,9 @@ async function handleMessages(sock, messageUpdate, printLog) {
                     const input = rawText.slice(prefix.length).trim();
                     if (input) {
                         if (prefix === '.song' || prefix === '.music') {
-                            const songCommand = require('./commands/search/song');
-                            await songCommand.song(sock, chatId, message, input);
+                            await downloadQueue.add(sock, chatId, message, input, songCommand);
                         } else {
-                            const btchCommand = require('./commands/downloader/btch');
-                            await btchCommand(sock, chatId, message, input);
+                            await downloadQueue.add(sock, chatId, message, input, btchCommand);
                         }
                     } else {
                         await sock.sendMessage(chatId, {
@@ -882,22 +872,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
 
         if (commandExecuted !== false) {
             await showTypingAfterCommand(sock, chatId);
-        }
-
-        async function groupJidCommand(sock, chatId, message) {
-            const groupJid = message.key.remoteJid;
-
-            if (!groupJid.endsWith('@g.us')) {
-                return await sock.sendMessage(chatId, {
-                    text: "Tuan~ Command ini hanya bisa digunakan di dalam grup. Yuuki tidak bisa memberikan informasi grup di luar sana~"
-                });
-            }
-
-            await sock.sendMessage(chatId, {
-                text: `Tuan~ Berikut adalah *Group JID* yang Tuan minta: ${groupJid}\nSimak baik-baik, ya~ Ini adalah identitas rahasia grup ini~`
-            }, {
-                quoted: message
-            });
         }
 
         if (userMessage.startsWith('.')) {
@@ -981,10 +955,6 @@ async function handleGroupParticipantUpdate(sock, update) {
 }
 
 
-function storeMessage(message) {
-    // Message silently stored for antidelete tracking
-}
-
 async function handleMessageRevocation(sock, message) {
     try {
         const antideleteData = JSON.parse(fs.readFileSync('./data/antidelete.json', 'utf8'));
@@ -1059,33 +1029,6 @@ async function unbanCommand(sock, chatId, message) {
     }
 }
 
-async function handleAntideleteCommand(sock, chatId, message, match) {
-    try {
-        const antideleteData = JSON.parse(fs.readFileSync('./data/antidelete.json', 'utf8'));
-
-        if (!match || match.toLowerCase() === 'status') {
-            const status = antideleteData.enabled ? 'aktif' : 'nonaktif';
-            await sock.sendMessage(chatId, { text: `Tuan~ Status Antidelete saat ini: *${status}*\nYuuki akan tetap mengawasi, apa pun yang terjadi~` });
-            return;
-        }
-
-        if (match.toLowerCase() === 'on') {
-            antideleteData.enabled = true;
-            fs.writeFileSync('./data/antidelete.json', JSON.stringify(antideleteData, null, 2));
-            await sock.sendMessage(chatId, { text: 'Baik, Tuan~ Antidelete telah Yuuki aktifkan. Kini tidak ada pesan yang bisa disembunyikan dari Yuuki~ Hehe~' });
-        } else if (match.toLowerCase() === 'off') {
-            antideleteData.enabled = false;
-            fs.writeFileSync('./data/antidelete.json', JSON.stringify(antideleteData, null, 2));
-            await sock.sendMessage(chatId, { text: 'Baik, Tuan~ Antidelete telah Yuuki nonaktifkan. Pesan-pesan akan kembali menjadi misteri~ Yuuki suka misteri~' });
-        } else {
-            await sock.sendMessage(chatId, { text: 'Tuan~ Cara menggunakan Antidelete:\n.antidelete on — untuk mengaktifkan\n.antidelete off — untuk menonaktifkan\n.antidelete status — untuk melihat status\nYuuki menunggu perintah Tuan~' });
-        }
-    } catch (error) {
-        console.error('Error in antidelete command:', error);
-        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki menemui kesalahan saat mengelola Antidelete. Mungkin ada yang tidak beres dengan sistem Yuuki~ Mohon periksa kembali~' });
-    }
-}
-
 async function handleStatusUpdate(sock, status) {
     try {
         const jid = status.key.remoteJid;
@@ -1101,8 +1044,6 @@ async function handleStatusUpdate(sock, status) {
 module.exports = {
     handleMessages,
     handleGroupParticipantUpdate,
-    handleStatus: async (sock, status) => {
-        await handleStatusUpdate(sock, status);
-    }
+    handleStatus: handleStatusUpdate
 };
 
