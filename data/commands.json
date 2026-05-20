@@ -1,0 +1,294 @@
+{
+  "categories": [
+    {
+      "id": "main",
+      "name": "*MAIN*",
+      "commands": [
+        {
+          "name": ".menu",
+          "desc": "Tampilkan daftar perintah"
+        },
+        {
+          "name": ".ping",
+          "desc": "Cek kecepatan respon Yuuki"
+        },
+        {
+          "name": ".alive",
+          "desc": "Cek apakah Yuuki masih bernafas"
+        },
+        {
+          "name": ".owner",
+          "desc": "Hubungi Tuan pemilik Yuuki"
+        },
+        {
+          "name": ".help",
+          "desc": "Tampilkan bantuan ini"
+        },
+        {
+          "name": ".del",
+          "alias": ".delete",
+          "desc": "Hapus pesan Yuuki"
+        },
+        {
+          "name": ".mylevel",
+          "desc": "Cek level & XP Tuan"
+        }
+      ]
+    },
+    {
+      "id": "group",
+      "name": "*GROUP*",
+      "commands": [
+        {
+          "name": ".antilink",
+          "desc": "Blokir link grup lain"
+        },
+        {
+          "name": ".antitag",
+          "desc": "Blokir tag massal/hidetag"
+        },
+        {
+          "name": ".antibadword",
+          "desc": "Sensor kata kasar otomatis"
+        },
+        {
+          "name": ".welcome",
+          "desc": "Atur pesan sambutan ala Yuuki"
+        },
+        {
+          "name": ".goodbye",
+          "desc": "Atur pesan perpisahan ala Yuuki"
+        },
+        {
+          "name": ".mutegroup",
+          "desc": "Bisukan chat di grup"
+        },
+        {
+          "name": ".unmutegroup",
+          "desc": "Aktifkan chat di grup"
+        },
+        {
+          "name": ".kick",
+          "desc": "Keluarkan member dari grup",
+          "usage": ".kick @user"
+        },
+        {
+          "name": ".warn",
+          "desc": "Beri peringatan dengan alasan",
+          "usage": ".warn @user [alasan]"
+        },
+        {
+          "name": ".warnings",
+          "desc": "Cek total warn member",
+          "usage": ".warnings @user"
+        },
+        {
+          "name": ".resetwarn",
+          "desc": "Hapus semua warning member",
+          "usage": ".resetwarn @user"
+        },
+        {
+          "name": ".tagall",
+          "desc": "Tag semua member sekaligus"
+        },
+        {
+          "name": ".hidetag",
+          "desc": "Tag semua tanpa notifikasi",
+          "usage": ".hidetag teks"
+        },
+        {
+          "name": ".resetlink",
+          "desc": "Reset link undangan grup"
+        },
+        {
+          "name": ".groupinfo",
+          "desc": "Info lengkap grup ini"
+        },
+        {
+          "name": ".groupset",
+          "desc": "Pengaturan grup"
+        },
+        {
+          "name": ".ceksewa",
+          "desc": "Cek status sewa grup"
+        },
+        {
+          "name": ".staff",
+          "desc": "Daftar admin & staff grup"
+        },
+        {
+          "name": ".absen",
+          "desc": "Mulai sesi absensi"
+        }
+      ]
+    },
+    {
+      "id": "chatbot",
+      "name": "*CHATBOT*",
+      "commands": [
+        {
+          "name": ".yuuki",
+          "desc": "Ngobrol langsung sama Yuuki"
+        }
+      ]
+    },
+    {
+      "id": "ai-chat",
+      "name": "*AI CHAT*",
+      "commands": [
+        {
+          "name": ".groq",
+          "desc": "Chat dengan Groq AI",
+          "usage": ".groq <teks>",
+          "example": ".groq apa itu AI?"
+        },
+        {
+          "name": ".deepseek",
+          "desc": "Chat dengan DeepSeek AI",
+          "usage": ".deepseek <teks>",
+          "example": ".deepseek jelaskan Machine Learning"
+        },
+        {
+          "name": ".gpt",
+          "desc": "Chat dengan GPT (OpenAI)",
+          "usage": ".gpt <teks>",
+          "example": ".gpt apa itu AI?"
+        }
+      ]
+    },
+    {
+      "id": "converter",
+      "name": "*CONVERTER*",
+      "commands": [
+        {
+          "name": ".sticker",
+          "alias": ".s",
+          "desc": "Gambar/video ke stiker (reply/kirim gambar)"
+        },
+        {
+          "name": ".setwm",
+          "desc": "Set author & paket stiker"
+        },
+        {
+          "name": ".toimage",
+          "alias": ".toimg",
+          "desc": "Stiker ke gambar"
+        },
+        {
+          "name": ".tovideo",
+          "alias": ".tovid",
+          "desc": "Stiker ke ke video"
+        },
+        {
+          "name": ".togif",
+          "alias": ".tgif",
+          "desc": "Stiker ke ke GIF"
+        },
+        {
+          "name": ".tomp3",
+          "alias": ".toaud",
+          "desc": "Video/audio ke MP3"
+        },
+        {
+          "name": ".stickercrop",
+          "alias": ".scrop",
+          "desc": "Crop stiker ke bentuk lain"
+        }
+      ]
+    },
+    {
+      "id": "downloader",
+      "name": "*DOWNLOADER*",
+      "commands": [
+        {
+          "name": ".dl",
+          "alias": ".download",
+          "desc": "Download dari link media"
+        },
+        {
+          "name": ".btch",
+          "desc": "Download universal (YouTube, IG, TikTok, dll)"
+        }
+      ]
+    },
+    {
+      "id": "information",
+      "name": "*INFORMATION*",
+      "commands": [
+        {
+          "name": ".joke",
+          "desc": "Cerita lucu random"
+        },
+        {
+          "name": ".meme",
+          "desc": "Meme random dari internet"
+        },
+        {
+          "name": ".quote",
+          "desc": "Kata-kata bijak / motivasi"
+        },
+        {
+          "name": ".fact",
+          "desc": "Fakta unik dunia"
+        },
+        {
+          "name": ".news",
+          "desc": "Berita terbaru hari ini"
+        },
+        {
+          "name": ".weather",
+          "desc": "Cek cuaca",
+          "usage": ".weather Jakarta"
+        }
+      ]
+    },
+    {
+      "id": "search",
+      "name": "*SEARCH*",
+      "commands": [
+        {
+          "name": ".pinterest",
+          "alias": ".pin",
+          "desc": "Cari gambar dari Pinterest"
+        },
+        {
+          "name": ".song",
+          "desc": "Cari lagu di YouTube",
+          "usage": ".song Bohemian Rhapsody"
+        },
+        {
+          "name": ".lyrics",
+          "desc": "Cari lirik lagu",
+          "usage": ".lyrics Perfect Ed Sheeran"
+        }
+      ]
+    },
+    {
+      "id": "tool",
+      "name": "*TOOLS*",
+      "commands": [
+        {
+          "name": ".translate",
+          "alias": ".trt",
+          "desc": "Terjemahkan teks ke bahasa lain"
+        },
+        {
+          "name": ".ss",
+          "alias": ".ssweb, .screenshot",
+          "desc": "Screenshot website"
+        }
+      ]
+    },
+    {
+      "id": "service",
+      "name": "*SERVICE*",
+      "commands": [
+        {
+          "name": ".reportbug",
+          "desc": "Laporkan bug/error ke pemilik Yuuki",
+          "usage": ".reportbug <pesan laporan>"
+        }
+      ]
+    }
+  ]
+}

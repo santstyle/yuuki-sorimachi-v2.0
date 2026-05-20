@@ -39,8 +39,9 @@ baileys_store.json
 logs/
 *.log
 
-# Runtime data
-data/
+# Runtime data (auto-generated, do not commit)
+data/*
+!data/commands.json
 database.sqlite
 *.db
 pids/

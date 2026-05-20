@@ -286,8 +286,27 @@ async function songCommand(sock, chatId, message, input) {
         if (audioData.filePath) {
             fileBuffer = fs.readFileSync(audioData.filePath);
         } else {
-            const response = await axios.get(audioData.url, { responseType: 'arraybuffer' });
-            fileBuffer = Buffer.from(response.data);
+            let lastError;
+            for (let attempt = 1; attempt <= 3; attempt++) {
+                try {
+                    const response = await axios.get(audioData.url, {
+                        responseType: 'arraybuffer',
+                        timeout: 30000,
+                        headers: { 'User-Agent': 'Mozilla/5.0' }
+                    });
+                    fileBuffer = Buffer.from(response.data);
+                    break;
+                } catch (e) {
+                    lastError = e;
+                    console.log(`Download attempt ${attempt} gagal: ${e.message}`);
+                    if (attempt < 3) await new Promise(r => setTimeout(r, 2000 * attempt));
+                }
+            }
+            if (!fileBuffer) {
+                return await sock.sendMessage(chatId, {
+                    text: `Maaf, Tuan~ Gagal mengunduh audio setelah 3 kali percobaan. Silakan coba lagi nanti.`
+                }, { quoted: message });
+            }
         }
 
         const stats = fileBuffer.length;

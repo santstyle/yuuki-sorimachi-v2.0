@@ -1,4 +1,5 @@
 const prisma = require('../../lib/db');
+const { getNextCustomId } = require('../../lib/customId');
 
 async function banCommand(sock, chatId, message) {
     let userToBan;
@@ -18,11 +19,22 @@ async function banCommand(sock, chatId, message) {
     }
 
     try {
-        const user = await prisma.user.upsert({
+        const existingUser = await prisma.user.findUnique({
             where: { id: userToBan },
-            update: { isBanned: true },
-            create: { id: userToBan, isBanned: true }
+            select: { id: true }
         });
+
+        if (existingUser) {
+            await prisma.user.update({
+                where: { id: userToBan },
+                data: { isBanned: true }
+            });
+        } else {
+            const nextId = await getNextCustomId();
+            await prisma.user.create({
+                data: { id: userToBan, isBanned: true, customId: nextId }
+            });
+        }
 
         await sock.sendMessage(chatId, {
             text: `Baik, Tuan~ @${userToBan.split('@')[0]} sudah Yuuki blokir. Semoga ia mendapat pelajaran~`,

@@ -1,118 +1,45 @@
 const settings = require('../../settings');
+const registry = require('../../data/commands.json');
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
 const chalk = require('chalk');
 const moment = require('moment-timezone');
 
+const helpNotes = {
+    'chatbot': `┃                      Yuuki akan menjawab... dengan satu syarat~`,
+    'ai-chat': `┃                      Ketik .groq reset untuk reset riwayat`,
+    'downloader': `┃                      Support: YouTube, Instagram, TikTok,\n┃                      Facebook, Spotify, Pinterest, dll.`
+};
+
+function buildHelp() {
+    const parts = ['Akhirnya Tuan melihat Yuuki~ Yuuki dengan segala hormat dan kerendahan hati siap melayani. Tapi sebelumnya... Yuuki boleh bertanya satu hal? *Apa warna favorit Tuan?* Ah, tidak tidak, lupakan~ Yuuki malah kepo sendiri.\n'];
+    for (const cat of registry.categories) {
+        const lines = [`┏━━「 ${cat.name} 」`];
+        for (const cmd of cat.commands) {
+            const displayName = cmd.usage || cmd.name;
+            const arrowGap = ' '.repeat(Math.max(1, 17 - displayName.length));
+            lines.push(`┃ > ${displayName}${arrowGap}→ ${cmd.desc}`);
+            if (cmd.alias) {
+                lines.push(`┃   alias: ${cmd.alias}`);
+            }
+            if (cmd.example) {
+                lines.push(`┃                      Contoh: ${cmd.example}`);
+            }
+        }
+        const note = helpNotes[cat.id];
+        if (note) lines.push(note);
+        lines.push('┗━━━━━━━━━━━━━━━━━━━━');
+        parts.push(lines.join('\n'));
+    }
+    parts.push('╭───「 TIPS 」───\n│ • Untuk sticker/reply, kirim gambar dulu lalu reply dengan command\n│ • .dl / .btch otomatis deteksi platform dari link\n╰───────────────────────────\n> *Pelayanmu yang setia dan selalu kepo — Yuuki Sorimachi*');
+    return parts.join('\n\n');
+}
+
 async function helpCommand(sock, chatId, message, input) {
     const pushName = message.pushName || 'User';
     const botNumber = sock.user.id.split(':')[0];
-
-    const helpText = `Akhirnya Tuan melihat Yuuki~ Yuuki dengan segala hormat dan kerendahan hati siap melayani. Tapi sebelumnya... Yuuki boleh bertanya satu hal? *Apa warna favorit Tuan?* Ah, tidak tidak, lupakan~ Yuuki malah kepo sendiri.
-
-┏━━「 MAIN 」
-┃ > .menu            → Tampilkan daftar perintah
-┃ > .ping            → Cek kecepatan respon Yuuki
-┃ > .alive           → Cek apakah Yuuki masih bernafas
-┃ > .owner           → Hubungi Tuan pemilik Yuuki
-┃ > .help            → Tampilkan bantuan ini
-┃ > .del             → Hapus pesan Yuuki
-┃   alias: .delete
-┃ > .mylevel         → Cek level & XP Tuan
-┗━━━━━━━━━━━━━━━━━━━━
-
-┏━━「 GROUP 」
-┃ > .antilink        → Blokir link grup lain
-┃ > .antitag         → Blokir tag massal/hidetag
-┃ > .antibadword     → Sensor kata kasar otomatis
-┃ > .welcome         → Atur pesan sambutan ala Yuuki
-┃ > .goodbye         → Atur pesan perpisahan ala Yuuki
-┃ > .mutegroup / .unmutegroup  → Bisukan/aktifkan chat di grup
-┃ > .kick @user      → Keluarkan member dari grup
-┃ > .warn @user [alasan]  → Beri peringatan dengan alasan
-┃ > .warnings @user  → Cek total warn member
-┃ > .resetwarn @user → Hapus semua warning member
-┃ > .tagall          → Tag semua member sekaligus
-┃ > .hidetag teks    → Tag semua tanpa notifikasi
-┃ > .resetlink       → Reset link undangan grup
-┃ > .groupinfo       → Info lengkap grup ini
-┃ > .groupset        → Pengaturan grup
-┃ > .ceksewa         → Cek status sewa grup
-┃ > .staff           → Daftar admin & staff grup
-┃ > .absen           → Mulai sesi absensi
-┗━━━━━━━━━━━━━━━━━━━━
-
-┏━━「 CHATBOT 」
-┃ > .yuuki           → Ngobrol langsung sama Yuuki
-┃                      Yuuki akan menjawab... dengan satu syarat~
-┗━━━━━━━━━━━━━━━━━━━━
-
-┏━━「 AI CHAT 」
-┃ > .groq <teks>    → Chat dengan Groq AI
-┃                      Contoh: .groq apa itu AI?
-┃                      Ketik .groq reset untuk reset riwayat
-┃ > .deepseek <teks>→ Chat dengan DeepSeek AI
-┃                      Contoh: .deepseek jelaskan Machine Learning
-┃ > .gpt <teks>     → Chat dengan GPT (OpenAI)
-┃                      Contoh: .gpt apa itu AI?
-┗━━━━━━━━━━━━━━━━━━━━
-
-┏━━「 CONVERTER 」
-┃ > .sticker         → Gambar/video ke stiker (reply/kirim gambar)
-┃   alias: .s
-┃ > .setwm <author>  → Set author & paket stiker
-┃ > .toimage         → Stiker ke gambar (reply stiker)
-┃   alias: .toimg
-┃ > .tovideo         → Stiker bergerak ke video (reply stiker)
-┃   alias: .tovid
-┃ > .togif           → Stiker bergerak ke GIF (reply stiker)
-┃   alias: .tgif
-┃ > .tomp3           → Video/audio ke MP3 (reply video)
-┃   alias: .toaud
-┃ > .stickercrop     → Crop stiker ke bentuk lain
-┃   alias: .scrop
-┗━━━━━━━━━━━━━━━━━━━━
-
-┏━━「 DOWNLOADER 」
-┃ > .dl / .download  → Download dari link media
-┃   alias: .btch
-┃                      Support: YouTube, Instagram, TikTok,
-┃                      Facebook, Spotify, Pinterest, dll.
-┃                      Contoh: .dl https://youtube.com/watch?v=xxxx
-┗━━━━━━━━━━━━━━━━━━━━
-
-┏━━「 INFORMATION 」
-┃ > .joke            → Cerita lucu random
-┃ > .meme            → Meme random dari internet
-┃ > .quote           → Kata-kata bijak / motivasi
-┃ > .fact            → Fakta unik dunia
-┃ > .news            → Berita terbaru hari ini
-┃ > .weather <kota>  → Cek cuaca, contoh: .weather Jakarta
-┃ > .groupinfo       → Info lengkap grup ini
-┗━━━━━━━━━━━━━━━━━━━━
-
-┏━━「 SEARCH 」
-┃ > .pinterest       → Cari gambar dari Pinterest
-┃   alias: .pin
-┃ > .song <judul>    → Cari lagu di YouTube
-┃                      Contoh: .song Bohemian Rhapsody
-┃ > .lyrics <judul>  → Cari lirik lagu
-┃                      Contoh: .lyrics Perfect Ed Sheeran
-┗━━━━━━━━━━━━━━━━━━━━
-
-┏━━「 TOOL 」
-┃ > .translate       → Terjemahkan teks ke bahasa lain
-┃   alias: .trt
-┃ > .ss              → Screenshot website
-┃   alias: .ssweb, .screenshot
-┗━━━━━━━━━━━━━━━━━━━━
-
-╭───「 TIPS 」───
-│ • Untuk sticker/reply, kirim gambar dulu lalu reply dengan command
-│ • .dl / .btch otomatis deteksi platform dari link
-╰───────────────────────────
-> *Pelayanmu yang setia dan selalu kepo — Yuuki Sorimachi*`;
+    const helpText = buildHelp();
 
     try {
         const helpDir = path.join(__dirname, '../../assets/help');

@@ -9,8 +9,8 @@ datasource db {
 
 model User {
   id        String    @id // WhatsApp ID (e.g. 628xxx@s.whatsapp.net)
+  customId  Int       @unique // Custom 8-digit user ID (e.g. 10000000)
   name      String?   // PushName (display name)
-  phone     String?   // Phone number extracted from ID (e.g. 628xxx)
   isBanned  Boolean   @default(false)
   packname  String?   // Custom WM packname
   createdAt DateTime  @default(now())
@@ -83,7 +83,6 @@ model History {
   user      User     @relation(fields: [userId], references: [id])
   // Denormalized for readability in Prisma Studio (no need to click relation)
   userName  String?  // Copy of user name at time of command
-  userPhone String?  // Copy of user phone number
   command   String
   chatId    String   // JID of the chat (group or private)
   chatType  String?  // "GROUP" or "PRIVATE"

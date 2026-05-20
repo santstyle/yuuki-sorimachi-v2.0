@@ -17,7 +17,7 @@ async function mylevelCommand(sock, chatId, message, args) {
 
         const user = await prisma.user.findUnique({
             where: { id: targetId },
-            select: { name: true, id: true }
+            select: { name: true, id: true, customId: true }
         });
 
         if (!user) {
@@ -43,6 +43,7 @@ async function mylevelCommand(sock, chatId, message, args) {
 
         const text = `User Profile: ${user.name || 'Unknown'}
 
+User ID: ${user.customId || 'Not assigned'}
 Level: ${progress.level}
 XP: ${progress.xp} / ${requiredXP}
 Progress: [${progressBar}] ${percentage}%

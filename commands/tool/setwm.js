@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const webp = require('node-webpmux');
 const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 const prisma = require('../../lib/db');
+const { getNextCustomId } = require('../../lib/customId');
 
 async function setWmCommand(sock, chatId, message, args, senderId) {
     try {
@@ -13,16 +14,22 @@ async function setWmCommand(sock, chatId, message, args, senderId) {
             return;
         }
 
-        await prisma.user.upsert({
+        const existingUser = await prisma.user.findUnique({
             where: { id: senderId },
-            update: {
-                packname: packname || null
-            },
-            create: {
-                id: senderId,
-                packname: packname || null
-            }
+            select: { id: true }
         });
+
+        if (existingUser) {
+            await prisma.user.update({
+                where: { id: senderId },
+                data: { packname: packname || null }
+            });
+        } else {
+            const nextId = await getNextCustomId();
+            await prisma.user.create({
+                data: { id: senderId, packname: packname || null, customId: nextId }
+            });
+        }
 
         const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
         

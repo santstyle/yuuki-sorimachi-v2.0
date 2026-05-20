@@ -10,12 +10,10 @@ const execPromise = util.promisify(exec);
 async function sendMessageWithRetry(sock, chatId, content, options = {}, maxRetries = 3) {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-            console.log(`Attempting to send message (attempt ${attempt}):`, content.text || 'Media message');
             const result = await sock.sendMessage(chatId, content, options);
-            console.log('Message sent successfully');
             return result;
         } catch (error) {
-            console.error(`Send message attempt ${attempt} failed:`, error.message);
+            console.log(`  Send  Retry ${attempt}/${maxRetries}: ${error.message}`);
             if (attempt === maxRetries) {
                 throw error;
             }
@@ -170,7 +168,7 @@ async function btchCommand(sock, chatId, message, url) {
             tempFile = path.join(tempDir, `btch_${timestamp}_${i}${extension}`);
             tempFiles.push(tempFile);
             
-            console.log(`Downloading ${mediaType} to: ${tempFile}`);
+            console.log(`  Download  ${mediaType} → temp file`);
 
             try {
                 await sock.sendMessage(chatId, {
@@ -182,7 +180,7 @@ async function btchCommand(sock, chatId, message, url) {
                 let downloadedMimeType = '';
 
                 if (item.localFile && fs.existsSync(mediaUrl)) {
-                    console.log(`[DEBUG] Using local file from yt-dlp fallback: ${mediaUrl}`);
+                    console.log(`  Download  Using local file from yt-dlp`);
                     tempFile = mediaUrl;
                     tempFiles[tempFiles.length - 1] = tempFile;
                 } else {
@@ -242,11 +240,11 @@ async function btchCommand(sock, chatId, message, url) {
                         // Cek apakah ffmpeg ada dengan mencoba menjalankan perintah versi
                         await execPromise(`"${ffmpegPath}" -version`);
                         
-                        console.log(`[DEBUG] Memulai konversi ke OGG/Opus: ${tempFile}`);
+                        console.log('  Convert  Audio → Opus...');
                         await execPromise(`"${ffmpegPath}" -i "${tempFile}" -c:a libopus -b:a 64k -vbr on -compression_level 10 -y "${convertedFile}"`);
                         
                         if (fs.existsSync(convertedFile)) {
-                            console.log(`[DEBUG] Konversi berhasil: ${convertedFile}`);
+                            console.log('  Convert  Opus ready');
                             fs.unlinkSync(tempFile);
                             tempFile = convertedFile;
                             tempFiles[tempFiles.length - 1] = tempFile;
@@ -255,7 +253,7 @@ async function btchCommand(sock, chatId, message, url) {
                             actualExtension = '.opus';
                         }
                     } catch (convErr) {
-                        console.log('[DEBUG] Skip konversi karena FFmpeg tidak ditemukan atau error. Menggunakan file asli.');
+                        console.log('  Convert  FFmpeg unavailable, using original');
                         // Fallback: Jika ini mp3 dari API, gunakan audio/mpeg
                         if (actualExtension === '.mp3') {
                             actualMediaType = 'audio';
@@ -293,8 +291,8 @@ async function btchCommand(sock, chatId, message, url) {
                     tempFiles[tempFiles.length - 1] = tempFile;
                 }
 
-                // Embed thumbnail as cover art into audio
-                if (item.thumbnail && (actualMediaType === 'audio' || item.type === 'audio')) {
+                // Embed thumbnail as cover art into audio (skip Opus — unsupported container)
+                if (item.thumbnail && (actualMediaType === 'audio' || item.type === 'audio') && actualExtension !== '.opus') {
                     try {
                         const thumbRes = await axios.get(item.thumbnail, { responseType: 'arraybuffer', timeout: 10000 });
                         const thumbBuf = Buffer.from(thumbRes.data);
@@ -312,12 +310,12 @@ async function btchCommand(sock, chatId, message, url) {
                                     tempFiles[tempFiles.length - 1] = tempFile;
                                 }
                             } catch (e) {
-                                console.log('[DEBUG] Gagal embed thumbnail:', e.message);
+                                console.log(`  Embed  Thumbnail failed: ${e.message}`);
                             }
                             fs.unlinkSync(thumbFile);
                         }
                     } catch (e) {
-                        console.log('[DEBUG] Gagal download thumbnail:', e.message);
+                        console.log(`  Thumbnail  Download failed: ${e.message}`);
                     }
                 }
 
@@ -332,7 +330,7 @@ async function btchCommand(sock, chatId, message, url) {
 
                 const fileName = item.title ? `${item.title}${actualExtension}` : (sendFileName || `btch_download_${timestamp}${actualExtension}`);
 
-                console.log(`[DEBUG] actualMediaType: ${actualMediaType}, actualMimeType: ${actualMimeType}, fileSize: ${fileSizeMB}MB`);
+                console.log(`  Send  ${actualMediaType} ${fileSizeMB}MB ready`);
 
                 if (actualMediaType === 'image') {
                     await sendMessageWithRetry(sock, chatId, {
@@ -340,7 +338,7 @@ async function btchCommand(sock, chatId, message, url) {
                         caption: `Tuan~ Media berhasil Yuuki unduh~`
                     }, { quoted: message });
                 } else if (actualMediaType === 'video') {
-                    console.log('[DEBUG] Sending video, size:', fileSizeMB, 'MB');
+                    console.log(`  Send  Video ${fileSizeMB}MB...`);
                     await sendMessageWithRetry(sock, chatId, {
                         video: finalBuffer,
                         mimetype: actualMimeType,
@@ -368,7 +366,7 @@ async function btchCommand(sock, chatId, message, url) {
                 }
 
             } catch (downloadError) {
-                console.error(`Download failed for item ${i + 1}:`, downloadError);
+                console.log(`  Download  Item ${i + 1} failed: ${downloadError.message}`);
                 await sendMessageWithRetry(sock, chatId, {
                     text: `Maaf, Tuan~ Yuuki gagal mengunduh media ${i + 1}: ${downloadError.message}`
                 }, { quoted: message });
@@ -385,7 +383,7 @@ async function btchCommand(sock, chatId, message, url) {
         });
 
     } catch (error) {
-        console.error('Error in btch command:', error);
+        console.log(`  Download  Error: ${error.message}`);
         if (statusMessage) {
             await sock.sendMessage(chatId, {
                 text: `Maaf, Tuan~ Yuuki mengalami kesalahan saat memproses downloader\n\nError: ${error.message}`,
@@ -402,10 +400,9 @@ async function btchCommand(sock, chatId, message, url) {
                 try {
                     if (fs.existsSync(filePath)) {
                         fs.unlinkSync(filePath);
-                        console.log('Temp file cleaned:', filePath);
                     }
                 } catch (e) {
-                    console.error('Gagal hapus temp file:', e.message);
+                    console.log(`  Cleanup  Failed: ${e.message}`);
                 }
             });
         }, 10000);

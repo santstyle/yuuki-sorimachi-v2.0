@@ -145,7 +145,6 @@ npm install
 ### 9. Setup Environment Variables
 
 ```bash
-cp .env.example .env
 nano .env
 ```
 

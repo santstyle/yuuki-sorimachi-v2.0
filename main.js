@@ -69,6 +69,7 @@ const { debugLevelUp } = require('./commands/debug/debuglevelup');
 const { lyrics: lyricsCommand } = require('./commands/search/lyrics');
 const pingCommand = require('./commands/main/ping');
 const aliveCommand = require('./commands/main/alive');
+const { reportbugCommand, handleReportReply } = require('./commands/main/reportbug');
 const welcomeCommand = require('./commands/group/welcome');
 const goodbyeCommand = require('./commands/group/goodbye');
 const antibadwordCommand = require('./commands/group/antibadword');
@@ -87,6 +88,7 @@ const { handleSsCommand } = require('./commands/tool/ss');
 const { addCommandReaction, handleAreactCommand } = require('./lib/reactions');
 const { mylevelCommand } = require('./commands/profile/mylevel');
 const { addXP } = require('./lib/xpManager');
+const { getNextCustomId } = require('./lib/customId');
 const { groupsetCommand } = require('./commands/group/groupset');
 const { cleanupCommand } = require('./commands/owner/cleanup');
 const ownermenuCommand = require('./commands/owner/ownermenu');
@@ -164,28 +166,26 @@ async function handleMessages(sock, messageUpdate, printLog) {
             logger.msg(`${chalk.yellow(pushName)} [${chalk.white(isGroup ? 'GROUP' : 'PRIVATE')}] -> ${chalk.white(displayMsg)}`);
         }
 
-        // Ekstrak nomor HP. WhatsApp baru pakai sistem LID (@lid) bukan nomor asli (@s.whatsapp.net)
-        const isLid = senderId.endsWith('@lid');
-        const phone = isLid
-            ? `LID:${senderId.split('@')[0]}` // LID bukan nomor HP asli
-            : senderId.replace('@s.whatsapp.net', ''); // Nomor HP asli
-
         try {
-            await prisma.user.upsert({
+            const existingUser = await prisma.user.findUnique({
                 where: { id: senderId },
-                update: {
-                    name: message.pushName || undefined,
-                    phone: phone
-                },
-                create: {
-                    id: senderId,
-                    name: message.pushName || null,
-                    phone: phone
-                }
+                select: { id: true }
             });
 
+            if (existingUser) {
+                await prisma.user.update({
+                    where: { id: senderId },
+                    data: { name: message.pushName || undefined }
+                });
+            } else {
+                const nextCustomId = await getNextCustomId();
+                await prisma.user.create({
+                    data: { id: senderId, name: message.pushName || null, customId: nextCustomId }
+                });
+            }
+
             if (userMessage.startsWith('.')) {
-                const skipHistory = ['.menu', '.bot', '.list', '.ping', '.alive', '.help'];
+                const skipHistory = ['.menu', '.bot', '.list', '.ping', '.alive', '.help', '.reportbug'];
                 const isTrivial = skipHistory.some(cmd => userMessage.startsWith(cmd));
                 
                 if (!isTrivial) {
@@ -193,7 +193,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
                         data: {
                             userId: senderId,
                             userName: pushName,
-                            userPhone: phone,
                             command: rawText.substring(0, 255),
                             chatId: chatId,
                             chatType: isGroup ? 'GROUP' : 'PRIVATE'
@@ -286,6 +285,11 @@ async function handleMessages(sock, messageUpdate, printLog) {
 
 
         if (!message.key.fromMe) incrementMessageCount(chatId, senderId);
+
+        if (rawText && (senderIsSudo || message.key.fromMe)) {
+            const handled = await handleReportReply(sock, chatId, message, rawText, senderId, senderIsSudo);
+            if (handled) return;
+        }
 
         if (!userMessage.startsWith('.')) {
             await handleYuukiResponse(sock, chatId, message, rawText, senderId);
@@ -469,6 +473,11 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage === '.owner':
                 await ownerCommand(sock, chatId);
+                break;
+            case userMessage.startsWith('.reportbug'):
+                const reportInput = rawText.slice(11).trim();
+                await reportbugCommand(sock, chatId, message, reportInput);
+                commandExecuted = true;
                 break;
             case userMessage === '.ownermenu' || userMessage === '.om':
                 if (!message.key.fromMe && !senderIsSudo) {
