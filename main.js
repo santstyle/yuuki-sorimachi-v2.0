@@ -432,6 +432,16 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 }
                 commandExecuted = true;
                 break;
+            case userMessage === '.menuowner':
+            case userMessage === '.ownermenu':
+            case userMessage === '.om':
+                if (!message.key.fromMe && !senderIsSudo) {
+                    await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya pemilik Yuuki yang boleh mengakses command ini. Yuuki sangat taat pada aturan~' }, { quoted: message });
+                    return;
+                }
+                await ownermenuCommand(sock, chatId, message);
+                commandExecuted = true;
+                break;
             case userMessage.startsWith('.menu'):
             case userMessage === '.bot':
             case userMessage === '.list':
@@ -477,16 +487,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage.startsWith('.reportbug'):
                 const reportInput = rawText.slice(11).trim();
                 await reportbugCommand(sock, chatId, message, reportInput);
-                commandExecuted = true;
-                break;
-            case userMessage === '.menuowner':
-            case userMessage === '.ownermenu':
-            case userMessage === '.om':
-                if (!message.key.fromMe && !senderIsSudo) {
-                    await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya pemilik Yuuki yang boleh mengakses command ini. Yuuki sangat taat pada aturan~' }, { quoted: message });
-                    return;
-                }
-                await ownermenuCommand(sock, chatId, message);
                 commandExecuted = true;
                 break;
             case userMessage === '.tagall':

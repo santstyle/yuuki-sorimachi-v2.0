@@ -5,15 +5,23 @@ async function broadcastCommand(sock, chatId, message, args) {
     try {
         const sender = message.key?.participant || message.key?.remoteJid;
         const ownerNumber = process.env.OWNER_NUMBER;
-        console.log('Broadcast - sender:', sender, 'ownerNumber:', ownerNumber);
-        if (!ownerNumber) {
-            return sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Nomor owner belum dikonfigurasi di file .env.' }, { quoted: message });
-        }
-        const ownerJid = ownerNumber.replace(/[^0-9]/g, '') + '@s.whatsapp.net';
-        console.log('Broadcast - ownerJid:', ownerJid);
+        const ownerLid = process.env.OWNER_LID;
+        console.log('Broadcast - sender:', sender, 'ownerNumber:', ownerNumber, 'ownerLid:', ownerLid);
 
-        if (sender !== ownerJid) {
+        let isOwner = false;
+        if (ownerNumber) {
+            const ownerJid = ownerNumber.replace(/[^0-9]/g, '') + '@s.whatsapp.net';
+            if (sender === ownerJid) isOwner = true;
+        }
+        if (ownerLid) {
+            const ownerLidJid = ownerLid.replace(/[^0-9]/g, '') + '@lid';
+            if (sender === ownerLidJid) isOwner = true;
+        }
+        if (!isOwner) {
             return sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya pemilik Yuuki yang bisa menggunakan kekuatan broadcast ini. Yuuki tidak ingin dimarahi Tuan, jadi Yuuki patuh~' }, { quoted: message });
+        }
+        if (!ownerNumber && !ownerLid) {
+            return sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Nomor owner belum dikonfigurasi di file .env.' }, { quoted: message });
         }
 
         let bcText = args.join(' ') || '';
