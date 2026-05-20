@@ -26,11 +26,12 @@ async function broadcastCommand(sock, chatId, message, args) {
 
         let bcText = args.join(' ') || '';
         if (bcText.trim().startsWith('.bc')) bcText = bcText.replace(/^\.bc\s*/i, '');
-        if (!bcText) {
-            return sock.sendMessage(chatId, { text: 'Tuan~ Yuuki perlu tahu pesan apa yang ingin di-broadcast. Contoh: .bc Halo semua~' }, { quoted: message });
-        }
 
         const quotedMsg = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+
+        if (!bcText && !quotedMsg) {
+            return sock.sendMessage(chatId, { text: 'Tuan~ Yuuki perlu tahu pesan apa yang ingin di-broadcast, atau reply media yang ingin di-broadcast. Contoh: .bc Halo semua~' }, { quoted: message });
+        }
 
         console.log('Broadcast - Fetching groups...');
         const allGroups = await sock.groupFetchAllParticipating();
