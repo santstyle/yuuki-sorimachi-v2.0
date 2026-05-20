@@ -1,86 +1,103 @@
 
-const settings = require('../../settings');
 const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 
 async function broadcastCommand(sock, chatId, message, args) {
-    const sender = message.key?.participant || message.key?.remoteJid;
-    const ownerJid = settings.ownerNumber + '@s.whatsapp.net';
-
-    if (sender !== ownerJid) {
-        return sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya pemilik Yuuki yang bisa menggunakan kekuatan broadcast ini. Yuuki tidak ingin dimarahi Tuan, jadi Yuuki patuh~' }, { quoted: message });
-    }
-
-    let bcText = args.join(' ') || '';
-    if (bcText.startsWith('.bc')) bcText = bcText.replace(/^\.bc\s*/, '');
-
-    const quotedMsg = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
-
-    const allGroups = await sock.groupFetchAllParticipating();
-    const groupIds = Object.keys(allGroups);
-
-    let success = 0;
-    let failed = 0;
-
-    for (const groupId of groupIds) {
-        try {
-            let msgOptions = {};
-
-            if (quotedMsg) {
-                const type = Object.keys(quotedMsg)[0];
-                let buffer;
-
-                if (!['conversation', 'extendedTextMessage'].includes(type)) {
-                    buffer = await downloadMediaMessage({ message: quotedMsg }, 'buffer', {}, { logger: console });
-                }
-
-                switch (type) {
-                    case 'imageMessage':
-                        msgOptions = {
-                            image: buffer,
-                            caption: `*Broadcast dari SantStyle*\n\n${bcText || quotedMsg.imageMessage?.caption || ''}`
-                        };
-                        break;
-                    case 'videoMessage':
-                        msgOptions = {
-                            video: buffer,
-                            caption: `*Broadcast dari SantStyle*\n\n${bcText || quotedMsg.videoMessage?.caption || ''}`
-                        };
-                        break;
-                    case 'audioMessage':
-                        msgOptions = {
-                            audio: buffer,
-                            mimetype: quotedMsg.audioMessage?.mimetype || 'audio/mp4',
-                            ptt: quotedMsg.audioMessage?.ptt || false
-                        };
-                        break;
-                    case 'stickerMessage':
-                        msgOptions = { sticker: buffer };
-                        break;
-                    case 'documentMessage':
-                        msgOptions = {
-                            document: buffer,
-                            mimetype: quotedMsg.documentMessage?.mimetype,
-                            fileName: quotedMsg.documentMessage?.fileName || 'file'
-                        };
-                        break;
-                    default:
-                        msgOptions = { text: `*Broadcast dari SantStyle*\n\n${bcText}` };
-                }
-            } else {
-                msgOptions = { text: `*Broadcast dari SantStyle*\n\n${bcText}` };
-            }
-
-            await sock.sendMessage(groupId, msgOptions);
-            success++;
-        } catch (err) {
-            console.error(`Gagal broadcast ke ${groupId}:`, err);
-            failed++;
+    try {
+        const sender = message.key?.participant || message.key?.remoteJid;
+        const ownerNumber = process.env.OWNER_NUMBER;
+        console.log('Broadcast - sender:', sender, 'ownerNumber:', ownerNumber);
+        if (!ownerNumber) {
+            return sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Nomor owner belum dikonfigurasi di file .env.' }, { quoted: message });
         }
-    }
+        const ownerJid = ownerNumber.replace(/[^0-9]/g, '') + '@s.whatsapp.net';
+        console.log('Broadcast - ownerJid:', ownerJid);
 
-    await sock.sendMessage(chatId, {
-        text: `Tuan~ Broadcast telah Yuuki selesaikan!\nSukses: ${success}, Gagal: ${failed}\n\nYuuki berharap semua pesan Tuan sampai dengan indah~ Tapi Yuuki penasaran, apa isi pesannya? Ah, Yuuki terlalu kepo~`
-    }, { quoted: message });
+        if (sender !== ownerJid) {
+            return sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya pemilik Yuuki yang bisa menggunakan kekuatan broadcast ini. Yuuki tidak ingin dimarahi Tuan, jadi Yuuki patuh~' }, { quoted: message });
+        }
+
+        let bcText = args.join(' ') || '';
+        if (bcText.trim().startsWith('.bc')) bcText = bcText.replace(/^\.bc\s*/i, '');
+        if (!bcText) {
+            return sock.sendMessage(chatId, { text: 'Tuan~ Yuuki perlu tahu pesan apa yang ingin di-broadcast. Contoh: .bc Halo semua~' }, { quoted: message });
+        }
+
+        const quotedMsg = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+
+        console.log('Broadcast - Fetching groups...');
+        const allGroups = await sock.groupFetchAllParticipating();
+        const groupIds = Object.keys(allGroups);
+        console.log('Broadcast - Groups found:', groupIds.length);
+
+        let success = 0;
+        let failed = 0;
+
+        for (const groupId of groupIds) {
+            try {
+                let msgOptions = {};
+
+                if (quotedMsg) {
+                    const type = Object.keys(quotedMsg)[0];
+                    let buffer;
+
+                    if (!['conversation', 'extendedTextMessage'].includes(type)) {
+                        buffer = await downloadMediaMessage({ message: quotedMsg }, 'buffer', {}, { logger: console });
+                    }
+
+                    switch (type) {
+                        case 'imageMessage':
+                            msgOptions = {
+                                image: buffer,
+                                caption: `*Broadcast dari SantStyle*\n\n${bcText || quotedMsg.imageMessage?.caption || ''}`
+                            };
+                            break;
+                        case 'videoMessage':
+                            msgOptions = {
+                                video: buffer,
+                                caption: `*Broadcast dari SantStyle*\n\n${bcText || quotedMsg.videoMessage?.caption || ''}`
+                            };
+                            break;
+                        case 'audioMessage':
+                            msgOptions = {
+                                audio: buffer,
+                                mimetype: quotedMsg.audioMessage?.mimetype || 'audio/mp4',
+                                ptt: quotedMsg.audioMessage?.ptt || false
+                            };
+                            break;
+                        case 'stickerMessage':
+                            msgOptions = { sticker: buffer };
+                            break;
+                        case 'documentMessage':
+                            msgOptions = {
+                                document: buffer,
+                                mimetype: quotedMsg.documentMessage?.mimetype,
+                                fileName: quotedMsg.documentMessage?.fileName || 'file'
+                            };
+                            break;
+                        default:
+                            msgOptions = { text: `*Broadcast dari SantStyle*\n\n${bcText}` };
+                    }
+                } else {
+                    msgOptions = { text: `*Broadcast dari SantStyle*\n\n${bcText}` };
+                }
+
+                await sock.sendMessage(groupId, msgOptions);
+                success++;
+            } catch (err) {
+                console.error(`Gagal broadcast ke ${groupId}:`, err);
+                failed++;
+            }
+        }
+
+        await sock.sendMessage(chatId, {
+            text: `Tuan~ Broadcast telah Yuuki selesaikan!\nSukses: ${success}, Gagal: ${failed}\n\nYuuki berharap semua pesan Tuan sampai dengan indah~ Tapi Yuuki penasaran, apa isi pesannya? Ah, Yuuki terlalu kepo~`
+        }, { quoted: message });
+    } catch (error) {
+        console.error('[BROADCAST ERROR]:', error);
+        await sock.sendMessage(chatId, {
+            text: `Maaf, Tuan~ Broadcast gagal: ${error.message}`
+        }, { quoted: message });
+    }
 }
 
 module.exports = broadcastCommand;

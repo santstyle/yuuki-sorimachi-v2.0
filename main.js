@@ -304,7 +304,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
         const adminCommands = ['.mutegroup', '.unmutegroup', '.kick', '.tagall', '.hidetag', '.antilink', '.antitag'];
         const isAdminCommand = adminCommands.some(cmd => userMessage.startsWith(cmd));
 
-        const ownerCommands = ['.mode', '.autostatus', '.antidelete', '.cleartmp', '.setpp', '.clearsession', '.areact', '.autoreact', '.ban', '.unban'];
+        const ownerCommands = ['.mode', '.autostatus', '.antidelete', '.cleartmp', '.setpp', '.clearsession', '.areact', '.autoreact', '.ban', '.unban', '.bc', '.broadcast', '.sudo', '.update', '.cleanup', '.debuglevelup', '.sewa'];
         const isOwnerCommand = ownerCommands.some(cmd => userMessage.startsWith(cmd));
 
         let isSenderAdmin = false;
@@ -479,7 +479,9 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 await reportbugCommand(sock, chatId, message, reportInput);
                 commandExecuted = true;
                 break;
-            case userMessage === '.ownermenu' || userMessage === '.om':
+            case userMessage === '.menuowner':
+            case userMessage === '.ownermenu':
+            case userMessage === '.om':
                 if (!message.key.fromMe && !senderIsSudo) {
                     await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya pemilik Yuuki yang boleh mengakses command ini. Yuuki sangat taat pada aturan~' }, { quoted: message });
                     return;

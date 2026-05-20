@@ -43,22 +43,25 @@ async function handleReportReply(sock, chatId, message, rawText, senderId, sende
     const replyText = `*Balasan dari ${settings.botOwner}*\n\n${rawText}`;
 
     try {
+        const quotedMsg = report.reporterMsgId ? {
+            key: {
+                id: report.reporterMsgId,
+                remoteJid: report.sourceChatId,
+                fromMe: false,
+                participant: report.sourceChatId.endsWith('@g.us') ? report.reporterJid : undefined
+            },
+            message: { conversation: report.reportMsg }
+        } : undefined;
+
         if (report.sourceChatId.endsWith('@g.us')) {
-            const quotedMsg = report.reporterMsgId ? {
-                key: {
-                    id: report.reporterMsgId,
-                    remoteJid: report.sourceChatId,
-                    fromMe: false,
-                    participant: report.sourceChatId.endsWith('@g.us') ? report.reporterJid : undefined
-                },
-                message: { conversation: report.reportMsg }
-            } : undefined;
             await sock.sendMessage(report.sourceChatId, {
                 text: replyText,
                 mentions: [report.reporterJid]
             }, quotedMsg ? { quoted: quotedMsg } : undefined);
         } else {
-            await sock.sendMessage(report.reporterJid, { text: replyText });
+            await sock.sendMessage(report.reporterJid, {
+                text: replyText
+            }, quotedMsg ? { quoted: quotedMsg } : undefined);
         }
 
         const idx = reports.indexOf(report);
