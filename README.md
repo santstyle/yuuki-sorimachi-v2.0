@@ -142,6 +142,23 @@ npm install
 > npm install --legacy-peer-deps
 > ```
 
+### 8a. Download Model Remove Background (Wajib untuk fitur .removebg)
+
+Fitur `.removebg` menggunakan AI model lokal agar gratis, offline, tanpa limit, dan hasil bersih.
+Pertama kali jalan, bot akan mendownload file model (~40MB) secara otomatis.
+Atau bisa download manual:
+
+```bash
+# Buat folder model
+mkdir -p node_modules/@imgly/background-removal-node/dist/
+
+# Download model (isnet_quint8 ~40MB)
+curl -L -o node_modules/@imgly/background-removal-node/dist/isnet_quint8.onnx \
+  "https://staticimgly.com/@imgly/background-removal-data/1.7.0/dist/isnet_quint8.onnx"
+```
+
+> Jika tidak download manual, bot akan mendownload otomatis saat pertama kali menjalankan `.removebg` (perlu koneksi internet & waktu beberapa menit).
+
 ### 9. Setup Environment Variables
 
 ```bash

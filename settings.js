@@ -8,6 +8,7 @@ const settings = {
   storeWriteInterval: 10000,
   description: "-",
   version: "2.0.0",
+  removebgApiKey: '', // Get your free API key at https://www.remove.bg/api (50 free/month)
 };
 
 module.exports = settings;

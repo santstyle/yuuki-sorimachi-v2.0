@@ -29,9 +29,9 @@
 - [✅] `.bc test` sebagai **sudo** — semua grup terima? (dulu error)
 
 ## Owner Tools
-- [ ] `.cleartmp` — folder temp bersih?
+- [✅] `.cleartmp` — folder temp bersih?
 - [ ] `.clearsession` — folder session bersih + bot restart?
-- [ ] `.setpp` (reply gambar) — foto profil bot berubah?
+- [✅] `.setpp` (reply gambar) — foto profil bot berubah?
 - [ ] `.update` — bot update & restart?
 - [ ] `.cleanup all` — database expired terhapus?
 - [ ] `.debuglevelup` — test trigger level up?
@@ -42,27 +42,24 @@
 - [ ] `.resetall --confirm` — data user tereset?
 
 ## Info & Social
-- [ ] `.topmembers` di grup — leaderboard muncul?
-- [ ] `.flirt` — random pesan flirty?
-- [ ] `.character` — profil bot muncul?
-- [ ] `.goodnight` / `.gn` — random goodnight message?
-- [ ] `.ship @a @b` di grup — persentase cocok?
+- [✅] `.topmembers` di grup — leaderboard muncul?
+- [✅] `.flirt` — random pesan flirty?
+- [✅] `.goodnight` / `.gn` — random goodnight message?
+- [✅] `.ship @a @b` di grup — persentase cocok?
 
 ## Media Commands
-- [ ] `.blur` (reply gambar) — gambar jadi blur?
-- [ ] `.waste` (reply gambar) — efek WASTED muncul?
-- [ ] `.vv` (reply pesan view-once) — bisa dilihat?
-- [ ] `.removebg` / `.rmbg` (reply gambar) — background kehapus?
-- [ ] `.remini` / `.enhance` (reply gambar) — gambar lebih jernih?
+- [✅] `.blur` (reply gambar) — gambar jadi blur?
+- [✅] `.vv` (reply pesan view-once) — bisa dilihat?
+- [✅] `.removebg` / `.rmbg` (reply gambar) — background kehapus?
+- [✅] `.remini` / `.enhance` (reply gambar) — gambar lebih jernih?
 
 ## Anime
-- [ ] `.waifu` — gambar waifu random?
-- [ ] `.loli` — gambar random?
-- [ ] `.quote` (anime) — gambar quote random?
+- [✅] `.waifu` — gambar waifu random?
+- [✅] `.quote` (anime) — gambar quote random?
 
 ## Ban
-- [ ] `.ban @user` — user diblokir?
-- [ ] `.unban @user` — user kebuka?
+- [✅] `.ban @user` — user diblokir?
+- [✅] `.unban @user` — user kebuka?
 
 ## Yang SUDAH Dihapus (pastikan error "command tidak dikenal")
 - [✅] `.surrender` — harusnya error

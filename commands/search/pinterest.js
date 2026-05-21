@@ -127,4 +127,4 @@ function toOriginalUrl(url) {
     return null;
 }
 
-module.exports = { pinterestCommand };
+module.exports = { pinterestCommand, scrapePinterest };

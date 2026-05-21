@@ -12,9 +12,9 @@ const FALLBACK_QUOTES = [
 ];
 
 const API_URLS = [
+    { url: 'https://katanime-api.vercel.app/api/random', parser: (r) => ({ quote: r.data.data.quote, source: r.data.data.karakter || 'Anime', category: 'Anime' }) },
     { url: 'https://indonesian-quotes-api.vercel.app/api/quotes/random', parser: (r) => r.data.data },
-    { url: 'https://api.quotable.io/random', parser: (r) => ({ quote: r.data.content, source: r.data.author, category: 'Umum' }) },
-    { url: 'https://katanime-api.vercel.app/api/random', parser: (r) => ({ quote: r.data.data.quote, source: r.data.data.karakter || 'Anime' }) }
+    { url: 'https://api.quotable.io/random', parser: (r) => ({ quote: r.data.content, source: r.data.author, category: 'Umum' }) }
 ];
 
 module.exports = async function quoteCommand(sock, chatId, message) {
