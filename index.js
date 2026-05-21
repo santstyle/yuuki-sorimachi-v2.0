@@ -73,9 +73,9 @@ setInterval(() => {
 
 setInterval(() => {
     const used = process.memoryUsage().rss / 1024 / 1024
-    if (used > 400) {
-        console.log('RAM too high (>400MB), restarting...')
-        process.exit(1)
+    if (used > 500) {
+        console.log(`RAM too high (${used.toFixed(0)}MB), restarting gracefully...`)
+        shutdown()
     }
 }, 30000)
 
@@ -84,21 +84,18 @@ global.themeemoji = "•"
 
 function clearOldSessionData() {
     try {
-        const sessionDir = './session'
-        if (fs.existsSync(sessionDir)) {
-            const stats = fs.statSync(sessionDir)
-            const now = new Date()
-            const sessionAge = now - stats.mtime
-            const oneDay = 24 * 60 * 60 * 1000
-
-            if (sessionAge > oneDay) {
-                console.log('Clearing old session data...')
-                fs.rmSync(sessionDir, { recursive: true, force: true })
-                console.log('✅ Old session cleared')
+        const credsPath = './session/creds.json'
+        if (fs.existsSync(credsPath)) {
+            const stats = fs.statSync(credsPath)
+            const sessionAge = Date.now() - stats.mtimeMs
+            const sevenDays = 7 * 24 * 60 * 60 * 1000
+            if (sessionAge > sevenDays) {
+                console.log('Session creds expired (>7 days), clearing...')
+                fs.rmSync('./session', { recursive: true, force: true })
             }
         }
     } catch (error) {
-        console.log('ℹNo session to clear:', error.message)
+        console.log('Session check:', error.message)
     }
 }
 
@@ -142,6 +139,8 @@ async function startXeonBotInc() {
         defaultCacheSize: 100
     })
 
+    XeonBotInc.public = true
+
     store.bind(XeonBotInc.ev)
 
     XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
@@ -156,7 +155,6 @@ async function startXeonBotInc() {
                 : mek.message
 
             if (mek.key && mek.key.remoteJid === 'status@broadcast') {
-                await handleStatus(XeonBotInc, chatUpdate)
                 return
             }
 
@@ -205,7 +203,7 @@ async function startXeonBotInc() {
     })
 
     XeonBotInc.getName = (jid, withoutContact = false) => {
-        id = XeonBotInc.decodeJid(jid)
+        const id = XeonBotInc.decodeJid(jid)
         withoutContact = XeonBotInc.withoutContact || withoutContact
         let v
         if (id.endsWith("@g.us")) return new Promise(async (resolve) => {
@@ -221,8 +219,6 @@ async function startXeonBotInc() {
             (store.contacts[id] || {})
         return (withoutContact ? '' : v.name) || v.subject || v.verifiedName || PhoneNumber('+' + jid.replace('@s.whatsapp.net', '')).getNumber('international')
     }
-
-    XeonBotInc.public = true
 
     const qrcode = require('qrcode-terminal')
     let connectionAttempts = 0

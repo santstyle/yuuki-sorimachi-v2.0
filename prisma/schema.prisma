@@ -8,11 +8,11 @@ datasource db {
 }
 
 model User {
-  id        String    @id // WhatsApp ID (e.g. 628xxx@s.whatsapp.net)
-  customId  Int       @unique // Custom 8-digit user ID (e.g. 10000000)
-  name      String?   // PushName (display name)
+  id        String    @id
+  customId  Int       @unique
+  name      String?
   isBanned  Boolean   @default(false)
-  packname  String?   // Custom WM packname
+  packname  String?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   History   History[]
@@ -21,15 +21,16 @@ model User {
 
 model UserProgress {
   id           Int      @id @default(autoincrement())
-  userName     String?  // Copy of user name for easy dashboard viewing
+  userName     String?
   userId       String   @unique
-  user         User     @relation(fields: [userId], references: [id])
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   xp           Int      @default(0)
   level        Int      @default(1)
   streak       Int      @default(0)
   lastActive   DateTime @default(now())
-  
+
   @@index([level(sort: Desc)])
+  @@index([userId])
 }
 
 model Group {
@@ -70,24 +71,25 @@ model WarningRecord {
   isAppealed    Boolean  @default(false)
   createdAt     DateTime @default(now())
 
-  groupSettings GroupSettings? @relation(fields: [groupId], references: [groupId])
+  groupSettings GroupSettings? @relation(fields: [groupId], references: [groupId], onDelete: SetNull)
   
   @@index([userId])
   @@index([groupId])
   @@index([createdAt(sort: Desc)])
+  @@index([reason])
 }
 
 model History {
   id        Int      @id @default(autoincrement())
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  // Denormalized for readability in Prisma Studio (no need to click relation)
-  userName  String?  // Copy of user name at time of command
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userName  String?
   command   String
-  chatId    String   // JID of the chat (group or private)
-  chatType  String?  // "GROUP" or "PRIVATE"
+  chatId    String
+  chatType  String?
   createdAt DateTime @default(now())
 
-  @@index([createdAt(sort: Desc)]) // Latest first
+  @@index([createdAt(sort: Desc)])
   @@index([userId])
+  @@index([chatId])
 }
