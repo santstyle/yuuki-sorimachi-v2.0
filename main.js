@@ -317,10 +317,10 @@ async function handleMessages(sock, messageUpdate, printLog) {
             return;
         }
 
-        const adminCommands = ['.mutegroup', '.unmutegroup', '.kick', '.tagall', '.hidetag', '.antilink', '.antitag'];
+        const adminCommands = ['.mutegroup', '.unmutegroup', '.kick', '.tagall', '.hidetag', '.antilink', '.antitag', '.antidelete'];
         const isAdminCommand = adminCommands.some(cmd => userMessage.startsWith(cmd));
 
-        const ownerCommands = ['.mode', '.self', '.autostatus', '.antidelete', '.cleartmp', '.setpp', '.clearsession', '.areact', '.autoreact', '.ban', '.unban', '.bc', '.broadcast', '.sudo', '.addsudo', '.listsudo', '.delsudo', '.update', '.cleanup', '.debuglevelup', '.sewa', '.autoread', '.eval', '.js', '.join', '.leave', '.resetall', '.backup', '.addprem', '.listprem'];
+        const ownerCommands = ['.mode', '.self', '.autostatus', '.cleartmp', '.setpp', '.clearsession', '.areact', '.autoreact', '.ban', '.unban', '.bc', '.broadcast', '.sudo', '.addsudo', '.listsudo', '.delsudo', '.update', '.cleanup', '.debuglevelup', '.sewa', '.autoread', '.eval', '.js', '.join', '.leave', '.resetall', '.backup', '.addprem', '.listprem'];
         const isOwnerCommand = ownerCommands.some(cmd => userMessage.startsWith(cmd));
 
         let isSenderAdmin = false;
@@ -331,16 +331,17 @@ async function handleMessages(sock, messageUpdate, printLog) {
             isSenderAdmin = adminStatus.isSenderAdmin;
             isBotAdmin = adminStatus.isBotAdmin;
 
-            if (!isBotAdmin) {
+            if (!isBotAdmin && !userMessage.startsWith('.antidelete')) {
                 await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki mohon dengan sangat, berilah Yuuki jabatan *admin* di grup ini agar Yuuki bisa bertindak. Saat ini tangan Yuuki terikat~' }, { quoted: message });
                 return;
             }
 
             if (
                 userMessage.startsWith('.mutegroup') ||
-                userMessage === '.unmutegroup'
+                userMessage === '.unmutegroup' ||
+                userMessage.startsWith('.antidelete')
             ) {
-                if (!isSenderAdmin && !message.key.fromMe) {
+                if (!isSenderAdmin && !message.key.fromMe && !senderIsSudo) {
                     await sock.sendMessage(chatId, {
                         text: 'Maaf, Tuan~ Hanya admin grup yang memiliki wewenang untuk menggunakan command ini. Yuuki tidak bisa melanggar aturan, meskipun Yuuki sangat ingin membantu~'
                     });
@@ -361,7 +362,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             if (!data.isPublic && !message.key.fromMe && !senderIsSudo) {
                 return;
             }
-            if (data.isSelf && !message.key.fromMe) {
+            if (data.isSelf && !message.key.fromMe && !senderIsSudo) {
                 return;
             }
         } catch (error) {
@@ -505,7 +506,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage.startsWith('.bc'):
             case userMessage.startsWith('.broadcast'):
                 const bcArgs = userMessage.split(' ').slice(1);
-                await broadcastCommand(sock, chatId, message, bcArgs);
+                await broadcastCommand(sock, chatId, message, bcArgs, message.key.fromMe, senderId);
                 break;
             case userMessage === '.owner':
                 await ownerCommand(sock, chatId);
@@ -725,8 +726,8 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 await autoreadCommand(sock, chatId, message, autoreadArgs);
                 break;
             case userMessage.startsWith('.antidelete'):
-                if (!message.key.fromMe && !senderIsSudo) {
-                    await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya pemilik Yuuki yang bisa menggunakan command ini. Rahasia grup tidak boleh sembarangan diungkap~' });
+                if (!isGroup) {
+                    await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Command ini hanya bisa digunakan di dalam grup. Yuuki tidak memiliki wewenang untuk mengatur penghapusan pesan di sini~' });
                     return;
                 }
                 const antideleteMatch = userMessage.slice(11).trim();
@@ -1059,19 +1060,23 @@ async function handleGroupParticipantUpdate(sock, update) {
 
 async function handleMessageRevocation(sock, message) {
     try {
-        const antideleteData = JSON.parse(fs.readFileSync('./data/antidelete.json', 'utf8'));
-        if (!antideleteData.enabled) return;
+        let antideleteData = {};
+        try {
+            antideleteData = JSON.parse(fs.readFileSync('./data/antidelete.json', 'utf8'));
+        } catch (e) {}
 
         const revokedMessage = message.message?.protocolMessage;
         if (!revokedMessage) return;
 
         const store = require('./lib/lightweight_store');
         const chatId = message.key.remoteJid;
+        if (!antideleteData[chatId]) return;
+
         const originalMessage = store.messages[chatId]?.find(m => m.key.id === revokedMessage.key.id);
 
         if (originalMessage) {
             await sock.sendMessage(chatId, {
-                text: `🔮 *Pesan Telah Dihapus* 🔮\n\n*Pengirim:* @${message.key.participant?.split('@')[0] || 'unknown'}\n\n*Isi Pesan:*\n${originalMessage.message?.conversation || originalMessage.message?.extendedTextMessage?.text || 'Media message'}\n\n*--- Yuuki melihat semuanya ---*`,
+                text: `Tuan, seseorang berusaha menyembunyikan sesuatu dari penglihatan-Ku.\n\n*Pengirim:* @${message.key.participant?.split('@')[0] || 'unknown'}\n*Isi Pesan:* ${originalMessage.message?.conversation || originalMessage.message?.extendedTextMessage?.text || 'Media message'}\n\n— Tidak ada yang bisa bersembunyi dari penglihatan-Ku.`,
                 mentions: [message.key.participant]
             });
         }
@@ -1181,7 +1186,7 @@ async function addSudoCommand(sock, chatId, message) {
         }
 
         if (!targetJid) {
-            await sock.sendMessage(chatId, { text: 'Tuan~ Sebutkan user yang ingin dijadikan sudo. Contoh: .addsudo @user' });
+            await sock.sendMessage(chatId, { text: 'Tuan~ Sebutkan user yang ingin dijadikan sudo. Contoh: .addsudo @user' }, { quoted: message });
             return;
         }
 
@@ -1190,13 +1195,13 @@ async function addSudoCommand(sock, chatId, message) {
             await sock.sendMessage(chatId, {
                 text: `Selamat datang, @${targetJid.split('@')[0]}! Kini Tuan ini dipercaya oleh Tuan~`,
                 mentions: [targetJid]
-            });
+            }, { quoted: message });
         } else {
-            await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Gagal menambahkan sudo. Mungkin sudah ada di daftar~' });
+            await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Gagal menambahkan sudo. Mungkin sudah ada di daftar~' }, { quoted: message });
         }
     } catch (error) {
         console.error('Error in addsudo command:', error);
-        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Ada error saat menambah sudo~' });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Ada error saat menambah sudo~' }, { quoted: message });
     }
 }
 
@@ -1209,15 +1214,23 @@ async function listSudoCommand(sock, chatId, message) {
         }
 
         const ownerNumber = process.env.OWNER_NUMBER?.replace(/[^0-9]/g, '') + '@s.whatsapp.net';
-        const list = sudoList.filter(jid => jid !== ownerNumber).map(jid => `▸ @${jid.split('@')[0]}`).join('\n');
+        const sudoEntries = await Promise.all(
+            sudoList.filter(jid => jid !== ownerNumber).map(async (jid) => {
+                const jidNum = jid.split('@')[0];
+                const name = await sock.getName(jid);
+                const displayName = name && name !== jidNum ? ` (${name})` : '';
+                return `▸ @${jidNum}${displayName}`;
+            })
+        );
+        const list = sudoEntries.join('\n');
 
         await sock.sendMessage(chatId, {
             text: `━━━「 *SUDO USERS* 」━━━\n\n${list || 'Tidak ada selain owner'}\n\nTotal: ${sudoList.length} user`,
             mentions: sudoList
-        });
+        }, { quoted: message });
     } catch (error) {
         console.error('Error in listsudo command:', error);
-        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Ada error saat menampilkan daftar sudo~' });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Ada error saat menampilkan daftar sudo~' }, { quoted: message });
     }
 }
 
@@ -1234,7 +1247,7 @@ async function delSudoCommand(sock, chatId, message) {
         }
 
         if (!targetJid) {
-            await sock.sendMessage(chatId, { text: 'Tuan~ Sebutkan user yang ingin dihapus dari sudo. Contoh: .delsudo @user' });
+            await sock.sendMessage(chatId, { text: 'Tuan~ Sebutkan user yang ingin dihapus dari sudo. Contoh: .delsudo @user' }, { quoted: message });
             return;
         }
 
@@ -1243,13 +1256,13 @@ async function delSudoCommand(sock, chatId, message) {
             await sock.sendMessage(chatId, {
                 text: `@${targetJid.split('@')[0]} telah dihapus dari daftar sudo. Selamat tinggal~`,
                 mentions: [targetJid]
-            });
+            }, { quoted: message });
         } else {
-            await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Gagal menghapus sudo. Mungkin tidak ada dalam daftar~' });
+            await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Gagal menghapus sudo. Mungkin tidak ada dalam daftar~' }, { quoted: message });
         }
     } catch (error) {
         console.error('Error in delsudo command:', error);
-        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Ada error saat menghapus sudo~' });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Ada error saat menghapus sudo~' }, { quoted: message });
     }
 }
 

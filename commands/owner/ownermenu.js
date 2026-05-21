@@ -8,7 +8,6 @@ async function ownermenuCommand(sock, chatId, message) {
 ┃ > .self on/off/status → Mode self (hanya owner)
 ┃ > .autoread on/off → Auto read chat pribadi
 ┃ > .bc / .broadcast <teks>→ Broadcast ke semua grup
-┃ > .antidelete on/off/status → Toggle anti hapus pesan
 ┃ > .autostatus on/off → Auto view status WA
 ┃ > .cleartmp → Bersihkan folder temporary
 ┃ > .clearsession → Bersihkan session bot & login ulang

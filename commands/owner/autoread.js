@@ -15,7 +15,7 @@ async function autoreadCommand(sock, chatId, message, args) {
         if (!action || action === 'status') {
             const status = data.enabled ? 'aktif' : 'nonaktif';
             await sock.sendMessage(chatId, {
-                text: `Tuan~ Auto-read saat ini sedang *${status}*. Yuuki akan membaca semua pesan pribadi yang masuk untuk Tuan~`
+                text: `Tuan~ Auto-read saat ini sedang *${status}*. Yuuki akan membaca semua pesan pribadi dan grup yang masuk untuk Tuan~`
             });
             return;
         }
@@ -23,7 +23,7 @@ async function autoreadCommand(sock, chatId, message, args) {
         if (action === 'on') {
             data.enabled = true;
             fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
-            await sock.sendMessage(chatId, { text: 'Baik, Tuan~ Yuuki akan membaca semua pesan pribadi yang masuk secara otomatis. Tidak ada yang terlewat!~' });
+            await sock.sendMessage(chatId, { text: 'Baik, Tuan~ Yuuki akan membaca semua pesan pribadi dan grup yang masuk secara otomatis. Tidak ada yang terlewat!~' });
         } else if (action === 'off') {
             data.enabled = false;
             fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));

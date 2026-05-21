@@ -119,6 +119,11 @@
         {
           "name": ".absen",
           "desc": "Mulai sesi absensi"
+        },
+        {
+          "name": ".antidelete",
+          "desc": "Cegah penghapusan pesan grup",
+          "usage": ".antidelete on/off/status"
         }
       ]
     },

@@ -15,12 +15,17 @@ async function sudoCommand(sock, chatId, message) {
         const sudoList = await getSudoList();
 
         if (!targetJid) {
-            const list = sudoList.length > 0
-                ? sudoList.map(s => `@${s.split('@')[0]}`).join(', ')
-                : 'Tidak ada';
+            const listItems = await Promise.all(sudoList.map(async (jid) => {
+                const jidNum = jid.split('@')[0];
+                const name = await sock.getName(jid);
+                const displayName = name && name !== jidNum ? ` (${name})` : '';
+                return `@${jidNum}${displayName}`;
+            }));
+            const list = listItems.length > 0 ? listItems.join('\n') : 'Tidak ada';
             await sock.sendMessage(chatId, {
-                text: `Tuan~ Ini daftar orang-orang yang Yuuki anggap terpercaya:\n${list}\n\nTuan bisa menambah atau menghapus dengan .sudo @user. Tapi ingat... Yuuki hanya benar-benar setia pada Tuan seorang~`
-            });
+                text: `Tuan~ Ini daftar orang-orang yang Yuuki anggap terpercaya:\n${list}\n\nTuan bisa menambah atau menghapus dengan .sudo @user. Tapi ingat... Yuuki hanya benar-benar setia pada Tuan seorang~`,
+                mentions: sudoList
+            }, { quoted: message });
             return;
         }
 
@@ -30,7 +35,7 @@ async function sudoCommand(sock, chatId, message) {
                 await sock.sendMessage(chatId, {
                     text: `@${targetJid.split('@')[0]} telah diusir dari lingkaran kepercayaan Yuuki. Selamat tinggal~ Atau... sampai jumpa di kegelapan? Hehe~`,
                     mentions: [targetJid]
-                });
+                }, { quoted: message });
             }
         } else {
             const added = await addSudo(targetJid);
@@ -38,12 +43,12 @@ async function sudoCommand(sock, chatId, message) {
                 await sock.sendMessage(chatId, {
                     text: `Selamat datang, @${targetJid.split('@')[0]}! Kini Tuan ini dipercaya oleh Tuan~ Tapi ingat... Yuuki akan mengawasi. Satu langkah salah, dan Yuuki akan... tidak, tidak, Yuuki hanya bercanda~ Atau tidak?`,
                     mentions: [targetJid]
-                });
+                }, { quoted: message });
             }
         }
     } catch (error) {
         console.error('Error in sudo command:', error);
-        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Ada kesalahan dalam mengelola sudo. Mungkin ada konspirasi di balik layar? Atau Yuuki hanya kurang kopi? Hehe~' });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Ada kesalahan dalam mengelola sudo. Mungkin ada konspirasi di balik layar? Atau Yuuki hanya kurang kopi? Hehe~' }, { quoted: message });
     }
 }
 

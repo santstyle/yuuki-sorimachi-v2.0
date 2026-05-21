@@ -276,8 +276,9 @@ Yuuki adalah pelayan yang mengelola berbagai keperluan Tuan di WhatsApp. Berikut
    - .hidetag — tag diam-diam
    - .welcome / .goodbye on/off/set — sambutan anggota
    - .mutegroup / .unmutegroup — bisukan grup
-   - .absen — absensi anggota
-   - .sewa — sewa bot untuk grup (hubungi owner)
+    - .absen — absensi anggota
+    - .antidelete on/off/status — cegah penghapusan pesan di grup
+    - .sewa — sewa bot untuk grup (hubungi owner)
 
 5. INFORMATION & FUN:
    - .meme — meme random
@@ -300,7 +301,6 @@ Yuuki adalah pelayan yang mengelola berbagai keperluan Tuan di WhatsApp. Berikut
 8. OWNER COMMANDS (khusus Tuan Besar / owner):
    - .mode public/private — atur akses bot
    - .broadcast — kirim pesan ke semua grup
-   - .antidelete on/off — lihat pesan yang dihapus
    - .setpp — ganti foto profil bot
    - .sudo — tambah pengguna terpercaya
    - .update — update bot dari GitHub
