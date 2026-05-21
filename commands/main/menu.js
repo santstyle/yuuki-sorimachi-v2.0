@@ -19,12 +19,7 @@ function buildMenu() {
     const parts = ['Oh~ Tuan akhirnya memanggil Yuuki~ Yuuki sudah menunggu dengan setia. Ada yang bisa Yuuki bantu?\n'];
     for (const cat of registry.categories) {
         const names = cat.commands.map(getMenuName);
-        const lines = [`┏━━「 ${cat.name} 」`];
-        for (let i = 0; i < names.length; i += 4) {
-            lines.push(`┃ ${names.slice(i, i + 4).join('   ')}`);
-        }
-        lines.push('┗━━━━━━━━━━━━━━━━━━━━');
-        parts.push(lines.join('\n'));
+        parts.push(`${cat.name}\n${names.join('\n')}`);
     }
     parts.push('> Ketik *.help* untuk detailnya, Tuan~ Tapi... apa Tuan yakin tidak ingin sekadar mengobrol dengan Yuuki? Yuuki bisa sangat... menarik.\n> *Pelayanmu yang setia — Yuuki Sorimachi*');
     return parts.join('\n\n');

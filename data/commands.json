@@ -36,8 +36,8 @@
       ]
     },
     {
-      "id": "group",
-      "name": "*GROUP*",
+      "id": "group-admin",
+      "name": "*GROUP ADMIN*",
       "commands": [
         {
           "name": ".antilink",
@@ -78,11 +78,6 @@
           "usage": ".warn @user [alasan]"
         },
         {
-          "name": ".warnings",
-          "desc": "Cek total warn member",
-          "usage": ".warnings @user"
-        },
-        {
           "name": ".resetwarn",
           "desc": "Hapus semua warning member",
           "usage": ".resetwarn @user"
@@ -101,12 +96,23 @@
           "desc": "Reset link undangan grup"
         },
         {
-          "name": ".groupinfo",
-          "desc": "Info lengkap grup ini"
-        },
-        {
           "name": ".groupset",
           "desc": "Pengaturan grup"
+        },
+        {
+          "name": ".antidelete",
+          "desc": "Cegah penghapusan pesan grup",
+          "usage": ".antidelete on/off/status"
+        }
+      ]
+    },
+    {
+      "id": "group",
+      "name": "*GROUP*",
+      "commands": [
+        {
+          "name": ".groupinfo",
+          "desc": "Info lengkap grup ini"
         },
         {
           "name": ".ceksewa",
@@ -114,16 +120,17 @@
         },
         {
           "name": ".staff",
+          "alias": ".admins, .listadmin",
           "desc": "Daftar admin & staff grup"
+        },
+        {
+          "name": ".warnings",
+          "desc": "Cek total warn member",
+          "usage": ".warnings @user"
         },
         {
           "name": ".absen",
           "desc": "Mulai sesi absensi"
-        },
-        {
-          "name": ".antidelete",
-          "desc": "Cegah penghapusan pesan grup",
-          "usage": ".antidelete on/off/status"
         }
       ]
     },

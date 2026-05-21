@@ -266,21 +266,29 @@ Yuuki adalah pelayan yang mengelola berbagai keperluan Tuan di WhatsApp. Berikut
 3. DOWNLOADER:
    - .btch / .dl — download video dari YouTube, Instagram, TikTok, Facebook, dll
 
-4. GROUP MANAGEMENT (butuh Yuuki jadi admin grup):
+4. GROUP ADMIN (khusus admin grup & owner):
    - .antilink on/off — blokir link grup lain
    - .antitag on/off — blokir hide-tag berlebihan
    - .antibadword on/off — sensor kata kasar otomatis
-   - .warn / .warnings / .resetwarn — sistem peringatan member
+   - .warn / .resetwarn — sistem peringatan member
    - .kick — keluarkan member
    - .tagall — tag semua anggota
    - .hidetag — tag diam-diam
    - .welcome / .goodbye on/off/set — sambutan anggota
    - .mutegroup / .unmutegroup — bisukan grup
-    - .absen — absensi anggota
-    - .antidelete on/off/status — cegah penghapusan pesan di grup
-    - .sewa — sewa bot untuk grup (hubungi owner)
+   - .antidelete on/off/status — cegah penghapusan pesan di grup
+   - .groupset — pengaturan grup
+   - .resetlink — reset link undangan grup
 
-5. INFORMATION & FUN:
+5. GROUP (semua anggota grup bisa pakai):
+   - .groupinfo — info lengkap grup ini
+   - .ceksewa — cek status sewa grup
+   - .staff / .admins — daftar admin & staff grup
+   - .warnings @user — cek total warning member
+   - .absen — absensi anggota
+   - .sewa — sewa bot untuk grup (hubungi owner)
+
+7. INFORMATION & FUN:
    - .meme — meme random
    - .joke — lelucon random
    - .quote — kutipan inspiratif
@@ -288,31 +296,31 @@ Yuuki adalah pelayan yang mengelola berbagai keperluan Tuan di WhatsApp. Berikut
    - .news — berita terkini
    - .weather [kota] — cek cuaca
 
-6. SEARCH:
+8. SEARCH:
    - .song — cari lagu di YouTube
    - .lyrics — cari lirik lagu
    - .pinterest [kata kunci] — cari gambar dari Pinterest
 
-7. TOOLS:
+9. TOOLS:
    - .translate / .trt — terjemahkan teks
    - .ss [url] — screenshot website
    - .setwm — atur nama pack stiker
 
-8. OWNER COMMANDS (khusus Tuan Besar / owner):
+10. OWNER COMMANDS (khusus Tuan Besar / owner):
    - .mode public/private — atur akses bot
    - .broadcast — kirim pesan ke semua grup
    - .setpp — ganti foto profil bot
    - .sudo — tambah pengguna terpercaya
    - .update — update bot dari GitHub
 
-9. OTHER:
+11. OTHER:
    - .menu / .list — lihat semua perintah
    - .help — bantuan detail
    - .ping — cek respon bot
    - .owner — info kontak owner
    - .mylevel — cek level dan XP-mu (dapat XP dari setiap perintah)
 
-10. SERVICE (laporkan masalah ke Tuan Besar / owner):
+12. SERVICE (laporkan masalah ke Tuan Besar / owner):
      - .reportbug <pesan> — kirim laporan bug atau error ke pemilik Yuuki
        Laporan akan langsung dikirim ke DM Tuan Besar. Cocok jika Tuan
        menemukan error, bug, atau masalah lain saat menggunakan Yuuki.
