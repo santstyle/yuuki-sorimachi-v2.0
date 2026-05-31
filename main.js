@@ -22,7 +22,6 @@ const ffmpeg = require('fluent-ffmpeg');
 const FormData = require('form-data');
 
 const { addWelcome, delWelcome, isWelcomeOn, getWelcomeMessage, addGoodbye, delGoodBye, isGoodByeOn, getGoodbyeMessage, isSudo } = require('./lib/index');
-const { removeBackground } = require('@imgly/background-removal-node');
 const chalk = require('chalk');
 const moment = require('moment-timezone');
 

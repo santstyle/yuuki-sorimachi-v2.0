@@ -1,4 +1,5 @@
 const puppeteer = require('puppeteer');
+const axios = require('axios');
 
 let browser = null;
 
@@ -39,8 +40,13 @@ async function pinterestCommand(sock, chatId, message, input) {
 
         const imageUrl = urls[Math.floor(Math.random() * urls.length)];
 
+        const imgResp = await axios.get(imageUrl, {
+            responseType: 'arraybuffer',
+            timeout: 15000,
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+        });
         await sock.sendMessage(chatId, {
-            image: { url: imageUrl }
+            image: Buffer.from(imgResp.data)
         }, { quoted: message });
 
     } catch (error) {

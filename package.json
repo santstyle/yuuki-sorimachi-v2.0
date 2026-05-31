@@ -25,7 +25,6 @@
     "@adiwajshing/keyed-db": "^0.2.4",
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@hapi/boom": "^10.0.1",
-    "@imgly/background-removal-node": "^1.4.5",
     "@prisma/client": "^5.22.0",
     "@types/node": "^20.0.0",
     "@whiskeysockets/baileys": "^6.7.21",
