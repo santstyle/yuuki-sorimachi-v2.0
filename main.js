@@ -21,9 +21,7 @@ const sharp = require('sharp');
 const ffmpeg = require('fluent-ffmpeg');
 const FormData = require('form-data');
 
-
 const { addWelcome, delWelcome, isWelcomeOn, getWelcomeMessage, addGoodbye, delGoodBye, isGoodByeOn, getGoodbyeMessage, isSudo } = require('./lib/index');
-const FormData = require('form-data');
 const { removeBackground } = require('@imgly/background-removal-node');
 const chalk = require('chalk');
 const moment = require('moment-timezone');
@@ -1312,7 +1310,6 @@ async function flirtCommand(sock, chatId, message) {
 
 async function shipCommand(sock, chatId, message) {
     try {
-        const senderId = message.key.participant || message.key.remoteJid;
         const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
         const senderId = message.key.participant || message.key.remoteJid;
         const groupMetadata = await sock.groupMetadata(chatId);
