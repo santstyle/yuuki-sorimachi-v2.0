@@ -2,6 +2,7 @@ const settings = require('./settings');
 require('./config.js');
 const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 
+const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 const { exec } = require('child_process');
 
 if (!process.env.FFMPEG_PATH) {
@@ -22,6 +23,8 @@ const FormData = require('form-data');
 
 
 const { addWelcome, delWelcome, isWelcomeOn, getWelcomeMessage, addGoodbye, delGoodBye, isGoodByeOn, getGoodbyeMessage, isSudo } = require('./lib/index');
+const FormData = require('form-data');
+const { removeBackground } = require('@imgly/background-removal-node');
 const chalk = require('chalk');
 const moment = require('moment-timezone');
 
@@ -33,6 +36,25 @@ const logger = {
     err: (msg) => console.log(`${chalk.cyan('[' + moment().tz('Asia/Jakarta').format('HH:mm:ss') + ']')} ${chalk.bgRed(' ERR  ')} ${msg}`)
 };
 
+async function downloadBuffer(msg, type) {
+    const stream = await downloadContentFromMessage(msg, type);
+    let buffer = Buffer.from([]);
+    for await (const chunk of stream) {
+        buffer = Buffer.concat([buffer, chunk]);
+    }
+    return buffer;
+}
+
+async function uploadToCatbox(buffer) {
+    const form = new FormData();
+    form.append('reqtype', 'fileupload');
+    form.append('fileToUpload', buffer, { filename: 'image.png', contentType: 'image/png' });
+    const { data } = await axios.post('https://catbox.moe/user/api.php', form, {
+        headers: { ...form.getHeaders() },
+        timeout: 15000
+    });
+    return data;
+}
 
 const tagAllCommand = require('./commands/group/tagall');
 const { hidetagCommand } = require('./commands/group/hidetag');
@@ -96,7 +118,7 @@ const { getNextCustomId } = require('./lib/customId');
 const { groupsetCommand } = require('./commands/group/groupset');
 const { cleanupCommand } = require('./commands/owner/cleanup');
 const ownermenuCommand = require('./commands/owner/ownermenu');
-const { pinterestCommand } = require('./commands/search/pinterest');
+const { pinterestCommand, scrapePinterest } = require('./commands/search/pinterest');
 const { autoreadCommand } = require('./commands/owner/autoread');
 
 const { joinCommand } = require('./commands/owner/join');
@@ -150,7 +172,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             return;
         }
 
-        const senderId = message.key.participant || message.key.remoteJid;
+        const senderId = message.key.fromMe ? sock.user.id : (message.key.participant || message.key.remoteJid);
         chatId = message.key.remoteJid;
         const isGroup = chatId.endsWith('@g.us');
         const senderIsSudo = await isSudo(senderId);
@@ -266,38 +288,40 @@ async function handleMessages(sock, messageUpdate, printLog) {
                     }
                 }
 
-                const xpResult = await addXP(senderId, Math.floor(Math.random() * 15) + 5, pushName);
-                if (xpResult && xpResult.leveledUp) {
-                    const levelUpImagePath = path.join(__dirname, 'assets', 'levelup', 'yuuki-uplevel.png');
-                    let thumbBuffer = null;
-                    if (fs.existsSync(levelUpImagePath)) {
-                        try {
-                            let buffer = fs.readFileSync(levelUpImagePath);
-                            buffer = await sharp(buffer)
-                                .resize(1140)
-                                .jpeg({ quality: 80 })
-                                .toBuffer();
-                            thumbBuffer = buffer;
-                        } catch (e) {
-                            console.error('Gagal baca thumbnail level up:', e.message);
+                if (!senderId.endsWith('@g.us')) {
+                    const xpResult = await addXP(senderId, Math.floor(Math.random() * 15) + 5, pushName);
+                    if (xpResult && xpResult.leveledUp) {
+                        const levelUpImagePath = path.join(__dirname, 'assets', 'levelup', 'yuuki-uplevel.png');
+                        let thumbBuffer = null;
+                        if (fs.existsSync(levelUpImagePath)) {
+                            try {
+                                let buffer = fs.readFileSync(levelUpImagePath);
+                                buffer = await sharp(buffer)
+                                    .resize(1140)
+                                    .jpeg({ quality: 80 })
+                                    .toBuffer();
+                                thumbBuffer = buffer;
+                            } catch (e) {
+                                console.error('Gagal baca thumbnail level up:', e.message);
+                            }
                         }
+
+                        const mentionNumber = senderId.split('@')[0];
+                        const levelUpText = `✨ Bintang-bintang berbisik... @${mentionNumber} naik ke Level *${xpResult.level}*. Takdir masih menyimpan banyak misteri untuk Tuan~`;
+
+                        const levelUpMessage = {
+                            text: levelUpText,
+                            mentions: [senderId]
+                        };
+
+                        if (thumbBuffer) {
+                            levelUpMessage.image = thumbBuffer;
+                            levelUpMessage.caption = levelUpText;
+                            delete levelUpMessage.text;
+                        }
+
+                        await sock.sendMessage(chatId, levelUpMessage, { quoted: message });
                     }
-
-                    const mentionNumber = senderId.split('@')[0];
-                    const levelUpText = `✨ Bintang-bintang berbisik... @${mentionNumber} naik ke Level *${xpResult.level}*. Takdir masih menyimpan banyak misteri untuk Tuan~`;
-
-                    const levelUpMessage = {
-                        text: levelUpText,
-                        mentions: [senderId]
-                    };
-
-                    if (thumbBuffer) {
-                        levelUpMessage.image = thumbBuffer;
-                        levelUpMessage.caption = levelUpText;
-                        delete levelUpMessage.text;
-                    }
-
-                    await sock.sendMessage(chatId, levelUpMessage, { quoted: message });
                 }
             }
         } catch (dbError) {
@@ -379,7 +403,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage === '.toimage' || userMessage === '.toimg': {
                 const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
                 if (quotedMessage?.stickerMessage) {
-                    await toimageCommand(sock, quotedMessage, chatId, senderId, ['toimage']);
+                    await toimageCommand(sock, message, chatId, senderId, ['toimage']);
                 } else {
                     await sock.sendMessage(chatId, { text: 'Tuan~ Yuuki memohon dengan hormat, balaslah sebuah *stiker* dengan command *.toimage* agar Yuuki bisa mengubahnya menjadi gambar~' });
                 }
@@ -822,7 +846,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage === '.goodnight' || userMessage === '.lovenight' || userMessage === '.gn':
                 await goodnightCommand(sock, chatId, message);
                 break;
-            case userMessage.startsWith('.quote'):
             case userMessage.startsWith('.waifu'):
                 {
                     const parts = userMessage.trim().split(/\s+/);
@@ -1262,12 +1285,12 @@ async function blurCommand(sock, chatId, message, quotedMessage) {
             await sock.sendMessage(chatId, { text: 'Tuan~ Balas sebuah *gambar* dengan command .blur agar Yuuki buatkan versi blur~' });
             return;
         }
-        const buffer = await downloadMediaMessage({ message: quotedMessage }, 'buffer', {}, { logger: console });
+        const buffer = await downloadBuffer(quotedMessage.imageMessage, 'image');
         const blurred = await sharp(buffer).blur(15).jpeg({ quality: 70 }).toBuffer();
         await sock.sendMessage(chatId, { image: blurred }, { quoted: message });
     } catch (error) {
         console.error('Error in blur:', error);
-        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal memblur gambar~' });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal memblur gambar~' }, { quoted: message });
     }
 }
 
@@ -1289,34 +1312,40 @@ async function flirtCommand(sock, chatId, message) {
 
 async function shipCommand(sock, chatId, message) {
     try {
+        const senderId = message.key.participant || message.key.remoteJid;
         const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
         const senderId = message.key.participant || message.key.remoteJid;
         const groupMetadata = await sock.groupMetadata(chatId);
         const allMembers = groupMetadata.participants.map(p => p.id).filter(jid => jid !== senderId);
 
-        let user1, user2;
-        if (mentioned.length >= 2) {
-            user1 = mentioned[0];
-            user2 = mentioned[1];
-        } else if (mentioned.length === 1) {
-            user1 = mentioned[0];
-            const others = allMembers.filter(jid => jid !== user1);
-            user2 = others[Math.floor(Math.random() * others.length)];
-        } else {
-            const shuffled = allMembers.sort(() => 0.5 - Math.random());
-            user1 = shuffled[0];
-            user2 = shuffled[1] || shuffled[0];
-        }
-
-        if (!user1 || !user2) {
-            await sock.sendMessage(chatId, { text: 'Tuan~ Tidak cukup anggota untuk di-ship. Minimal 2 orang~' });
+        if (mentioned.length < 2) {
+            await sock.sendMessage(chatId, {
+                text: 'Tuan~ Cara pakai .ship:\n\n`.ship @user1 @user2`\n\nYuuki akan men-ship dua orang yang Tuan sebut~ 💕'
+            });
             return;
         }
 
+        let user1 = mentioned[0], user2 = mentioned[1];
+
         const compatibility = Math.floor(Math.random() * 60) + 30;
+
+        let name1, name2;
+        try { name1 = await sock.getName(user1); } catch (e) {}
+        try { name2 = await sock.getName(user2); } catch (e) {}
+
+        if (!name1 || name1.includes('@')) {
+            const user = await prisma.user.findUnique({ where: { id: user1 }, select: { name: true } });
+            name1 = user?.name || user1.split('@')[0];
+        }
+        if (!name2 || name2.includes('@')) {
+            const user = await prisma.user.findUnique({ where: { id: user2 }, select: { name: true } });
+            name2 = user?.name || user2.split('@')[0];
+        }
+
         const hearts = compatibility > 80 ? '💕💕💕' : compatibility > 60 ? '💕💕' : '💕';
-        const name1 = (await sock.getName(user1)) || user1.split('@')[0];
-        const name2 = (await sock.getName(user2)) || user2.split('@')[0];
+        const vibe = compatibility > 70
+            ? 'Wah~ Yuuki bisa merasakan chemistry yang kuat di antara mereka! Semoga jadi pasangan yang serasi~ 💕'
+            : 'Hmm~ Mungkin perlu sedikit waktu agar benih cinta tumbuh di antara mereka~ Yuuki akan mendoakan yang terbaik~';
 
         await sock.sendMessage(chatId, {
             text: `@${user1.split('@')[0]} 💕 @${user2.split('@')[0]}\n\n*Kompatibilitas:* ${compatibility}% ${hearts}\n\n${compatibility > 70 ? 'Sepertinya mereka cocok~ Yuuki iri...' : 'Hmm... mungkin perlu waktu~'}`,
@@ -1344,7 +1373,7 @@ async function viewOnceCommand(sock, chatId, message) {
             const buffer = await downloadMediaMessage({ message: quoted }, 'buffer', {}, { logger: console });
             await sock.sendMessage(chatId, { video: buffer, caption: 'Tuan~ Yuuki berhasil mengintip video ini untuk Tuan~' }, { quoted: message });
         } else if (type === 'audioMessage') {
-            const buffer = await downloadMediaMessage({ message: quoted }, 'buffer', {}, { logger: console });
+            const buffer = await downloadBuffer(quoted.audioMessage, 'audio');
             await sock.sendMessage(chatId, { audio: buffer, mimetype: quoted.audioMessage?.mimetype || 'audio/mp4', ptt: quoted.audioMessage?.ptt || false });
         } else {
             await sock.sendMessage(chatId, { text: 'Tuan~ Yuuki tidak bisa mengintip tipe media ini~' });
@@ -1425,6 +1454,7 @@ async function removebgCommand(sock, chatId, message, args) {
 }
 
 async function reminiCommand(sock, chatId, message, args) {
+    let buffer;
     try {
         const quoted = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
         if (!quoted?.imageMessage) {
@@ -1524,7 +1554,17 @@ async function reminiCommand(sock, chatId, message, args) {
         }
     } catch (error) {
         console.error('Error in remini:', error);
-        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal meningkatkan kualitas gambar. Mungkin server sedang sibuk~' });
+        try {
+            const imageUrl = await uploadToCatbox(buffer);
+            const res = await axios.get('https://api.nexray.eu.cc/tools/upscale?url=' + encodeURIComponent(imageUrl) + '&resolusi=2x', {
+                timeout: 60000,
+                responseType: 'arraybuffer'
+            });
+            await sock.sendMessage(chatId, { image: res.data }, { quoted: message });
+        } catch (fallbackError) {
+            console.error('Fallback remini also failed:', fallbackError.message);
+            await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal meningkatkan kualitas gambar. Mungkin server sedang sibuk~' }, { quoted: message });
+        }
     }
 }
 
