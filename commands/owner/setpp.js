@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 
 async function setProfilePicture(sock, chatId, message) {
     try {
@@ -13,11 +14,17 @@ async function setProfilePicture(sock, chatId, message) {
 
         await sock.sendMessage(chatId, { text: 'Tuan~ Yuuki sedang merias wajah... bersabarlah. Yuuki ingin sempurna di mata Tuan~' });
 
-        const media = await sock.downloadMediaMessage(
-            quotedMessage ? { message: quotedMessage } : message
+        const media = await downloadMediaMessage(
+            quotedMessage ? { message: quotedMessage } : message,
+            'buffer',
+            {},
+            { logger: console }
         );
 
-        await sock.updateProfilePicture(sock.user.id, { url: media });
+        const tempFile = path.join(__dirname, `../../temp/pp_${Date.now()}.jpg`);
+        fs.writeFileSync(tempFile, media);
+        await sock.updateProfilePicture(sock.user.id, { url: tempFile });
+        fs.unlinkSync(tempFile);
         await sock.sendMessage(chatId, { text: 'Tuan~ Wajah baru Yuuki sudah siap! Cantik, bukan? Yuuki berharap Tuan suka~ Kalau tidak suka... Yuuki akan menangis dan mengutuk dunia. Hehe, hanya bercanda, Tuan~ Atau tidak?' });
     } catch (error) {
         console.error('Error setting profile picture:', error);

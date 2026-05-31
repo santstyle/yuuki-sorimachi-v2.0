@@ -142,6 +142,20 @@ npm install
 > npm install --legacy-peer-deps
 > ```
 
+### 8a. Download Model Remove Background (Opsional)
+
+Model AI lokal untuk fitur `.removebg` / `.rmbg` / `.nobg` tanpa API key. Ukuran ~80MB, didownload otomatis saat pertama kali menjalankan perintah.
+
+Atau download manual:
+
+```bash
+# Buat folder model
+mkdir -p node_modules/@imgly/background-removal-node/resources/model
+
+# Download model medium
+curl -L https://github.com/imgly/background-removal-js/releases/download/v1.4.0/model-medium.onnx -o node_modules/@imgly/background-removal-node/resources/model/model-medium.onnx
+```
+
 ### 9. Setup Environment Variables
 
 ```bash
@@ -241,6 +255,8 @@ Kirim pesan `.ping` ke nomor bot - harus reply `Pong!`.
 | `GROQ_API_KEY` | Tidak | Untuk fitur .groq |
 | `DEEPSEEK_API_KEY` | Tidak | Untuk fitur .deepseek |
 | `OPENAI_API_KEY` | Tidak | Untuk fitur .gpt |
+| `REMBG_API_KEY` | Tidak | API key rembg.com (gratis, untuk .removebg). Dapatkan di https://www.rembg.com/api-usage |
+| `REMOVEBG_API_KEY` | Tidak | API key remove.bg (fallback jika rembg gagal). Dapatkan di https://www.remove.bg/ |
 | `XTEAM_API_KEY` | Tidak | API key external services |
 | `LOLHUMAN_API_KEY` | Tidak | API key external services |
 

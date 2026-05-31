@@ -2,18 +2,13 @@ const { performAutoCleanup, cleanupHistory, cleanupInactiveUsers, cleanupWarning
 
 async function cleanupCommand(sock, chatId, message, senderId, args) {
     try {
-        if (!message.key.fromMe && !senderId.includes(process.env.OWNER_NUMBER || '')) {
-            await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Command ini hanya untuk pemilik Yuuki. Yuuki tidak bisa sembarangan memberikan akses~ Meskipun Yuuki percaya Tuan, aturan tetaplah aturan.' });
-            return;
-        }
-
         const target = args[0]?.toLowerCase();
         let deletedCount = 0;
         let responseText = '';
 
         switch (target) {
             case 'history':
-                deletedCount = await cleanupHistory(parseInt(args[1]) || 30);
+                deletedCount = await cleanupHistory(parseInt(args[1]) || 1);
                 responseText = `Tuan~ Yuuki berhasil membersihkan ${deletedCount} riwayat command lama. Kenangan lama lenyap entah ke mana... seperti kenangan Yuuki yang pudar dimakan waktu, hiks~`;
                 break;
             case 'users':

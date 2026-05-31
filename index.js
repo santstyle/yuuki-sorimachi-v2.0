@@ -33,7 +33,7 @@ if (fs.existsSync(ffmpegPath)) {
 
 const FileType = require('file-type')
 const axios = require('axios')
-const { handleMessages, handleGroupParticipantUpdate, handleStatus } = require('./main')
+const { handleMessages, handleGroupParticipantUpdate } = require('./main')
 const PhoneNumber = require('awesome-phonenumber')
 const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./lib/exif')
 const {
@@ -73,7 +73,7 @@ setInterval(() => {
 
 setInterval(() => {
     const used = process.memoryUsage().rss / 1024 / 1024
-    if (used > 500) {
+    if (used > 4000) {
         console.log(`RAM too high (${used.toFixed(0)}MB), restarting gracefully...`)
         shutdown()
     }
@@ -155,7 +155,15 @@ async function startXeonBotInc() {
                 : mek.message
 
             if (mek.key && mek.key.remoteJid === 'status@broadcast') {
-                return
+                try {
+                    const fs = require('fs');
+                    let autostatusData = { enabled: false };
+                    try { autostatusData = JSON.parse(fs.readFileSync('./data/autostatus.json', 'utf8')); } catch (e) {}
+                    if (autostatusData.enabled) {
+                        await XeonBotInc.readMessages([mek.key]);
+                    }
+                } catch (e) {}
+                return;
             }
 
             if (!XeonBotInc.public && !mek.key.fromMe && chatUpdate.type === 'notify') return
@@ -281,14 +289,6 @@ async function startXeonBotInc() {
             await handleGroupParticipantUpdate(XeonBotInc, update)
         } catch (error) {
             console.error('Error in group update:', error.message)
-        }
-    })
-
-    XeonBotInc.ev.on('status.update', async (status) => {
-        try {
-            await handleStatus(XeonBotInc, status)
-        } catch (error) {
-            console.error('Error handling status:', error.message)
         }
     })
 

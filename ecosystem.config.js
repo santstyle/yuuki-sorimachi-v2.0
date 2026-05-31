@@ -25,7 +25,7 @@ module.exports = {
     },
 
     // Node.js options
-    node_args: "--max-old-space-size=512",
+    node_args: "--max-old-space-size=6144",
     exec_mode: "fork",
 
     // Monitoring
@@ -40,7 +40,7 @@ module.exports = {
     ],
 
     // Memory limits
-    max_memory_restart: "450M",
+    max_memory_restart: "4G",
 
     time: true
   }]
