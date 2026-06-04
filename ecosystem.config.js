@@ -3,7 +3,7 @@ module.exports = {
     name: "yuuki-bot",
     "version": "2.0.0",
     script: "./index.js",
-    cwd: "/home/ubuntu/santstyle/yuukibot-v2.0",
+    cwd: __dirname,
 
     // Log settings
     log_date_format: "YYYY-MM-DD HH:mm:ss",

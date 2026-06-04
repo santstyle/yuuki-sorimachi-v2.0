@@ -81,6 +81,9 @@ Thumbs.db
 *.tmp
 *.temp
 
+# Testing files
+Testing Downloader Yuuki Bot.txt
+
 # Large files (GitHub has 100MB limit)
 *.zip
 *.tar.gz

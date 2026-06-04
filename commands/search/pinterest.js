@@ -126,10 +126,13 @@ function extractFromContent(html) {
 }
 
 function toOriginalUrl(url) {
+    if (!url) return null;
+    if (url.includes('/originals/')) return url;
     const match = url.match(/^(https:\/\/i\.pinimg\.com\/)(\d+x(?:\d+)?)(\/.+)$/);
     if (match) {
         return match[1] + 'originals' + match[3];
     }
+    if (url.includes('i.pinimg.com')) return url;
     return null;
 }
 

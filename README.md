@@ -48,8 +48,8 @@
 |----------|---------|-------------|
 | OS | Ubuntu 20.04 | Ubuntu 22.04 / 24.04 |
 | Node.js | 18.x | 20.x LTS |
-| RAM | 256 MB | 512 MB+ |
-| Storage | 500 MB | 1 GB+ |
+| RAM | 1 GB | 2 GB+ |
+| Storage | 1 GB | 2 GB+ |
 | Lainnya | FFmpeg, Git, PM2 | yt-dlp (untuk downloader) |
 
 ---
@@ -168,14 +168,15 @@ Isi minimal yang wajib:
 OWNER_NUMBER=62812xxxxxxx       # Nomor HP owner (pakai kode negara, tanpa +)
 BOT_NUMBER=62889xxxxxxx         # Nomor HP bot
 OWNER_LID=18684xxxxxxxx         # LID owner (bisa dikosongkan dulu)
+DATABASE_URL="file:./prisma/database.db"  # Wajib untuk Prisma/SQLite
 ```
 
 API key opsional (kosongi jika tidak butuh fitur AI):
 
 ```env
-GROQ_API_KEY=your_key_here      # Untuk Groq AI
-DEEPSEEK_API_KEY=your_key_here   # Untuk DeepSeek
-OPENAI_API_KEY=your_key_here     # Untuk ChatGPT
+GROQ_API_KEY=your_key_here      # Untuk Groq AI (Llama-3.3-70b)
+DEEPSEEK_API_KEY=your_key_here  # Untuk DeepSeek
+OPENAI_API_KEY=your_key_here    # Untuk ChatGPT
 ```
 
 Simpan file dengan `Ctrl + X`, tekan `Y`, lalu `Enter`.
@@ -210,6 +211,8 @@ npm start
 ```bash
 pm2 start ecosystem.config.js
 ```
+
+> **Penting:** File `ecosystem.config.js` memiliki `cwd` (working directory) yang perlu disesuaikan dengan path instalasi kamu di VPS. Buka file tersebut dan ubah nilai `cwd` ke path yang sesuai.
 
 Simpan daftar proses PM2 agar aktif terus:
 
@@ -252,24 +255,32 @@ Kirim pesan `.ping` ke nomor bot - harus reply `Pong!`.
 | `OWNER_NUMBER` | Ya | Nomor HP owner (628xxx) |
 | `BOT_NUMBER` | Ya | Nomor HP bot |
 | `OWNER_LID` | Tidak | LID owner (untuk WhatsApp baru) |
-| `GROQ_API_KEY` | Tidak | Untuk fitur .groq |
-| `DEEPSEEK_API_KEY` | Tidak | Untuk fitur .deepseek |
-| `OPENAI_API_KEY` | Tidak | Untuk fitur .gpt |
-| `REMBG_API_KEY` | Tidak | API key rembg.com (gratis, untuk .removebg). Dapatkan di https://www.rembg.com/api-usage |
+| `DATABASE_URL` | Ya | URL database SQLite (`file:./prisma/database.db`) |
+| `GROQ_API_KEY` | Tidak | Untuk fitur `.groq` (LLaMA-3.3-70b) |
+| `DEEPSEEK_API_KEY` | Tidak | Untuk fitur `.deepseek` |
+| `OPENAI_API_KEY` | Tidak | Untuk fitur `.gpt` |
+| `REMBG_API_KEY` | Tidak | API key rembg.com (gratis, untuk `.removebg`). Dapatkan di https://www.rembg.com/api-usage |
 | `REMOVEBG_API_KEY` | Tidak | API key remove.bg (fallback jika rembg gagal). Dapatkan di https://www.remove.bg/ |
-| `XTEAM_API_KEY` | Tidak | API key external services |
-| `LOLHUMAN_API_KEY` | Tidak | API key external services |
+| `GIPHY_API_KEY` | Tidak | API key Giphy untuk sticker/GIF |
+| `FAPIHUB_API_KEY` | Tidak | API key FapiHub |
+| `XTEAM_API_KEY` | Tidak | API key xteam.xyz |
+| `LOLHUMAN_API_KEY` | Tidak | API key lolhuman.xyz |
+| `[NAMA_API]_API_KEY` | Tidak | API key untuk API eksternal lain (lihat `config.js` untuk daftar lengkap) |
 
 ### File `settings.js`
 
 ```js
 {
   packname: 'Yuuki Sorimachi | Bot',  // Nama pack sticker
+  wm: '',                             // Watermark sticker (kosongkan jika tidak perlu)
   botName: "Yuuki Sorimachi | Bot",
-  botOwner: 'SantStyle',
+  botOwner: 'SantStyle',              // Nama kamu
   commandMode: "public",              // "public" atau "private"
   maxStoreMessages: 20,               // Max pesan disimpan di memory
   storeWriteInterval: 10000,          // Interval simpan store (ms)
+  description: "-",                   // Deskripsi bot
+  version: "2.0.0",                   // Versi bot (sesuai package.json)
+  removebgApiKey: '',                 // API key remove.bg (opsional, local AI sbg fallback)
 }
 ```
 
@@ -407,9 +418,18 @@ pm2 restart yuuki-bot
 
 ---
 
-## Deploy dengan Docker (Alternatif)
+## NPM Scripts
 
-> Coming soon - Dockerfile masih dalam pengembangan.
+| Script | Perintah | Kegunaan |
+|--------|----------|----------|
+| `start` | `npm start` | Jalankan bot (memory limit 4GB) |
+| `start:optimized` | `npm run start:optimized` | Jalankan dengan optimasi memori |
+| `start:clean` | `npm run start:clean` | Cleanup tmp + start optimized |
+| `start:fresh` | `npm run start:fresh` | Reset session + start ulang |
+| `cleanup` | `npm run cleanup` | Bersihkan file temporary |
+| `reset-session` | `npm run reset-session` | Hapus folder session |
+| `install:panel` | `npm run install:panel` | Install ulang dependencies (--legacy-peer-deps) |
+| `install:force` | `npm run install:force` | Install ulang dependencies (--force) |
 
 ---
 

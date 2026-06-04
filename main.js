@@ -70,6 +70,7 @@ const { modeCommand } = require('./commands/owner/mode');
 const { antideleteCommand } = require('./commands/owner/antidelete');
 
 const { clearTmpCommand } = require('./commands/owner/cleartmp');
+const { clearSessionCommand } = require('./commands/owner/clearsession');
 const { setProfilePicture } = require('./commands/owner/setpp');
 const { autoStatusCommand } = require('./commands/owner/autostatus');
 const { sudoCommand } = require('./commands/owner/sudo');
@@ -345,7 +346,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
         const adminCommands = ['.mutegroup', '.unmutegroup', '.kick', '.tagall', '.hidetag', '.antilink', '.antitag', '.antidelete'];
         const isAdminCommand = adminCommands.some(cmd => userMessage.startsWith(cmd));
 
-        const ownerCommands = ['.mode', '.self', '.autostatus', '.cleartmp', '.setpp', '.areact', '.autoreact', '.ban', '.unban', '.bc', '.broadcast', '.sudo', '.addsudo', '.listsudo', '.delsudo', '.cleanup', '.debuglevelup', '.sewa', '.autoread', '.join', '.leave', '.addprem', '.listprem'];
+        const ownerCommands = ['.mode', '.self', '.autostatus', '.cleartmp', '.clearsession', '.setpp', '.areact', '.autoreact', '.ban', '.unban', '.bc', '.broadcast', '.sudo', '.addsudo', '.listsudo', '.delsudo', '.cleanup', '.debuglevelup', '.sewa', '.autoread', '.join', '.leave', '.addprem', '.listprem'];
         const isOwnerCommand = ownerCommands.some(cmd => userMessage.startsWith(cmd));
 
         let isSenderAdmin = false;
@@ -611,6 +612,9 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage === '.topmembers':
                 topMembers(sock, chatId, isGroup);
                 break;
+            case userMessage === '.leaderboard' || userMessage === '.lb' || userMessage === '.globalrank':
+                await leaderboardCommand(sock, chatId);
+                break;
             case userMessage.startsWith('.lyrics'):
                 const songTitle = userMessage.split(' ').slice(1).join(' ');
                 await lyricsCommand(sock, chatId, songTitle, message);
@@ -760,6 +764,13 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 }
                 await clearTmpCommand(sock, chatId, message);
                 break;
+            case userMessage === '.clearsession':
+                if (!message.key.fromMe && !senderIsSudo) {
+                    await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya pemilik Yuuki yang berhak membersihkan memori Yuuki. Ini masalah privasi~' });
+                    return;
+                }
+                await clearSessionCommand(sock, chatId, message);
+                break;
             case userMessage === '.setpp':
                 if (!message.key.fromMe && !senderIsSudo) {
                     await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya pemilik Yuuki yang bisa mengganti wajah Yuuki. Ini masalah harga diri~' });
@@ -800,7 +811,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 await gptCommand(sock, chatId, message, gptInput, senderId);
                 break;
             case userMessage.startsWith('.pinterest') || userMessage.startsWith('.pin'):
-                const pinPrefix = userMessage.startsWith('.pinterest') ? 11 : 4;
+                const pinPrefix = userMessage.startsWith('.pinterest') ? 10 : 4;
                 const pinInput = rawText.slice(pinPrefix).trim();
                 await pinterestCommand(sock, chatId, message, pinInput);
                 break;
@@ -1273,6 +1284,29 @@ async function topMembers(sock, chatId, isGroup) {
     } catch (error) {
         console.error('Error in topMembers:', error);
         await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal menampilkan peringkat~' });
+    }
+}
+
+async function leaderboardCommand(sock, chatId) {
+    try {
+        const top = await prisma.userProgress.findMany({
+            orderBy: [{ level: 'desc' }, { xp: 'desc' }],
+            take: 20,
+            include: { user: true }
+        });
+        if (top.length === 0) {
+            await sock.sendMessage(chatId, { text: 'Tuan~ Belum ada data user untuk membuat peringkat global. Ayo lebih aktif menggunakan Yuuki~' });
+            return;
+        }
+        let text = '━━━「 *LEADERBOARD* 」━━━\n\n';
+        top.slice(0, 10).forEach((u, i) => {
+            const name = u.userName || u.user?.name || u.userId.split('@')[0];
+            text += `${i + 1}. ${name.replace(/[^a-zA-Z0-9\s]/g, '')} — Level ${u.level} (${u.xp} XP)\n`;
+        });
+        await sock.sendMessage(chatId, { text });
+    } catch (error) {
+        console.error('Error in leaderboard:', error);
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal menampilkan leaderboard~' });
     }
 }
 
