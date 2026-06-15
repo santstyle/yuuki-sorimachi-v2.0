@@ -99,7 +99,21 @@ function clearOldSessionData() {
     }
 }
 
+let currentSocket = null;
+
 async function startXeonBotInc() {
+    if (currentSocket) {
+        try {
+            currentSocket.ev.removeAllListeners('connection.update');
+            currentSocket.ev.removeAllListeners('messages.upsert');
+            currentSocket.ev.removeAllListeners('creds.update');
+            currentSocket.ev.removeAllListeners('group-participants.update');
+            currentSocket.ev.removeAllListeners('contacts.update');
+            currentSocket.end(undefined);
+        } catch (e) {}
+        currentSocket = null;
+    }
+
     clearOldSessionData()
 
     let { version, isLatest } = await fetchLatestBaileysVersion()
@@ -139,6 +153,7 @@ async function startXeonBotInc() {
         defaultCacheSize: 100
     })
 
+    currentSocket = XeonBotInc
     XeonBotInc.public = true
 
     store.bind(XeonBotInc.ev)

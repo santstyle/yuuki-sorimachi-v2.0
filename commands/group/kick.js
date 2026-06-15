@@ -3,14 +3,7 @@ const isAdmin = require('../../lib/isAdmin');
 async function kickCommand(sock, chatId, senderId, mentionedJids, message) {
     const isOwner = message.key.fromMe;
     if (!isOwner) {
-        const { isSenderAdmin, isBotAdmin } = await isAdmin(sock, chatId, senderId);
-
-        if (!isBotAdmin) {
-            await sock.sendMessage(chatId, {
-                text: 'Maaf, Tuan~ Yuuki harus menjadi admin dulu agar bisa mengeluarkan member. Bisakah Tuan mengangkat Yuuki?~'
-            }, { quoted: message });
-            return;
-        }
+        const { isSenderAdmin } = await isAdmin(sock, chatId, senderId);
 
         if (!isSenderAdmin) {
             await sock.sendMessage(chatId, {
@@ -46,21 +39,34 @@ async function kickCommand(sock, chatId, senderId, mentionedJids, message) {
     }
 
     try {
+        const groupMetadata = await sock.groupMetadata(chatId);
+        const groupName = groupMetadata.subject || 'Grup';
+
+        for (const target of usersToKick) {
+            await sock.sendMessage(target, {
+                text: `Maaf, Tuan~ Yuuki mendapat perintah dari admin grup *${groupName}* untuk mengeluarkan Tuan dari grup tersebut. Terima kasih atas kebersamaannya selama ini. Sampai jumpa~`
+            }).catch(() => {});
+        }
+
         await sock.groupParticipantsUpdate(chatId, usersToKick, "remove");
 
-        const usernames = await Promise.all(usersToKick.map(async jid => {
-            return `@${jid.split('@')[0]}`;
-        }));
-
+        const usernames = usersToKick.map(jid => `@${jid.split('@')[0]}`);
+        const isPlural = usersToKick.length > 1;
         await sock.sendMessage(chatId, {
-            text: `Tuan~ ${usernames.join(', ')} telah Yuuki keluarkan dari grup. Semoga mereka bahagia di luar sana~`,
+            text: `Tuan~ ${usernames.join(', ')} telah Yuuki keluarkan dari grup. Semoga ${isPlural ? 'mereka' : 'dia'} bahagia di luar sana~`,
             mentions: usersToKick
         });
     } catch (error) {
         console.error('Error di kick command:', error);
-        await sock.sendMessage(chatId, {
-            text: 'Maaf, Tuan~ Yuuki gagal mengeluarkan member. Mungkin Tuan bisa melakukannya secara manual? Yuuki minta maaf~'
-        });
+        if (error.message?.includes('not-authorized')) {
+            await sock.sendMessage(chatId, {
+                text: 'Maaf, Tuan~ Yuuki mohon dengan sangat, berilah Yuuki jabatan *admin* di grup ini agar Yuuki bisa bertindak. Saat ini tangan Yuuki terikat~'
+            }, { quoted: message });
+        } else {
+            await sock.sendMessage(chatId, {
+                text: 'Maaf, Tuan~ Yuuki gagal mengeluarkan member. Mungkin Tuan bisa melakukannya secara manual? Yuuki minta maaf~'
+            }, { quoted: message });
+        }
     }
 }
 

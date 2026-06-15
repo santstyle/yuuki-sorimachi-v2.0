@@ -220,22 +220,15 @@ async function handleMessages(sock, messageUpdate, printLog) {
         }
 
         try {
-            const existingUser = await prisma.user.findUnique({
+            await prisma.user.upsert({
                 where: { id: senderId },
-                select: { id: true }
+                update: { name: message.pushName || undefined },
+                create: {
+                    id: senderId,
+                    name: message.pushName || null,
+                    customId: await getNextCustomId()
+                }
             });
-
-            if (existingUser) {
-                await prisma.user.update({
-                    where: { id: senderId },
-                    data: { name: message.pushName || undefined }
-                });
-            } else {
-                const nextCustomId = await getNextCustomId();
-                await prisma.user.create({
-                    data: { id: senderId, name: message.pushName || null, customId: nextCustomId }
-                });
-            }
 
             if (userMessage.startsWith('.')) {
                 const skipHistory = ['.menu', '.bot', '.list', '.ping', '.alive', '.help', '.reportbug'];
@@ -356,11 +349,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
             const adminStatus = await isAdmin(sock, chatId, senderId, message);
             isSenderAdmin = adminStatus.isSenderAdmin;
             isBotAdmin = adminStatus.isBotAdmin;
-
-            if (!isBotAdmin && !userMessage.startsWith('.antidelete')) {
-                await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki mohon dengan sangat, berilah Yuuki jabatan *admin* di grup ini agar Yuuki bisa bertindak. Saat ini tangan Yuuki terikat~' }, { quoted: message });
-                return;
-            }
 
             if (
                 userMessage.startsWith('.mutegroup') ||
@@ -1112,13 +1100,11 @@ async function unbanCommand(sock, chatId, message) {
             return;
         }
 
-        const existing = await prisma.user.findUnique({ where: { id: targetJid } });
-        if (existing) {
-            await prisma.user.update({ where: { id: targetJid }, data: { isBanned: false } });
-        } else {
-            const nextCustomId = await getNextCustomId();
-            await prisma.user.create({ data: { id: targetJid, isBanned: false, customId: nextCustomId } });
-        }
+        await prisma.user.upsert({
+            where: { id: targetJid },
+            update: { isBanned: false },
+            create: { id: targetJid, isBanned: false, customId: await getNextCustomId() }
+        });
 
         await sock.sendMessage(chatId, { text: `Baik, Tuan~ @${targetJid.split('@')[0]} sudah Yuuki buka blokirnya~`, mentions: [targetJid] });
     } catch (error) {

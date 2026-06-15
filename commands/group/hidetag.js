@@ -15,7 +15,7 @@ async function getUserTitle(sock, chatId, senderId) {
 
 async function hidetagCommand(sock, m, prefix) {
     try {
-        console.log("HIDETAG FITURE");
+        console.log("[HIDETAG]");
 
         const senderId = m.key.participant || m.key.remoteJid;
         const title = await getUserTitle(sock, m.key.remoteJid, senderId);
@@ -28,8 +28,6 @@ async function hidetagCommand(sock, m, prefix) {
         const groupMetadata = await sock.groupMetadata(m.key.remoteJid);
         const participants = groupMetadata.participants.map(p => p.id);
 
-        console.log("Participants:", participants.length);
-
         let body = "";
         let textAfterCommand = "";
 
@@ -37,25 +35,61 @@ async function hidetagCommand(sock, m, prefix) {
             body = m.message.conversation;
         } else if (m.message?.extendedTextMessage?.text) {
             body = m.message.extendedTextMessage.text;
+        } else if (m.message?.imageMessage?.caption) {
+            body = m.message.imageMessage.caption;
+        } else if (m.message?.videoMessage?.caption) {
+            body = m.message.videoMessage.caption;
         }
 
         if (body.startsWith(prefix + "hidetag")) {
             textAfterCommand = body.replace(prefix + "hidetag", "").trim();
         }
 
-        console.log("Text after command:", `"${textAfterCommand}"`);
-
         const contextInfo = m.message?.extendedTextMessage?.contextInfo;
         const quotedMessage = contextInfo?.quotedMessage;
-        const isReply = contextInfo && quotedMessage;
-
-        console.log("Is reply:", isReply);
+        const isReply = !!(contextInfo && quotedMessage);
 
         if (isReply) {
-            console.log("Processing REPLY message");
             await handleQuotedMessage(sock, m.key.remoteJid, quotedMessage, textAfterCommand, participants, title);
+        } else if (m.message?.imageMessage) {
+            const imageStream = await downloadContentFromMessage(m.message.imageMessage, "image");
+            let imageBuffer = Buffer.from([]);
+            for await (const chunk of imageStream) {
+                imageBuffer = Buffer.concat([imageBuffer, chunk]);
+            }
+            await sock.sendMessage(m.key.remoteJid, {
+                image: imageBuffer,
+                caption: textAfterCommand || `Dengan hormat, Yuuki memanggil semua anggota di sini`,
+                mentions: participants
+            });
+        } else if (m.message?.videoMessage) {
+            const videoStream = await downloadContentFromMessage(m.message.videoMessage, "video");
+            let videoBuffer = Buffer.from([]);
+            for await (const chunk of videoStream) {
+                videoBuffer = Buffer.concat([videoBuffer, chunk]);
+            }
+            await sock.sendMessage(m.key.remoteJid, {
+                video: videoBuffer,
+                caption: textAfterCommand || `Dengan hormat, Yuuki memanggil semua anggota di sini`,
+                mentions: participants
+            });
+        } else if (m.message?.documentMessage || m.message?.documentWithCaptionMessage) {
+            const doc = m.message?.documentMessage || m.message?.documentWithCaptionMessage?.message?.documentMessage;
+            if (doc) {
+                const docStream = await downloadContentFromMessage(doc, "document");
+                let docBuffer = Buffer.from([]);
+                for await (const chunk of docStream) {
+                    docBuffer = Buffer.concat([docBuffer, chunk]);
+                }
+                await sock.sendMessage(m.key.remoteJid, {
+                    document: docBuffer,
+                    fileName: doc.fileName || "document",
+                    mimetype: doc.mimetype,
+                    caption: textAfterCommand || doc.caption || "",
+                    mentions: participants
+                });
+            }
         } else {
-            console.log("Processing DIRECT message");
             const finalText = textAfterCommand || `Dengan hormat, Yuuki meminta izin untuk memanggil semua anggota di sini`;
 
             await sock.sendMessage(m.key.remoteJid, {
@@ -67,14 +101,8 @@ async function hidetagCommand(sock, m, prefix) {
     } catch (error) {
         console.error("Error di hidetag:", error);
         try {
-            const senderId = m.key.participant || m.key.remoteJid;
-            const title = await getUserTitle(sock, m.key.remoteJid, senderId);
-            const groupMetadata = await sock.groupMetadata(m.key.remoteJid);
-            const participants = groupMetadata.participants.map(p => p.id);
-
             await sock.sendMessage(m.key.remoteJid, {
-                text: `Maaf ${title}, Yuuki mengalami kesalahan. Sepertinya ada yang mengganggu Yuuki... ` + error.message,
-                mentions: participants
+                text: `Maaf Tuan, Yuuki mengalami kesalahan. Sepertinya ada yang mengganggu Yuuki... ` + error.message
             });
         } catch (e) {
             console.error("Gagal kirim error message:", e);
@@ -86,9 +114,6 @@ async function hidetagCommand(sock, m, prefix) {
  */
 async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterCommand, participants, title) {
     const messageType = Object.keys(quotedMessage)[0];
-
-    console.log("Quoted message type:", messageType);
-    console.log("Text after command:", `"${textAfterCommand}"`);
 
     try {
         switch (messageType) {
@@ -111,7 +136,6 @@ async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterComm
                 break;
 
             case "imageMessage":
-                console.log("Processing image message");
                 const imageStream = await downloadContentFromMessage(quotedMessage.imageMessage, "image");
                 let imageBuffer = Buffer.from([]);
                 for await (const chunk of imageStream) {
@@ -127,7 +151,6 @@ async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterComm
                 break;
 
             case "videoMessage":
-                console.log("Processing video message");
                 const videoStream = await downloadContentFromMessage(quotedMessage.videoMessage, "video");
                 let videoBuffer = Buffer.from([]);
                 for await (const chunk of videoStream) {
@@ -143,7 +166,6 @@ async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterComm
                 break;
 
             case "audioMessage":
-                console.log("Processing audio message");
                 const audioStream = await downloadContentFromMessage(quotedMessage.audioMessage, "audio");
                 let audioBuffer = Buffer.from([]);
                 for await (const chunk of audioStream) {
@@ -158,7 +180,6 @@ async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterComm
                 break;
 
             case "documentMessage":
-                console.log("Processing document message");
                 const documentStream = await downloadContentFromMessage(quotedMessage.documentMessage, "document");
                 let documentBuffer = Buffer.from([]);
                 for await (const chunk of documentStream) {
@@ -175,7 +196,6 @@ async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterComm
                 break;
 
             case "stickerMessage":
-                console.log("Processing sticker message");
                 const stickerStream = await downloadContentFromMessage(quotedMessage.stickerMessage, "sticker");
                 let stickerBuffer = Buffer.from([]);
                 for await (const chunk of stickerStream) {
@@ -189,7 +209,6 @@ async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterComm
                 break;
 
             case "contactMessage":
-                console.log("Processing contact message");
                 const contact = quotedMessage.contactMessage;
                 await sock.sendMessage(remoteJid, {
                     contacts: {
@@ -201,7 +220,6 @@ async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterComm
                 break;
 
             case "locationMessage":
-                console.log("Processing location message");
                 const location = quotedMessage.locationMessage;
                 await sock.sendMessage(remoteJid, {
                     location: {
@@ -213,7 +231,6 @@ async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterComm
                 break;
 
             case "pollCreationMessage":
-                console.log("Processing poll message");
                 const poll = quotedMessage.pollCreationMessage;
                 await sock.sendMessage(remoteJid, {
                     text: `Poll: ${poll.name}\n\nPilihan:\n${poll.options.map((opt, idx) => `${idx + 1}. ${opt.optionName}`).join('\n')}`,
@@ -222,19 +239,16 @@ async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterComm
                 break;
 
             case "ephemeralMessage":
-                console.log("Processing ephemeral message");
                 const ephemeralContent = quotedMessage.ephemeralMessage.message;
                 await handleQuotedMessage(sock, remoteJid, ephemeralContent, textAfterCommand, participants, title);
                 break;
 
             case "viewOnceMessage":
-                console.log("Processing view once message");
                 const viewOnceContent = quotedMessage.viewOnceMessage.message;
                 await handleQuotedMessage(sock, remoteJid, viewOnceContent, textAfterCommand, participants, title);
                 break;
 
             case "buttonsMessage":
-                console.log("Processing buttons message");
                 const buttonsText = quotedMessage.buttonsMessage.text || quotedMessage.buttonsMessage.contentText || "";
                 const finalText = textAfterCommand || buttonsText || `Dengan hormat, Yuuki sampaikan ini kepada semua ${title}~`;
                 await sock.sendMessage(remoteJid, {
@@ -244,7 +258,6 @@ async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterComm
                 break;
 
             case "templateMessage":
-                console.log("Processing template message");
                 const templateContent = quotedMessage.templateMessage?.hydratedTemplate?.hydratedContentText ||
                     quotedMessage.templateMessage?.hydratedTemplate?.hydratedTitle ||
                     "Pesan template";
@@ -255,8 +268,13 @@ async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterComm
                 });
                 break;
 
+            case "documentWithCaptionMessage":
+                const innerContent = quotedMessage.documentWithCaptionMessage.message;
+                await handleQuotedMessage(sock, remoteJid, innerContent, textAfterCommand, participants, title);
+                break;
+
             default:
-                console.log("Unsupported message type:", messageType);
+                console.log("[HIDETAG] Unsupported:", messageType);
                 const fallbackText = textAfterCommand || `Dengan hormat, Yuuki sampaikan ini kepada semua ${title}~`;
                 await sock.sendMessage(remoteJid, {
                     text: fallbackText,
@@ -267,10 +285,14 @@ async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterComm
     } catch (error) {
         console.error("Error processing quoted message:", error);
         const fallbackText = textAfterCommand || `Dengan hormat, Yuuki sampaikan ini kepada semua ${title}~`;
-        await sock.sendMessage(remoteJid, {
-            text: fallbackText,
-            mentions: participants
-        });
+        try {
+            await sock.sendMessage(remoteJid, {
+                text: fallbackText,
+                mentions: participants
+            });
+        } catch (e) {
+            console.error("Gagal kirim fallback pesan:", e);
+        }
     }
 }
 

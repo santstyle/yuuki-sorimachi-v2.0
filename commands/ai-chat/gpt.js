@@ -11,17 +11,12 @@ async function gptCommand(sock, chatId, message, input) {
 
         await sock.sendPresenceUpdate('composing', chatId);
 
-        const apiUrl = `https://www.neoapis.xyz/api/ai/gpt?text=${encodeURIComponent(input)}`;
-        
-        const response = await axios.get(apiUrl, {
-            headers: {
-                'User-Agent': 'Yuuki-Bot'
-            },
-            timeout: 30000
-        });
+        const apiKey = process.env.CUKI_API_KEY || 'cuki-x';
+        const apiUrl = `https://api.cuki.biz.id/api/ai/gpt?question=${encodeURIComponent(input)}&apikey=${apiKey}`;
 
-        const result = response.data?.data;
-        
+        const response = await axios.get(apiUrl, { timeout: 30000 });
+        const result = response.data?.results;
+
         if (!result) {
             throw new Error('Format response tidak dikenali');
         }
@@ -30,7 +25,7 @@ async function gptCommand(sock, chatId, message, input) {
 
     } catch (error) {
         console.error('GPT error:', error.response?.data || error.message);
-        await sock.sendMessage(chatId, { 
+        await sock.sendMessage(chatId, {
             text: 'Maaf, Tuan~ Yuuki gagal memprosesnya. Mungkin lain kali~'
         }, { quoted: message });
     }

@@ -51,40 +51,40 @@
 - [✅] `.remini` / `.enhance` (reply gambar) — gambar lebih jernih?
 
 ## Downloader
-- [ ] `.btch <url youtube>` — download video/audio YouTube?
-- [ ] `.btch <url instagram>` — download IG post/reel?
-- [ ] `.btch <url tiktok>` — download TikTok video/image?
-- [ ] `.btch <url twitter/x>` — download X/Twitter media?
-- [ ] `.btch <url facebook>` — download FB video?
-- [ ] `.btch <url spotify>` — download Spotify track?
-- [ ] `.btch <url pinterest>` — download Pinterest image?
-- [ ] `.btch <url google drive>` — download Google Drive file?
-- [ ] `.song <judul>` / `.music <judul>` — cari & download lagu?
+- [✅] `.btch <url youtube>` — download video/audio YouTube?
+- [✅] `.btch <url instagram>` — download IG post/reel?
+- [✅] `.btch <url tiktok>` — download TikTok video/image?
+- [✅] `.btch <url twitter/x>` — download X/Twitter media?
+- [✅] `.btch <url facebook>` — download FB video?
+- [✅] `.btch <url spotify>` — download Spotify track?
+- [✅] `.btch <url pinterest>` — download Pinterest image?
+- [✅] `.btch <url google drive>` — download Google Drive file?
+- [✅] `.song <judul>` / `.music <judul>` — cari & download lagu?
 
 ## Converter
-- [ ] `.sticker` / `.s` (reply gambar/video) — jadi sticker?
-- [ ] `.toimage` / `.toimg` (reply sticker) — jadi gambar?
-- [ ] `.tovideo` / `.tovid` (reply sticker) — jadi video?
-- [ ] `.togif` / `.tgif` (reply sticker animasi) — jadi GIF?
-- [ ] `.toaudio` / `.tomp3` (reply video) — jadi audio?
-- [ ] `.stickercrop` / `.scrop` (reply sticker) — crop sticker?
-- [ ] `.setwm <packname>` — set watermark sticker?
+- [✅] `.sticker` / `.s` (reply gambar/video) — jadi sticker?
+- [✅] `.toimage` / `.toimg` (reply sticker) — jadi gambar?
+- [✅] `.tovideo` / `.tovid` (reply sticker) — jadi video?
+- [✅] `.togif` / `.tgif` (reply sticker animasi) — jadi GIF?
+- [✅] `.toaudio` / `.tomp3` (reply video) — jadi audio?
+- [✅] `.stickercrop` / `.scrop` (reply sticker) — crop sticker?
+- [✅] `.setwm <packname>` — set watermark sticker?
 
 ## AI Chat
-- [ ] `.gpt <pertanyaan>` — GPT jawab?
-- [ ] `.deepseek <pertanyaan>` — DeepSeek jawab?
-- [ ] `.groq <pertanyaan>` — Groq AI jawab?
+- [✅] `.gpt <pertanyaan>` — GPT jawab?
+- [✅] `.deepseek <pertanyaan>` — DeepSeek jawab?
+- [✅] `.groq <pertanyaan>` — Groq AI jawab?
 
 ## Chatbot
-- [ ] `.yuuki on` di grup — Yuuki auto-response aktif?
-- [ ] `.yuuki off` di grup — Yuuki berhenti reply?
-- [ ] `.yuuki` (tanpa arg) — nampilin status?
-- [ ] Tag/mention Yuuki di grup — dia reply?
-- [ ] Chat pribadi ke bot — Yuuki auto-response?
+- [✅] `.yuuki on` di grup — Yuuki auto-response aktif?
+- [✅] `.yuuki off` di grup — Yuuki berhenti reply?
+- [✅] `.yuuki` (tanpa arg) — nampilin status?
+- [✅] Tag/mention Yuuki di grup — dia reply?
+- [✅] Chat pribadi ke bot — Yuuki auto-response?
 
 ## Group Admin
-- [ ] `.kick @user` — user ke-kick dari grup?
-- [ ] `.tagall <teks>` — semua member ke-tag?
+- [✅] `.kick @user` — user ke-kick dari grup?
+- [✅] `.tagall <teks>` — semua member ke-tag?
 - [ ] `.hidetag <teks>` — tag semua tanpa notif?
 - [ ] `.warn @user <alasan>` — user kena warn?
 - [ ] `.warnings @user` — cek total warn user?

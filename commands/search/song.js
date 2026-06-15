@@ -7,7 +7,7 @@ const util = require('util');
 
 const execPromise = util.promisify(exec);
 
-const ytdlpPath = path.join(__dirname, '../yt-dlp.exe');
+const ytdlpPath = path.join(__dirname, '../../yt-dlp.exe');
 
 function extractYouTubeId(url) {
     const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -77,7 +77,8 @@ async function getAudioWithYtDlp(youtubeUrl, title) {
         const outputFile = path.join(tempDir, `audio_${timestamp}.mp3`);
 
         console.log('Mendownload dengan yt-dlp...');
-        const command = `"${ytdlpPath}" -x --audio-format mp3 --audio-quality 128K -o "${outputFile}" "${youtubeUrl}"`;
+        const ffmpegDir = path.join(__dirname, '../../ffmpeg/bin');
+        const command = `"${ytdlpPath}" -x --audio-format mp3 --audio-quality 128K --ffmpeg-location "${ffmpegDir}" -o "${outputFile}" "${youtubeUrl}"`;
 
         try {
             await execPromise(command, { timeout: 180000 });
@@ -108,107 +109,7 @@ async function getAudioWithYtDlp(youtubeUrl, title) {
 }
 
 async function getAudioUrl(videoInfo) {
-    const btchLib = require('btch-downloader');
-    try {
-        console.log('Mencoba API btch-downloader...');
-        const result = await btchLib.youtube(videoInfo.url);
-        if (result && result.mp3) {
-            return {
-                success: true,
-                url: result.mp3,
-                title: videoInfo.title,
-                api: 'btch-api'
-            };
-        }
-    } catch (e) {
-        console.log('API btch-downloader gagal:', e.message);
-    }
-
-    const onlineApis = [
-        async () => {
-            try {
-                console.log('Mencoba API loader.to...');
-                const response = await axios.post('https://loader.to/ajax/download.php',
-                    `url=${encodeURIComponent(videoInfo.url)}&format=mp3`,
-                    {
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                        },
-                        timeout: 15000,
-                        httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false })
-                    }
-                );
-
-                if (response.data && response.data.download_url) {
-                    return {
-                        success: true,
-                        url: response.data.download_url,
-                        title: videoInfo.title,
-                        api: 'loader.to'
-                    };
-                }
-            } catch (e) {
-                console.log('API loader.to gagal:', e.message);
-                return null;
-            }
-        },
-
-        async () => {
-            try {
-                console.log('Mencoba metode yt5s...');
-                const infoResponse = await axios.post('https://yt5s.com/api/ajaxSearch/index',
-                    `q=${encodeURIComponent(videoInfo.url)}&vt=mp3`,
-                    {
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                        },
-                        timeout: 15000
-                    }
-                );
-
-                if (infoResponse.data && infoResponse.data.vid) {
-                    const convertResponse = await axios.post('https://yt5s.com/api/ajaxConvert/convert',
-                        `vid=${infoResponse.data.vid}&k=${infoResponse.data.links.mp3['128']?.k || infoResponse.data.links.mp3['320']?.k}`,
-                        {
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                            },
-                            timeout: 15000
-                        }
-                    );
-
-                    if (convertResponse.data && convertResponse.data.dlink) {
-                        return {
-                            success: true,
-                            url: convertResponse.data.dlink,
-                            title: infoResponse.data.title || videoInfo.title,
-                            api: 'yt5s'
-                        };
-                    }
-                }
-            } catch (e) {
-                console.log('Metode yt5s gagal:', e.message);
-                return null;
-            }
-        }
-    ];
-
-    for (let i = 0; i < onlineApis.length; i++) {
-        try {
-            const result = await onlineApis[i]();
-            if (result) {
-                console.log(`Berhasil dengan API: ${result.api}`);
-                return result;
-            }
-        } catch (error) {
-            console.log(`API ${i + 1} error:`, error.message);
-            continue;
-        }
-    }
-
+    console.log('Menggunakan yt-dlp untuk download audio...');
     const ytDlpResult = await getAudioWithYtDlp(videoInfo.url, videoInfo.title);
     if (ytDlpResult) {
         return ytDlpResult;
@@ -312,6 +213,27 @@ async function songCommand(sock, chatId, message, input) {
         const stats = fileBuffer.length;
         const fileSizeMB = (stats / (1024 * 1024)).toFixed(2);
 
+        // Convert to AAC in MP4 container for WhatsApp compatibility
+        const ffmpegPath = process.env.FFMPEG_PATH || path.join(__dirname, '../../ffmpeg/bin/ffmpeg.exe');
+        const convTempDir = path.join(__dirname, '../../temp');
+        if (!fs.existsSync(convTempDir)) {
+            fs.mkdirSync(convTempDir, { recursive: true });
+        }
+        const convTimestamp = Date.now();
+        const convInput = path.join(convTempDir, `wa_conv_in_${convTimestamp}.mp3`);
+        const convOutput = path.join(convTempDir, `wa_conv_out_${convTimestamp}.m4a`);
+        try {
+            fs.writeFileSync(convInput, fileBuffer);
+            await execPromise(`"${ffmpegPath}" -i "${convInput}" -c:a aac -b:a 128k -movflags +faststart -y "${convOutput}"`, { timeout: 60000 });
+            if (fs.existsSync(convOutput)) {
+                fileBuffer = fs.readFileSync(convOutput);
+                fs.unlinkSync(convOutput);
+            }
+        } catch (e) {
+            console.log('AAC conversion skipped:', e.message);
+        }
+        try { if (fs.existsSync(convInput)) fs.unlinkSync(convInput); } catch (e) {}
+
         let thumbBuffer = null;
         if (videoInfo.thumbnail) {
             try {
@@ -341,8 +263,8 @@ async function songCommand(sock, chatId, message, input) {
 
         await sock.sendMessage(chatId, {
             audio: fileBuffer,
-            mimetype: "audio/mpeg",
-            fileName: `${cleanFileName(videoInfo.title)}.mp3`
+            mimetype: "audio/mp4",
+            fileName: `${cleanFileName(videoInfo.title)}.m4a`
         }, { quoted: message });
 
         await sock.sendMessage(chatId, { delete: statusKey }).catch(() => {});
