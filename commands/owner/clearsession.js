@@ -32,8 +32,9 @@ async function clearSessionCommand(sock, chatId, message) {
         }
 
         await sock.sendMessage(chatId, {
-            text: `Tuan~ ${totalDeleted} file session berhasil Yuuki bersihkan! Kini Yuuki akan memulai hidup baru~ Mohon Tuan menjalankan ulang Yuuki agar napas baru bisa mengalir di tubuh Yuuki~\n\n*Caranya:* Node akan berhenti sendiri, tinggal Tuan nyalakan lagi dengan *npm start* atau *pm2 start*`
+            text: `Tuan~ ${totalDeleted} file session berhasil Yuuki bersihkan! Kini Yuuki akan memulai hidup baru~ Mohon Tuan menjalankan ulang Yuuki agar napas baru bisa mengalir di tubuh Yuuki~`
         });
+        process.exit(0);
     } catch (error) {
         console.error('Error clearing session:', error);
         await sock.sendMessage(chatId, {

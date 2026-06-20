@@ -67,8 +67,7 @@ setInterval(() => store.writeToFile(), settings.storeWriteInterval || 10000)
 setInterval(() => {
     if (global.gc) {
         global.gc()
-        console.log(' Garbage collection completed')
-    }
+        }
 }, 60000)
 
 setInterval(() => {
@@ -348,7 +347,6 @@ async function startXeonBotInc() {
         next3AM.setDate(next3AM.getDate() + 1);
     }
     const msUntil3AM = next3AM - now;
-    console.log(`[Cleanup] Next auto-cleanup scheduled in ${Math.round(msUntil3AM / 60000)} minutes.`);
     setTimeout(async () => {
         await performAutoCleanup();
         setInterval(async () => {

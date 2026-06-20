@@ -7,7 +7,7 @@ async function warnCommand(sock, chatId, senderId, mentionedJids, message, reaso
         if (!chatId.endsWith('@g.us')) {
             await sock.sendMessage(chatId, {
                 text: 'Maaf, Tuan~ Command warn hanya bisa dipakai di grup. Yuuki tidak bisa melayaninya di sini~'
-            });
+            }, { quoted: message });
             return;
         }
 
@@ -16,14 +16,14 @@ async function warnCommand(sock, chatId, senderId, mentionedJids, message, reaso
         if (!isBotAdmin) {
             await sock.sendMessage(chatId, {
                 text: 'Maaf, Tuan~ Yuuki harus menjadi admin untuk menggunakan fitur warning. Bisakah Tuan mengangkat Yuuki?~'
-            });
+            }, { quoted: message });
             return;
         }
 
         if (!isSenderAdmin) {
             await sock.sendMessage(chatId, {
                 text: 'Maaf, Tuan~ Hanya admin grup yang bisa memberikan warning. Yuuki mohon pengertian Tuan~'
-            });
+            }, { quoted: message });
             return;
         }
 
@@ -45,7 +45,7 @@ async function warnCommand(sock, chatId, senderId, mentionedJids, message, reaso
                     '`.warn @user Spam berlebihan`\n' +
                     '`.warn @user` (reply pesan)\n\n' +
                     'Yuuki akan mencatat setiap pelanggaran dengan setia~ Apakah Tuan ingin memberikan peringatan sekarang?'
-            });
+            }, { quoted: message });
             return;
         }
 
@@ -67,7 +67,7 @@ async function warnCommand(sock, chatId, senderId, mentionedJids, message, reaso
         await sock.sendMessage(chatId, {
             text: warningText,
             mentions: [userToWarn, senderId]
-        });
+        }, { quoted: message });
 
         if (warnCount >= maxWarn) {
             await sock.groupParticipantsUpdate(chatId, [userToWarn], "remove");
@@ -84,7 +84,7 @@ async function warnCommand(sock, chatId, senderId, mentionedJids, message, reaso
         console.error('Error in warn command:', error);
         await sock.sendMessage(chatId, {
             text: 'Maaf, Tuan~ Yuuki gagal memberikan warning. Coba lagi, ya~'
-        });
+        }, { quoted: message });
     }
 }
 

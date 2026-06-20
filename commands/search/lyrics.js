@@ -132,8 +132,6 @@ async function getLyricsFromGenius(artist, title) {
             searchQuery = `${artist} ${title}`;
         }
 
-        console.log(`Searching Genius for: ${searchQuery}`);
-
         const searchUrl = `https://genius.com/api/search/multi?q=${encodeURIComponent(searchQuery)}`;
 
         const searchResponse = await axios.get(searchUrl, {
@@ -176,14 +174,10 @@ async function getLyricsFromGenius(artist, title) {
         }
 
         if (!songResult) {
-            console.log('No song found on Genius');
             return null;
         }
 
-        console.log(`Found song: ${songResult.title} by ${songResult.primary_artist.name}`);
-
         const lyricsUrl = songResult.url;
-        console.log(`Fetching lyrics from: ${lyricsUrl}`);
 
         const lyricsResponse = await axios.get(lyricsUrl, {
             timeout: 20000,
@@ -255,8 +249,6 @@ async function getLyricsFromGenius(artist, title) {
 }
 
 async function getLyrics(artist, title) {
-    console.log(`Mencari lirik: ${artist || 'Unknown'} - ${title}`);
-
     const geniusResult = await getLyricsFromGenius(artist, title);
 
     if (geniusResult) {
@@ -288,8 +280,6 @@ Caranya: ketik \`.lyrics <judul lagu>\``
             const parsed = parseSongQuery(songTitle);
             const artist = parsed.artist;
             const title = parsed.title;
-
-            console.log(`Parsed: Artist="${artist}", Title="${title}"`);
 
             const lyricsData = await getLyrics(artist, title);
 

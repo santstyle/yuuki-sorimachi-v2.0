@@ -1,4 +1,4 @@
-const { downloadContentFromMessage } = require("@whiskeysockets/baileys");
+const { downloadContentFromMessage, downloadMediaMessage } = require("@whiskeysockets/baileys");
 
 async function getUserTitle(sock, chatId, senderId) {
     try {
@@ -52,42 +52,62 @@ async function hidetagCommand(sock, m, prefix) {
         if (isReply) {
             await handleQuotedMessage(sock, m.key.remoteJid, quotedMessage, textAfterCommand, participants, title);
         } else if (m.message?.imageMessage) {
-            const imageStream = await downloadContentFromMessage(m.message.imageMessage, "image");
-            let imageBuffer = Buffer.from([]);
-            for await (const chunk of imageStream) {
-                imageBuffer = Buffer.concat([imageBuffer, chunk]);
+            try {
+                const imageStream = await downloadContentFromMessage(m.message.imageMessage, "image");
+                let imageBuffer = Buffer.from([]);
+                for await (const chunk of imageStream) {
+                    imageBuffer = Buffer.concat([imageBuffer, chunk]);
+                }
+                const imgData = { image: imageBuffer, mentions: participants };
+                if (textAfterCommand) imgData.caption = textAfterCommand;
+                await sock.sendMessage(m.key.remoteJid, imgData);
+            } catch (error) {
+                console.error("[HIDETAG] Image download failed:", error.message);
+                await sock.sendMessage(m.key.remoteJid, {
+                    text: textAfterCommand || `Dengan hormat, Yuuki memanggil semua anggota di sini`,
+                    mentions: participants
+                });
             }
-            await sock.sendMessage(m.key.remoteJid, {
-                image: imageBuffer,
-                caption: textAfterCommand || `Dengan hormat, Yuuki memanggil semua anggota di sini`,
-                mentions: participants
-            });
         } else if (m.message?.videoMessage) {
-            const videoStream = await downloadContentFromMessage(m.message.videoMessage, "video");
-            let videoBuffer = Buffer.from([]);
-            for await (const chunk of videoStream) {
-                videoBuffer = Buffer.concat([videoBuffer, chunk]);
+            try {
+                const videoStream = await downloadContentFromMessage(m.message.videoMessage, "video");
+                let videoBuffer = Buffer.from([]);
+                for await (const chunk of videoStream) {
+                    videoBuffer = Buffer.concat([videoBuffer, chunk]);
+                }
+                const vidData = { video: videoBuffer, mentions: participants };
+                if (textAfterCommand) vidData.caption = textAfterCommand;
+                await sock.sendMessage(m.key.remoteJid, vidData);
+            } catch (error) {
+                console.error("[HIDETAG] Video download failed:", error.message);
+                await sock.sendMessage(m.key.remoteJid, {
+                    text: textAfterCommand || `Dengan hormat, Yuuki memanggil semua anggota di sini`,
+                    mentions: participants
+                });
             }
-            await sock.sendMessage(m.key.remoteJid, {
-                video: videoBuffer,
-                caption: textAfterCommand || `Dengan hormat, Yuuki memanggil semua anggota di sini`,
-                mentions: participants
-            });
         } else if (m.message?.documentMessage || m.message?.documentWithCaptionMessage) {
             const doc = m.message?.documentMessage || m.message?.documentWithCaptionMessage?.message?.documentMessage;
             if (doc) {
-                const docStream = await downloadContentFromMessage(doc, "document");
-                let docBuffer = Buffer.from([]);
-                for await (const chunk of docStream) {
-                    docBuffer = Buffer.concat([docBuffer, chunk]);
+                try {
+                    const docStream = await downloadContentFromMessage(doc, "document");
+                    let docBuffer = Buffer.from([]);
+                    for await (const chunk of docStream) {
+                        docBuffer = Buffer.concat([docBuffer, chunk]);
+                    }
+                    await sock.sendMessage(m.key.remoteJid, {
+                        document: docBuffer,
+                        fileName: doc.fileName || "document",
+                        mimetype: doc.mimetype,
+                        caption: textAfterCommand || doc.caption || "",
+                        mentions: participants
+                    });
+                } catch (error) {
+                    console.error("[HIDETAG] Document download failed:", error.message);
+                    await sock.sendMessage(m.key.remoteJid, {
+                        text: textAfterCommand || `Dengan hormat, Yuuki memanggil semua anggota di sini`,
+                        mentions: participants
+                    });
                 }
-                await sock.sendMessage(m.key.remoteJid, {
-                    document: docBuffer,
-                    fileName: doc.fileName || "document",
-                    mimetype: doc.mimetype,
-                    caption: textAfterCommand || doc.caption || "",
-                    mentions: participants
-                });
             }
         } else {
             const finalText = textAfterCommand || `Dengan hormat, Yuuki meminta izin untuk memanggil semua anggota di sini`;
@@ -116,172 +136,180 @@ async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterComm
     const messageType = Object.keys(quotedMessage)[0];
 
     try {
-        switch (messageType) {
-            case "conversation":
-                const quotedText = quotedMessage.conversation;
-                const messageText = textAfterCommand || quotedText || `Dengan hormat, Yuuki sampaikan pesan ini kepada semua ${title}~`;
-                await sock.sendMessage(remoteJid, {
-                    text: messageText,
-                    mentions: participants
-                });
-                break;
-
-            case "extendedTextMessage":
-                const extendedText = quotedMessage.extendedTextMessage.text;
-                const extendedMessageText = textAfterCommand || extendedText || `Dengan hormat, Yuuki sampaikan pesan ini kepada semua ${title}~`;
-                await sock.sendMessage(remoteJid, {
-                    text: extendedMessageText,
-                    mentions: participants
-                });
-                break;
-
-            case "imageMessage":
-                const imageStream = await downloadContentFromMessage(quotedMessage.imageMessage, "image");
-                let imageBuffer = Buffer.from([]);
-                for await (const chunk of imageStream) {
-                    imageBuffer = Buffer.concat([imageBuffer, chunk]);
-                }
-                const imageCaption = textAfterCommand || quotedMessage.imageMessage.caption || "";
-
-                await sock.sendMessage(remoteJid, {
-                    image: imageBuffer,
-                    caption: imageCaption,
-                    mentions: participants
-                });
-                break;
-
-            case "videoMessage":
-                const videoStream = await downloadContentFromMessage(quotedMessage.videoMessage, "video");
-                let videoBuffer = Buffer.from([]);
-                for await (const chunk of videoStream) {
-                    videoBuffer = Buffer.concat([videoBuffer, chunk]);
-                }
-                const videoCaption = textAfterCommand || quotedMessage.videoMessage.caption || "";
-
-                await sock.sendMessage(remoteJid, {
-                    video: videoBuffer,
-                    caption: videoCaption,
-                    mentions: participants
-                });
-                break;
-
-            case "audioMessage":
-                const audioStream = await downloadContentFromMessage(quotedMessage.audioMessage, "audio");
-                let audioBuffer = Buffer.from([]);
-                for await (const chunk of audioStream) {
-                    audioBuffer = Buffer.concat([audioBuffer, chunk]);
-                }
-
-                await sock.sendMessage(remoteJid, {
-                    audio: audioBuffer,
-                    mimetype: quotedMessage.audioMessage.mimetype || 'audio/mpeg',
-                    mentions: participants
-                });
-                break;
-
-            case "documentMessage":
-                const documentStream = await downloadContentFromMessage(quotedMessage.documentMessage, "document");
-                let documentBuffer = Buffer.from([]);
-                for await (const chunk of documentStream) {
-                    documentBuffer = Buffer.concat([documentBuffer, chunk]);
-                }
-                const documentFileName = quotedMessage.documentMessage.fileName || "document";
-
-                await sock.sendMessage(remoteJid, {
-                    document: documentBuffer,
-                    fileName: documentFileName,
-                    mimetype: quotedMessage.documentMessage.mimetype,
-                    mentions: participants
-                });
-                break;
-
-            case "stickerMessage":
-                const stickerStream = await downloadContentFromMessage(quotedMessage.stickerMessage, "sticker");
-                let stickerBuffer = Buffer.from([]);
-                for await (const chunk of stickerStream) {
-                    stickerBuffer = Buffer.concat([stickerBuffer, chunk]);
-                }
-
-                await sock.sendMessage(remoteJid, {
-                    sticker: stickerBuffer,
-                    mentions: participants
-                });
-                break;
-
-            case "contactMessage":
-                const contact = quotedMessage.contactMessage;
-                await sock.sendMessage(remoteJid, {
-                    contacts: {
-                        displayName: contact.displayName || "Kontak",
-                        contacts: [contact]
-                    },
-                    mentions: participants
-                });
-                break;
-
-            case "locationMessage":
-                const location = quotedMessage.locationMessage;
-                await sock.sendMessage(remoteJid, {
-                    location: {
-                        degreesLatitude: location.degreesLatitude,
-                        degreesLongitude: location.degreesLongitude
-                    },
-                    mentions: participants
-                });
-                break;
-
-            case "pollCreationMessage":
-                const poll = quotedMessage.pollCreationMessage;
-                await sock.sendMessage(remoteJid, {
-                    text: `Poll: ${poll.name}\n\nPilihan:\n${poll.options.map((opt, idx) => `${idx + 1}. ${opt.optionName}`).join('\n')}`,
-                    mentions: participants
-                });
-                break;
-
-            case "ephemeralMessage":
-                const ephemeralContent = quotedMessage.ephemeralMessage.message;
-                await handleQuotedMessage(sock, remoteJid, ephemeralContent, textAfterCommand, participants, title);
-                break;
-
-            case "viewOnceMessage":
-                const viewOnceContent = quotedMessage.viewOnceMessage.message;
-                await handleQuotedMessage(sock, remoteJid, viewOnceContent, textAfterCommand, participants, title);
-                break;
-
-            case "buttonsMessage":
-                const buttonsText = quotedMessage.buttonsMessage.text || quotedMessage.buttonsMessage.contentText || "";
-                const finalText = textAfterCommand || buttonsText || `Dengan hormat, Yuuki sampaikan ini kepada semua ${title}~`;
-                await sock.sendMessage(remoteJid, {
-                    text: finalText,
-                    mentions: participants
-                });
-                break;
-
-            case "templateMessage":
-                const templateContent = quotedMessage.templateMessage?.hydratedTemplate?.hydratedContentText ||
-                    quotedMessage.templateMessage?.hydratedTemplate?.hydratedTitle ||
-                    "Pesan template";
-                const templateFinalText = textAfterCommand || templateContent || `Dengan hormat, Yuuki sampaikan ini kepada semua ${title}~`;
-                await sock.sendMessage(remoteJid, {
-                    text: templateFinalText,
-                    mentions: participants
-                });
-                break;
-
-            case "documentWithCaptionMessage":
-                const innerContent = quotedMessage.documentWithCaptionMessage.message;
-                await handleQuotedMessage(sock, remoteJid, innerContent, textAfterCommand, participants, title);
-                break;
-
-            default:
-                console.log("[HIDETAG] Unsupported:", messageType);
-                const fallbackText = textAfterCommand || `Dengan hormat, Yuuki sampaikan ini kepada semua ${title}~`;
-                await sock.sendMessage(remoteJid, {
-                    text: fallbackText,
-                    mentions: participants
-                });
-                break;
+        if (messageType === "viewOnceMessage" || messageType === "ephemeralMessage" || messageType === "documentWithCaptionMessage") {
+            const innerMsg = quotedMessage.viewOnceMessage?.message
+                || quotedMessage.ephemeralMessage?.message
+                || quotedMessage.documentWithCaptionMessage?.message;
+            if (innerMsg) {
+                return handleQuotedMessage(sock, remoteJid, innerMsg, textAfterCommand, participants, title);
+            }
         }
+
+        if (messageType === "conversation") {
+            const quotedText = quotedMessage.conversation;
+            const messageText = textAfterCommand || quotedText || `Dengan hormat, Yuuki sampaikan pesan ini kepada semua ${title}~`;
+            await sock.sendMessage(remoteJid, { text: messageText, mentions: participants });
+            return;
+        }
+
+        if (messageType === "extendedTextMessage") {
+            const extMsg = quotedMessage.extendedTextMessage;
+            const messageText = textAfterCommand || extMsg.text || `Dengan hormat, Yuuki sampaikan pesan ini kepada semua ${title}~`;
+            const content = { text: messageText, mentions: participants };
+            if (!textAfterCommand && extMsg.matchedText) {
+                const lp = { 'matched-text': extMsg.matchedText };
+                if (extMsg.jpegThumbnail) lp.jpegThumbnail = extMsg.jpegThumbnail;
+                if (extMsg.description) lp.description = extMsg.description;
+                if (extMsg.title) lp.title = extMsg.title;
+                if (extMsg.thumbnailDirectPath) {
+                    lp.highQualityThumbnail = {
+                        directPath: extMsg.thumbnailDirectPath,
+                        mediaKey: extMsg.mediaKey,
+                        mediaKeyTimestamp: extMsg.mediaKeyTimestamp,
+                        width: extMsg.thumbnailWidth,
+                        height: extMsg.thumbnailHeight,
+                        fileSha256: extMsg.thumbnailSha256,
+                        fileEncSha256: extMsg.thumbnailEncSha256,
+                    };
+                }
+                content.linkPreview = lp;
+            }
+            await sock.sendMessage(remoteJid, content);
+            return;
+        }
+
+        if (messageType === "buttonsMessage") {
+            const buttonsText = quotedMessage.buttonsMessage.text || quotedMessage.buttonsMessage.contentText || "";
+            const finalText = textAfterCommand || buttonsText || `Dengan hormat, Yuuki sampaikan ini kepada semua ${title}~`;
+            await sock.sendMessage(remoteJid, { text: finalText, mentions: participants });
+            return;
+        }
+
+        if (messageType === "templateMessage") {
+            const templateContent = quotedMessage.templateMessage?.hydratedTemplate?.hydratedContentText
+                || quotedMessage.templateMessage?.hydratedTemplate?.hydratedTitle
+                || "Pesan template";
+            const finalText = textAfterCommand || templateContent || `Dengan hormat, Yuuki sampaikan ini kepada semua ${title}~`;
+            await sock.sendMessage(remoteJid, { text: finalText, mentions: participants });
+            return;
+        }
+
+        if (messageType === "contactMessage") {
+            const contact = quotedMessage.contactMessage;
+            await sock.sendMessage(remoteJid, {
+                contacts: { displayName: contact.displayName || "Kontak", contacts: [contact] },
+                mentions: participants
+            });
+            return;
+        }
+
+        if (messageType === "locationMessage") {
+            const location = quotedMessage.locationMessage;
+            await sock.sendMessage(remoteJid, {
+                location: { degreesLatitude: location.degreesLatitude, degreesLongitude: location.degreesLongitude },
+                mentions: participants
+            });
+            return;
+        }
+
+        if (messageType === "pollCreationMessage") {
+            const poll = quotedMessage.pollCreationMessage;
+            await sock.sendMessage(remoteJid, {
+                text: `Poll: ${poll.name}\n\nPilihan:\n${poll.options.map((opt, idx) => `${idx + 1}. ${opt.optionName}`).join('\n')}`,
+                mentions: participants
+            });
+            return;
+        }
+
+        if (messageType === "imageMessage" || messageType === "videoMessage") {
+            const type = messageType === "imageMessage" ? "image" : "video";
+            try {
+                const quoted = { message: quotedMessage };
+                const buffer = await downloadMediaMessage(quoted, 'buffer', {}, { logger: console });
+                const msgData = { [type]: buffer, mentions: participants };
+                const origCap = quotedMessage[messageType]?.caption;
+                if (textAfterCommand) {
+                    msgData.caption = textAfterCommand;
+                } else if (origCap) {
+                    msgData.caption = origCap;
+                }
+                await sock.sendMessage(remoteJid, msgData);
+                return;
+            } catch (error) {
+                console.error("[HIDETAG] Download failed:", error.message);
+            }
+            await sock.sendMessage(remoteJid, {
+                text: textAfterCommand || `Dengan hormat, Yuuki sampaikan ini kepada semua ${title}~`,
+                mentions: participants
+            });
+            return;
+        }
+
+        if (messageType === "documentMessage" || messageType === "documentWithCaptionMessage") {
+            const doc = quotedMessage.documentMessage || quotedMessage.documentWithCaptionMessage?.message?.documentMessage;
+            if (doc) {
+                try {
+                    const quoted = { message: quotedMessage };
+                    const buffer = await downloadMediaMessage(quoted, 'buffer', {}, { logger: console });
+                    const msgData = {
+                        document: buffer,
+                        fileName: doc.fileName || "document",
+                        mimetype: doc.mimetype,
+                        mentions: participants
+                    };
+                    if (textAfterCommand) {
+                        msgData.caption = textAfterCommand;
+                    } else if (doc.caption) {
+                        msgData.caption = doc.caption;
+                    }
+                    await sock.sendMessage(remoteJid, msgData);
+                    return;
+                } catch (error) {
+                    console.error("[HIDETAG] Document download failed:", error.message);
+                }
+            }
+            const docText = textAfterCommand || `Dengan hormat, Yuuki sampaikan ini kepada semua ${title}~`;
+            await sock.sendMessage(remoteJid, { text: docText, mentions: participants });
+            return;
+        }
+
+        if (messageType === "stickerMessage") {
+            try {
+                const quoted = { message: quotedMessage };
+                const buffer = await downloadMediaMessage(quoted, 'buffer', {}, { logger: console });
+                await sock.sendMessage(remoteJid, { sticker: buffer, mentions: participants });
+                return;
+            } catch (error) {
+                console.error("[HIDETAG] Sticker download failed:", error.message);
+            }
+            const stkText = textAfterCommand || `Dengan hormat, Yuuki sampaikan ini kepada semua ${title}~`;
+            await sock.sendMessage(remoteJid, { text: stkText, mentions: participants });
+            return;
+        }
+
+        if (messageType === "audioMessage") {
+            try {
+                const quoted = { message: quotedMessage };
+                const buffer = await downloadMediaMessage(quoted, 'buffer', {}, { logger: console });
+                await sock.sendMessage(remoteJid, { audio: buffer, mentions: participants, mimetype: quotedMessage.audioMessage.mimetype || "audio/mpeg", ptt: quotedMessage.audioMessage.ptt });
+                return;
+            } catch (error) {
+                console.error("[HIDETAG] Audio download failed:", error.message);
+            }
+            const audText = textAfterCommand || `Dengan hormat, Yuuki sampaikan ini kepada semua ${title}~`;
+            await sock.sendMessage(remoteJid, { text: audText, mentions: participants });
+            return;
+        }
+
+        const fakeMsg = {
+            message: quotedMessage,
+            key: { fromMe: false }
+        };
+        await sock.sendMessage(remoteJid, {
+            forward: fakeMsg,
+            mentions: participants
+        });
+
     } catch (error) {
         console.error("Error processing quoted message:", error);
         const fallbackText = textAfterCommand || `Dengan hormat, Yuuki sampaikan ini kepada semua ${title}~`;

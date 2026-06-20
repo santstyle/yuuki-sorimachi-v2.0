@@ -28,11 +28,18 @@ ${groupMetadata.desc?.toString() || 'Belum ada deskripsi'}
 
 Yuuki harap informasi ini bermanfaat untuk Tuan~`.trim();
 
-        await sock.sendMessage(chatId, {
-            image: { url: pp },
-            caption: text,
-            mentions: [...groupAdmins.map(v => v.id), owner]
-        }, { quoted: msg });
+        try {
+            await sock.sendMessage(chatId, {
+                image: { url: pp },
+                caption: text,
+                mentions: [...groupAdmins.map(v => v.id), owner]
+            }, { quoted: msg });
+        } catch {
+            await sock.sendMessage(chatId, {
+                text,
+                mentions: [...groupAdmins.map(v => v.id), owner]
+            }, { quoted: msg });
+        }
 
     } catch (error) {
         const errMsg = error?.message || error?.toString() || '';

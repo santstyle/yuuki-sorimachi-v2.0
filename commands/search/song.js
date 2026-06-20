@@ -76,7 +76,6 @@ async function getAudioWithYtDlp(youtubeUrl, title) {
         const timestamp = Date.now();
         const outputFile = path.join(tempDir, `audio_${timestamp}.mp3`);
 
-        console.log('Mendownload dengan yt-dlp...');
         const ffmpegDir = path.join(__dirname, '../../ffmpeg/bin');
         const command = `"${ytdlpPath}" -x --audio-format mp3 --audio-quality 128K --ffmpeg-location "${ffmpegDir}" -o "${outputFile}" "${youtubeUrl}"`;
 
@@ -95,7 +94,6 @@ async function getAudioWithYtDlp(youtubeUrl, title) {
                 }
             }
         } catch (error) {
-            console.log('yt-dlp error:', error.message);
             if (fs.existsSync(outputFile)) {
                 fs.unlinkSync(outputFile);
             }
@@ -103,13 +101,11 @@ async function getAudioWithYtDlp(youtubeUrl, title) {
 
         return null;
     } catch (error) {
-        console.log('yt-dlp process error:', error.message);
         return null;
     }
 }
 
 async function getAudioUrl(videoInfo) {
-    console.log('Menggunakan yt-dlp untuk download audio...');
     const ytDlpResult = await getAudioWithYtDlp(videoInfo.url, videoInfo.title);
     if (ytDlpResult) {
         return ytDlpResult;
@@ -168,8 +164,6 @@ async function songCommand(sock, chatId, message, input) {
         statusKey = statusMessage.key;
 
         const videoInfo = await getYouTubeInfo(searchQuery);
-        console.log(`Video ditemukan: ${videoInfo.title}`);
-
         await updateMessage(sock, chatId, statusKey, 
             `Tuan~ Yuuki sedang mengunduh: ${videoInfo.title}\n\n` +
             `Artist: ${videoInfo.artist}\n` +
@@ -199,7 +193,6 @@ async function songCommand(sock, chatId, message, input) {
                     break;
                 } catch (e) {
                     lastError = e;
-                    console.log(`Download attempt ${attempt} gagal: ${e.message}`);
                     if (attempt < 3) await new Promise(r => setTimeout(r, 2000 * attempt));
                 }
             }
@@ -230,34 +223,36 @@ async function songCommand(sock, chatId, message, input) {
                 fs.unlinkSync(convOutput);
             }
         } catch (e) {
-            console.log('AAC conversion skipped:', e.message);
         }
         try { if (fs.existsSync(convInput)) fs.unlinkSync(convInput); } catch (e) {}
 
-        let thumbBuffer = null;
         if (videoInfo.thumbnail) {
             try {
                 const res = await axios.get(videoInfo.thumbnail, { responseType: 'arraybuffer' });
-                let buffer = Buffer.from(res.data);
-                if (buffer.length < 1000000) {
-                    thumbBuffer = buffer;
+                const thumbBuffer = Buffer.from(res.data);
+                if (thumbBuffer.length < 100000) {
+                    await sock.sendMessage(chatId, {
+                        text: videoInfo.url,
+                        linkPreview: {
+                            title: videoInfo.title,
+                            description: videoInfo.artist,
+                            jpegThumbnail: thumbBuffer,
+                            'matched-text': videoInfo.url,
+                        }
+                    }, { quoted: message });
+                } else {
+                    await sock.sendMessage(chatId, {
+                        text: `${videoInfo.title}\nArtist: ${videoInfo.artist}\n\n${videoInfo.url}`,
+                    }, { quoted: message });
                 }
             } catch (e) {
-                console.log('Gagal unduh thumbnail:', e.message);
+                await sock.sendMessage(chatId, {
+                    text: `${videoInfo.title}\nArtist: ${videoInfo.artist}\n\n${videoInfo.url}`,
+                }, { quoted: message });
             }
-        }
-
-        if (thumbBuffer) {
+        } else {
             await sock.sendMessage(chatId, {
                 text: `${videoInfo.title}\nArtist: ${videoInfo.artist}\n\n${videoInfo.url}`,
-                linkPreview: {
-                    title: videoInfo.title,
-                    description: `${videoInfo.artist}`,
-                    jpegThumbnail: thumbBuffer,
-                    'matched-text': videoInfo.url,
-                    'canonical-url': videoInfo.url,
-                    thumbnailDirectly: true
-                }
             }, { quoted: message });
         }
 

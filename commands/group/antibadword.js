@@ -28,12 +28,12 @@ const defaultBadwords = [
     'porno', 'hentai', 'bugil', 'telanjang'
 ];
 
-async function handleAntiBadwordCommand(sock, chatId, userMessage, senderId, isSenderAdmin) {
+async function handleAntiBadwordCommand(sock, chatId, userMessage, senderId, isSenderAdmin, message) {
     try {
         if (!isSenderAdmin) {
             await sock.sendMessage(chatId, {
                 text: 'Maaf, Tuan~ Hanya admin grup yang bisa mengatur antibadword. Yuuki mohon pengertian Tuan~'
-            });
+            }, { quoted: message });
             return;
         }
 
@@ -55,7 +55,7 @@ Usage:
 
 Antibadword akan merespon jika ada yang kirim kata terlarang`;
 
-            await sock.sendMessage(chatId, { text: usage });
+            await sock.sendMessage(chatId, { text: usage }, { quoted: message });
             return;
         }
 
@@ -65,13 +65,13 @@ Antibadword akan merespon jika ada yang kirim kata terlarang`;
                 if (existingConfig?.enabled) {
                     await sock.sendMessage(chatId, {
                         text: 'Tuan~ Antibadword sudah aktif di grup ini, lho. Yuuki sudah menjaganya~'
-                    });
+                    }, { quoted: message });
                     return;
                 }
                 await setAntiBadword(chatId, 'on', 'delete');
                 await sock.sendMessage(chatId, {
                     text: `Tuan~ FITUR ANTIBADWORD telah Yuuki aktifkan!\n\nPerhatian untuk seluruh member:\nDilarang mengirim kata-kata kasar atau terlarang.\nPelanggaran akan dihapus dan mendapat peringatan.\n\nJangan coba-coba ya, Yuuki mengawasi~`
-                });
+                }, { quoted: message });
                 break;
             }
 
@@ -79,7 +79,7 @@ Antibadword akan merespon jika ada yang kirim kata terlarang`;
                 await removeAntiBadword(chatId, 'on');
                 await sock.sendMessage(chatId, {
                     text: 'Tuan~ Antibadword telah Yuuki nonaktifkan. Silakan bebas bicara~ Tapi tetap sopan, ya~'
-                });
+                }, { quoted: message });
                 break;
             }
 
@@ -87,20 +87,20 @@ Antibadword akan merespon jika ada yang kirim kata terlarang`;
                 if (args.length < 2) {
                     await sock.sendMessage(chatId, {
                         text: 'Tuan~ Mode belum dipilih. Pilih salah satu: delete / kick / warn. Yuuki menunggu perintah Tuan~'
-                    });
+                    }, { quoted: message });
                     return;
                 }
                 const mode = args[1];
                 if (!['delete', 'kick', 'warn'].includes(mode)) {
                     await sock.sendMessage(chatId, {
                         text: 'Tuan~ Mode tidak valid. Pilih: delete / kick / warn. Yuuki harap Tuan lebih teliti~'
-                    });
+                    }, { quoted: message });
                     return;
                 }
                 await setAntiBadword(chatId, 'on', mode);
                 await sock.sendMessage(chatId, {
                     text: `Tuan~ Mode antibadword telah Yuuki atur ke: ${mode}. Sesuai perintah Tuan~`
-                });
+                }, { quoted: message });
                 break;
             }
 
@@ -111,7 +111,7 @@ Antibadword akan merespon jika ada yang kirim kata terlarang`;
                 const badwords = await getBadwords(chatId);
                 const totalBadwords = badwords.length;
                 const statusMsg = `Tuan~ Berikut status antibadword:\n\nStatus     : ${status}\nMode       : ${mode}\nKata terlarang: ${totalBadwords} kata\n\nYuuki siap melayani~`;
-                await sock.sendMessage(chatId, { text: statusMsg });
+                await sock.sendMessage(chatId, { text: statusMsg }, { quoted: message });
                 break;
             }
 
@@ -119,7 +119,7 @@ Antibadword akan merespon jika ada yang kirim kata terlarang`;
                 if (args.length < 2) {
                     await sock.sendMessage(chatId, {
                         text: 'Tuan~ Kata belum dimasukkan. Contoh: .antibadword add anjing bangsat. Yuuki tunggu input dari Tuan~'
-                    });
+                    }, { quoted: message });
                     return;
                 }
                 const words = args.slice(1);
@@ -132,7 +132,7 @@ Antibadword akan merespon jika ada yang kirim kata terlarang`;
                 }
                 await sock.sendMessage(chatId, {
                     text: `Tuan~ Berhasil menambah ${added} kata terlarang${alreadyExists > 0 ? `, ${alreadyExists} kata sudah ada sebelumnya` : ''}. Yuuki catat semuanya~`
-                });
+                }, { quoted: message });
                 break;
             }
 
@@ -140,7 +140,7 @@ Antibadword akan merespon jika ada yang kirim kata terlarang`;
                 if (args.length < 2) {
                     await sock.sendMessage(chatId, {
                         text: 'Tuan~ Kata belum dimasukkan. Contoh: .antibadword del anjing. Yuuki harap Tuan lebih spesifik~'
-                    });
+                    }, { quoted: message });
                     return;
                 }
                 const words = args.slice(1);
@@ -151,7 +151,7 @@ Antibadword akan merespon jika ada yang kirim kata terlarang`;
                 }
                 await sock.sendMessage(chatId, {
                     text: `Tuan~ Berhasil menghapus ${removed} kata terlarang. Kata-kata itu telah Yuuki lupakan~`
-                });
+                }, { quoted: message });
                 break;
             }
 
@@ -159,7 +159,7 @@ Antibadword akan merespon jika ada yang kirim kata terlarang`;
                 await clearBadwords(chatId);
                 await sock.sendMessage(chatId, {
                     text: 'Tuan~ Semua kata terlarang custom telah Yuuki hapus. Sekarang hanya menggunakan kata default. Bersih kembali~'
-                });
+                }, { quoted: message });
                 break;
             }
 
@@ -168,19 +168,19 @@ Antibadword akan merespon jika ada yang kirim kata terlarang`;
                 if (badwords.length === 0) {
                     await sock.sendMessage(chatId, {
                         text: 'Tuan~ Belum ada kata terlarang custom. Bersih sekali grup ini~'
-                    });
+                    }, { quoted: message });
                     return;
                 }
                 await sock.sendMessage(chatId, {
                     text: `Tuan~ Berikut daftar kata terlarang:\n\nTotal: ${badwords.length} kata\n\n${badwords.map((w, i) => `${i + 1}. ${w}`).join('\n')}\n\nYuuki mengawasi semuanya~`
-                });
+                }, { quoted: message });
                 break;
             }
 
             default: {
                 await sock.sendMessage(chatId, {
                     text: 'Tuan~ Perintah tidak dikenal. Ketik .antibadword untuk melihat daftar perintah. Yuuki bingung~'
-                });
+                }, { quoted: message });
                 break;
             }
         }
@@ -188,7 +188,7 @@ Antibadword akan merespon jika ada yang kirim kata terlarang`;
         console.error('Error di antibadword command:', error);
         await sock.sendMessage(chatId, {
             text: 'Maaf, Tuan~ Yuuki gagal memproses perintah antibadword. Mungkin ada yang mengganggu Yuuki~'
-        });
+        }, { quoted: message });
     }
 }
 
@@ -290,7 +290,7 @@ async function handleBadwordDetection(sock, chatId, message, userMessage, sender
 async function antibadwordCommand(sock, chatId, message, senderId, isSenderAdmin) {
     const userMessage = message.message?.conversation ||
         message.message?.extendedTextMessage?.text || '';
-    await handleAntiBadwordCommand(sock, chatId, userMessage, senderId, isSenderAdmin);
+    await handleAntiBadwordCommand(sock, chatId, userMessage, senderId, isSenderAdmin, message);
 }
 
 module.exports = antibadwordCommand;

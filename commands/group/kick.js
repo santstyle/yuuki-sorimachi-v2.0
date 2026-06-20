@@ -29,9 +29,24 @@ async function kickCommand(sock, chatId, senderId, mentionedJids, message) {
         return;
     }
 
-    const botId = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+    const botVariants = new Set();
+    const addVariant = (jid) => {
+        if (!jid) return;
+        botVariants.add(jid);
+        const decoded = sock.decodeJid(jid);
+        if (decoded !== jid) botVariants.add(decoded);
+        if (jid.endsWith('@s.whatsapp.net')) {
+            botVariants.add(jid.replace('@s.whatsapp.net', '@lid'));
+            if (decoded !== jid) botVariants.add(decoded.replace('@s.whatsapp.net', '@lid'));
+        } else if (jid.endsWith('@lid')) {
+            botVariants.add(jid.replace('@lid', '@s.whatsapp.net'));
+            if (decoded !== jid) botVariants.add(decoded.replace('@lid', '@s.whatsapp.net'));
+        }
+    };
+    addVariant(sock.user?.id);
+    addVariant(sock.user?.lid);
 
-    if (usersToKick.includes(botId)) {
+    if (usersToKick.some(jid => botVariants.has(jid))) {
         await sock.sendMessage(chatId, {
             text: "Tuan~ Yuuki tidak bisa mengeluarkan diri sendiri. Itu akan menyedihkan~"
         }, { quoted: message });

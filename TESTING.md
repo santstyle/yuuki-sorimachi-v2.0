@@ -30,7 +30,7 @@
 
 ## Owner Tools
 - [✅] `.cleartmp` — folder temp bersih?
-- [ ] `.clearsession` — folder session bersih + bot restart? (PERLU DIIMPLEMENTASIKAN)
+- [✅] `.clearsession` — folder session bersih + bot restart? (PERLU DIIMPLEMENTASIKAN)
 - [✅] `.setpp` (reply gambar) — foto profil bot berubah?
 - [✅] `.cleanup history` — History commands terhapus?
 - [✅] `.debuglevelup` — test trigger level up?
@@ -85,41 +85,41 @@
 ## Group Admin
 - [✅] `.kick @user` — user ke-kick dari grup?
 - [✅] `.tagall <teks>` — semua member ke-tag?
-- [ ] `.hidetag <teks>` — tag semua tanpa notif?
-- [ ] `.warn @user <alasan>` — user kena warn?
-- [ ] `.warnings @user` — cek total warn user?
-- [ ] `.resetwarn @user` — warn user di-reset?
-- [ ] `.antilink on` — link grup lain ke-block?
-- [ ] `.antitag on` — tag massal ke-block?
-- [ ] `.antibadword on` — kata kasar ke-sensor?
-- [ ] `.groupset status` — lihat pengaturan grup?
-- [ ] `.mutegroup <menit>` — grup di-mute?
-- [ ] `.unmutegroup` — grup di-unmute?
-- [ ] `.welcome on` + `.welcome set <pesan>` — welcome message?
-- [ ] `.goodbye on` + `.goodbye set <pesan>` — goodbye message?
-- [ ] `.resetlink` — link grup di-reset?
-- [ ] `.groupinfo` — info grup muncul?
-- [ ] `.staff` / `.admins` — daftar admin?
-- [ ] `.startabsen <judul>` — absen dimulai?
-- [ ] `.absen` / `.absen <nama>` — absen masuk?
-- [ ] `.finishabsen` — hasil absen keluar?
+- [✅] `.hidetag <teks>` — tag semua tanpa notif?
+- [✅] `.warn @user <alasan>` — user kena warn?
+- [✅] `.warnings @user` — cek total warn user?
+- [✅] `.resetwarn @user` — warn user di-reset?
+- [✅] `.antilink on` — link grup lain ke-block?
+- [✅] `.antitag on` — tag massal ke-block?
+- [✅] `.antibadword on` — kata kasar ke-sensor?
+- [✅] `.groupset status` — lihat pengaturan grup?
+- [✅] `.mutegroup <menit>` — grup di-mute?
+- [✅] `.unmutegroup` — grup di-unmute?
+- [✅] `.welcome on` + `.welcome set <pesan>` — welcome message?
+- [✅] `.goodbye on` + `.goodbye set <pesan>` — goodbye message?
+- [✅] `.resetlink` — link grup di-reset?
+- [✅] `.groupinfo` — info grup muncul?
+- [✅] `.staff` / `.admins` — daftar admin?
+- [✅] `.startabsen <judul>` — absen dimulai?
+- [✅] `.absen` / `.absen <nama>` — absen masuk?
+- [✅] `.finishabsen` — hasil absen keluar?
 
 ## Information
-- [ ] `.meme` — meme random?
-- [ ] `.joke` — joke random?
-- [ ] `.quote` — kata bijak random (bisa anime/umum)?
-- [ ] `.fact` — fakta unik?
-- [ ] `.news` — berita terbaru?
-- [ ] `.weather <kota>` — info cuaca?
+- [✅] `.meme` — meme random?
+- [✅] `.joke` — joke random?
+- [✅] `.quote` — kata bijak random (bisa anime/umum)?
+- [✅] `.fact` — fakta unik?
+- [✅] `.news` — berita terbaru?
+- [✅] `.weather <kota>` — info cuaca?
 
 ## Search
-- [ ] `.pinterest <query>` / `.pin <query>` — gambar dari Pinterest?
-- [ ] `.lyrics <judul>` — lirik lagu?
-- [ ] `.song <judul>` / `.music <judul>` — cari & download lagu?
+- [✅] `.pinterest <query>` / `.pin <query>` — gambar dari Pinterest?
+- [✅] `.lyrics <judul>` — lirik lagu?
+- [✅] `.song <judul>` / `.music <judul>` — cari & download lagu?
 
 ## Tools
-- [ ] `.translate <teks> <lang>` / `.trt` — terjemahan?
-- [ ] `.ss <url>` / `.ssweb` — screenshot website?
+- [✅] `.translate <teks> <lang>` / `.trt` — terjemahan?
+- [✅] `.ss <url>` / `.ssweb` — screenshot website?
 
 ## Profile
 - [✅] `.mylevel` — level & XP muncul?

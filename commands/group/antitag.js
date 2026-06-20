@@ -13,12 +13,12 @@ function formatPrivateWarning(text) {
     return `${getGreeting()} Tuan,\n\nPelayanmu yang setia dan rendah hati, Yuuki, ingin memberitahumu sesuatu.\n\n${text}`;
 }
 
-async function handleAntitagCommand(sock, chatId, userMessage, senderId, isSenderAdmin) {
+async function handleAntitagCommand(sock, chatId, userMessage, senderId, isSenderAdmin, message) {
     try {
         if (!isSenderAdmin) {
             await sock.sendMessage(chatId, {
                 text: 'Maaf, Tuan~ Hanya admin grup yang bisa mengatur antitag. Yuuki mohon pengertian Tuan~'
-            });
+            }, { quoted: message });
             return;
         }
 
@@ -36,7 +36,7 @@ Usage:
 
 Antitag akan merespon jika ada yang tag member di grup`;
 
-            await sock.sendMessage(chatId, { text: usage });
+            await sock.sendMessage(chatId, { text: usage }, { quoted: message });
             return;
         }
 
@@ -46,13 +46,13 @@ Antitag akan merespon jika ada yang tag member di grup`;
                 if (existingConfig?.enabled) {
                     await sock.sendMessage(chatId, {
                         text: 'Tuan~ Antitag sudah aktif di grup ini. Yuuki sudah menjaganya~'
-                    });
+                    }, { quoted: message });
                     return;
                 }
                 await setAntitag(chatId, 'on', 'delete');
                 await sock.sendMessage(chatId, {
                     text: `Tuan~ FITUR ANTITAG telah Yuuki aktifkan!\n\nPerhatian untuk seluruh member:\nDilarang men-tag member secara sembarangan.\nPelanggaran akan dihapus dan mendapat peringatan.\n\nYuuki tidak suka tag yang tidak perlu~`
-                });
+                }, { quoted: message });
                 break;
             }
 
@@ -60,7 +60,7 @@ Antitag akan merespon jika ada yang tag member di grup`;
                 await removeAntitag(chatId, 'on');
                 await sock.sendMessage(chatId, {
                     text: 'Tuan~ Antitag telah Yuuki nonaktifkan. Silakan tag dengan bijak~'
-                });
+                }, { quoted: message });
                 break;
             }
 
@@ -68,20 +68,20 @@ Antitag akan merespon jika ada yang tag member di grup`;
                 if (args.length < 2) {
                     await sock.sendMessage(chatId, {
                         text: 'Tuan~ Mode belum dipilih. Pilih: delete / kick / warn. Yuuki menunggu petunjuk Tuan~'
-                    });
+                    }, { quoted: message });
                     return;
                 }
                 const mode = args[1];
                 if (!['delete', 'kick', 'warn'].includes(mode)) {
                     await sock.sendMessage(chatId, {
                         text: 'Tuan~ Mode tidak valid. Pilih: delete / kick / warn. Yuuki harap Tuan lebih cermat~'
-                    });
+                    }, { quoted: message });
                     return;
                 }
                 await setAntitag(chatId, 'on', mode);
                 await sock.sendMessage(chatId, {
                     text: `Tuan~ Mode antitag telah Yuuki atur ke: ${mode}. Sesuai perintah Tuan~`
-                });
+                }, { quoted: message });
                 break;
             }
 
@@ -90,14 +90,14 @@ Antitag akan merespon jika ada yang tag member di grup`;
                 const status = config?.enabled ? 'AKTIF' : 'NONAKTIF';
                 const mode = config?.action || 'Belum diatur';
                 const statusMsg = `Tuan~ Berikut status antitag:\n\nStatus : ${status}\nMode   : ${mode}\n\nYuuki siap melaporkan~`;
-                await sock.sendMessage(chatId, { text: statusMsg });
+                await sock.sendMessage(chatId, { text: statusMsg }, { quoted: message });
                 break;
             }
 
             default: {
                 await sock.sendMessage(chatId, {
                     text: 'Tuan~ Perintah tidak dikenal. Ketik .antitag untuk melihat daftar perintah. Yuuki bingung~'
-                });
+                }, { quoted: message });
                 break;
             }
         }
@@ -105,7 +105,7 @@ Antitag akan merespon jika ada yang tag member di grup`;
         console.error('Error di antitag command:', error);
         await sock.sendMessage(chatId, {
             text: 'Maaf, Tuan~ Yuuki gagal memproses perintah antitag. Ada yang tidak beres~'
-        });
+        }, { quoted: message });
     }
 }
 
@@ -116,13 +116,29 @@ async function handleTagDetection(sock, chatId, message, senderId) {
 
         const msg = message.message;
         const mentions = msg?.extendedTextMessage?.contextInfo?.mentionedJid || [];
-        const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
         const ownerLid = process.env.OWNER_LID ? process.env.OWNER_LID + '@lid' : null;
         const ownerPn = process.env.OWNER_NUMBER ? process.env.OWNER_NUMBER + '@s.whatsapp.net' : null;
 
         if (mentions.length === 0) return;
 
-        const isTaggingBot = mentions.includes(botJid) || mentions.includes(ownerLid) || mentions.includes(ownerPn);
+        const botVariants = new Set();
+        const addVariant = (jid) => {
+            if (!jid) return;
+            botVariants.add(jid);
+            const decoded = sock.decodeJid(jid);
+            if (decoded !== jid) botVariants.add(decoded);
+            if (jid.endsWith('@s.whatsapp.net')) {
+                botVariants.add(jid.replace('@s.whatsapp.net', '@lid'));
+                if (decoded !== jid) botVariants.add(decoded.replace('@s.whatsapp.net', '@lid'));
+            } else if (jid.endsWith('@lid')) {
+                botVariants.add(jid.replace('@lid', '@s.whatsapp.net'));
+                if (decoded !== jid) botVariants.add(decoded.replace('@lid', '@s.whatsapp.net'));
+            }
+        };
+        addVariant(sock.user?.id);
+        addVariant(sock.user?.lid);
+
+        const isTaggingBot = mentions.some(jid => botVariants.has(jid)) || mentions.includes(ownerLid) || mentions.includes(ownerPn);
         const isTaggingSelf = mentions.includes(senderId);
         if (isTaggingSelf) return;
 

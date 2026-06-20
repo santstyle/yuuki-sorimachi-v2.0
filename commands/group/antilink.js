@@ -14,12 +14,12 @@ function formatPrivateWarning(text) {
     return `${getGreeting()} Tuan,\n\nPelayanmu yang setia dan rendah hati, Yuuki, ingin memberitahumu sesuatu.\n\n${text}`;
 }
 
-async function handleAntilinkCommand(sock, chatId, userMessage, senderId, isSenderAdmin) {
+async function handleAntilinkCommand(sock, chatId, userMessage, senderId, isSenderAdmin, message) {
     try {
         if (!isSenderAdmin) {
             await sock.sendMessage(chatId, {
                 text: 'Maaf, Tuan~ Hanya admin grup yang bisa mengatur antilink. Yuuki mohon pengertian~'
-            });
+            }, { quoted: message });
             return;
         }
 
@@ -37,7 +37,7 @@ Usage:
 
 Antilink akan merespon jika ada yang kirim link di grup`;
 
-            await sock.sendMessage(chatId, { text: usage });
+            await sock.sendMessage(chatId, { text: usage }, { quoted: message });
             return;
         }
 
@@ -47,13 +47,13 @@ Antilink akan merespon jika ada yang kirim link di grup`;
                 if (existingConfig?.enabled) {
                     await sock.sendMessage(chatId, {
                         text: 'Tuan~ Antilink sudah aktif di grup ini. Yuuki sudah menjaganya dengan baik~'
-                    });
+                    }, { quoted: message });
                     return;
                 }
                 await setAntilink(chatId, 'on', 'delete');
                 await sock.sendMessage(chatId, {
                     text: `Tuan~ FITUR ANTILINK telah Yuuki aktifkan!\n\nPerhatian untuk seluruh member:\nDilarang mengirim tautan/link apapun.\nPelanggaran akan dihapus dan mendapat peringatan.\n\nYuuki tidak akan melewatkan satu link pun~`
-                });
+                }, { quoted: message });
                 break;
             }
 
@@ -61,7 +61,7 @@ Antilink akan merespon jika ada yang kirim link di grup`;
                 await removeAntilink(chatId, 'on');
                 await sock.sendMessage(chatId, {
                     text: 'Tuan~ Antilink telah Yuuki nonaktifkan. Silakan share link dengan bijak~'
-                });
+                }, { quoted: message });
                 break;
             }
 
@@ -69,20 +69,20 @@ Antilink akan merespon jika ada yang kirim link di grup`;
                 if (args.length < 2) {
                     await sock.sendMessage(chatId, {
                         text: 'Tuan~ Mode belum dipilih. Pilih salah satu: delete / kick / warn. Yuuki menunggu perintah Tuan~'
-                    });
+                    }, { quoted: message });
                     return;
                 }
                 const mode = args[1];
                 if (!['delete', 'kick', 'warn'].includes(mode)) {
                     await sock.sendMessage(chatId, {
                         text: 'Tuan~ Mode tidak valid. Pilih: delete / kick / warn. Yuuki harap Tuan lebih teliti~'
-                    });
+                    }, { quoted: message });
                     return;
                 }
                 await setAntilink(chatId, 'on', mode);
                 await sock.sendMessage(chatId, {
                     text: `Tuan~ Mode antilink telah Yuuki atur ke: ${mode}. Sesuai keinginan Tuan~`
-                });
+                }, { quoted: message });
                 break;
             }
 
@@ -91,14 +91,14 @@ Antilink akan merespon jika ada yang kirim link di grup`;
                 const status = config?.enabled ? 'AKTIF' : 'NONAKTIF';
                 const mode = config?.action || 'Belum diatur';
                 const statusMsg = `Tuan~ Berikut status antilink:\n\nStatus : ${status}\nMode   : ${mode}\n\nYuuki siap melaporkan~`;
-                await sock.sendMessage(chatId, { text: statusMsg });
+                await sock.sendMessage(chatId, { text: statusMsg }, { quoted: message });
                 break;
             }
 
             default: {
                 await sock.sendMessage(chatId, {
                     text: 'Tuan~ Perintah tidak dikenal. Ketik .antilink untuk melihat daftar perintah. Yuuki bingung harus melakukan apa~'
-                });
+                }, { quoted: message });
                 break;
             }
         }
@@ -106,7 +106,7 @@ Antilink akan merespon jika ada yang kirim link di grup`;
         console.error('Error di antilink command:', error);
         await sock.sendMessage(chatId, {
             text: 'Maaf, Tuan~ Yuuki gagal memproses perintah antilink. Mungkin ada gangguan teknis~'
-        });
+        }, { quoted: message });
     }
 }
 
