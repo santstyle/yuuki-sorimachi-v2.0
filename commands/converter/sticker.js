@@ -89,7 +89,7 @@ async function stickerCommand(sock, chatId, message) {
         const prisma = require('../../lib/db');
         const senderId = message.key.participant || message.key.remoteJid;
         let wmName = '';
-        
+
         try {
             const user = await prisma.user.findUnique({ where: { id: senderId } });
             if (user && user.packname) {
@@ -128,7 +128,7 @@ async function stickerCommand(sock, chatId, message) {
     } catch (error) {
         console.error('Yah, error di sticker command nih:', error);
         await sock.sendMessage(chatId, {
-            text: 'Maaf, Tuan~ Yuuki gagal membuat stikernya. Mungkin Tuan bisa coba lagi dengan gambar yang lebih kecil?'
+            text: 'Maaf, Tuan~ Yuuki gagal membuat stikernya. Mungkin internet sedang lambat, Tuan bisa coba lagi nanti'
         }, { quoted: messageToQuote });
     }
 }

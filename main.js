@@ -7,9 +7,9 @@ const { exec } = require('child_process');
 
 if (!process.env.FFMPEG_PATH) {
     const path = require('path');
-    const ffmpegPath = path.join(__dirname, 'ffmpeg', 'bin', 'ffmpeg.exe');
-    process.env.FFMPEG_PATH = ffmpegPath;
-    console.log('Path FFmpeg diatur di main.js:', ffmpegPath);
+    const localFfmpeg = path.join(__dirname, 'ffmpeg', 'bin', 'ffmpeg.exe');
+    process.env.FFMPEG_PATH = fs.existsSync(localFfmpeg) ? localFfmpeg : 'ffmpeg';
+    console.log('Path FFmpeg diatur di main.js:', process.env.FFMPEG_PATH);
 }
 
 const { isBanned } = require('./lib/isBanned');
@@ -120,7 +120,7 @@ const ownermenuCommand = require('./commands/owner/ownermenu');
 const { pinterestCommand, scrapePinterest } = require('./commands/search/pinterest');
 const { autoreadCommand } = require('./commands/owner/autoread');
 
-const { joinCommand } = require('./commands/owner/join');
+const { joinCommand, joinModeCommand } = require('./commands/owner/join');
 const { leaveCommand } = require('./commands/owner/leave');
 
 
@@ -129,6 +129,8 @@ const { addSudo, removeSudo, getSudoList } = require('./lib/index');
 
 
 const { startAbsen, addAbsen, finishAbsen } = require('./commands/group/absen');
+
+const connectionMonitor = require('./lib/connectionMonitor');
 
 
 const sewaCommand = require('./commands/group/sewa');
@@ -337,10 +339,10 @@ async function handleMessages(sock, messageUpdate, printLog) {
             return;
         }
 
-        const adminCommands = ['.mutegroup', '.unmutegroup', '.kick', '.tagall', '.hidetag', '.antilink', '.antitag', '.antidelete'];
+        const adminCommands = ['.mutegroup', '.unmutegroup', '.kick', '.tagall', '.hidetag', '.antilink', '.antitag', '.antidelete', '.vv'];
         const isAdminCommand = adminCommands.some(cmd => userMessage.startsWith(cmd));
 
-        const ownerCommands = ['.mode', '.self', '.autostatus', '.cleartmp', '.clearsession', '.setpp', '.areact', '.autoreact', '.ban', '.unban', '.bc', '.broadcast', '.sudo', '.addsudo', '.listsudo', '.delsudo', '.cleanup', '.debuglevelup', '.sewa', '.autoread', '.join', '.leave', '.addprem', '.listprem'];
+        const ownerCommands = ['.mode', '.self', '.autostatus', '.cleartmp', '.clearsession', '.setpp', '.areact', '.autoreact', '.ban', '.unban', '.bc', '.broadcast', '.sudo', '.addsudo', '.listsudo', '.delsudo', '.cleanup', '.debuglevelup', '.sewa', '.autoread', '.joinmode', '.leave', '.addprem', '.listprem'];
         const isOwnerCommand = ownerCommands.some(cmd => userMessage.startsWith(cmd));
 
         let isSenderAdmin = false;
@@ -382,6 +384,16 @@ async function handleMessages(sock, messageUpdate, printLog) {
             }
         } catch (error) {
             console.error('Error memeriksa mode akses:', error);
+        }
+
+        if (userMessage.startsWith('.') && connectionMonitor.isUnstable() && connectionMonitor.canSendWarning()) {
+            connectionMonitor.markWarningSent();
+            const title = isSenderAdmin ? 'Tuan Besar' : 'Tuan';
+            try {
+                await sock.sendMessage(chatId, {
+                    text: connectionMonitor.getStatusMessage(title)
+                }, { quoted: message });
+            } catch (e) {}
         }
 
         let commandExecuted = false;
@@ -860,13 +872,13 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 }
                 break;
 
+            case userMessage.startsWith('.joinmode'):
+                await joinModeCommand(sock, chatId, message, senderIsSudo);
+                commandExecuted = true;
+                break;
             case userMessage.startsWith('.join'):
-                if (!message.key.fromMe && !senderIsSudo) {
-                    await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya pemilik Yuuki yang bisa menyuruh Yuuki bergabung~' }, { quoted: message });
-                    return;
-                }
                 const joinArgs = rawText.split(' ').slice(1);
-                await joinCommand(sock, chatId, message, joinArgs);
+                await joinCommand(sock, chatId, message, joinArgs, senderIsSudo, senderId);
                 commandExecuted = true;
                 break;
             case userMessage.startsWith('.leave'):
@@ -959,6 +971,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
         }
 
         if (commandExecuted !== false) {
+            connectionMonitor.reportSuccess();
             await showTypingAfterCommand(sock, chatId);
         }
 
@@ -966,14 +979,19 @@ async function handleMessages(sock, messageUpdate, printLog) {
             await addCommandReaction(sock, message);
         }
     } catch (error) {
-        const errMsg = error?.message || error?.toString() || '';
-        if (!errMsg.includes('Connection Closed') && !errMsg.includes('Connection Terminated')) {
-            console.error('Error dalam penangan pesan:', error);
-            if (chatId) {
-                await sock.sendMessage(chatId, {
-                    text: 'Maaf, Tuan~ Yuuki mengalami sedikit gangguan dalam memproses perintah Tuan. Mohon Tuan bersabar dan mencoba lagi~ Yuuki akan berusaha lebih baik~'
-                }, { quoted: message }).catch(() => { });
+        connectionMonitor.reportFailure();
+        const errMsg = error?.message || error?.toString() || error?.code || '';
+        const isConnectionIssue = errMsg.includes('Connection Closed') || errMsg.includes('Connection Terminated') || errMsg.includes('ECONNREFUSED') || errMsg.includes('ETIMEDOUT') || errMsg.includes('ENETUNREACH') || errMsg.includes('timeout') || errMsg.includes('socket') || errMsg.includes('EHOSTUNREACH') || errMsg.includes('EAI_AGAIN') || errMsg.includes('fetch failed');
+
+        if (chatId) {
+            const title = typeof isSenderAdmin !== 'undefined' && isSenderAdmin ? 'Tuan Besar' : 'Tuan';
+            const text = isConnectionIssue
+                ? `Mohon maaf, ${title}~ Yuuki mendeteksi koneksi internet yang kurang stabil. Mohon Tuan bersabar dan mencoba lagi dalam beberapa saat. Yuuki akan berusaha segera kembali melayani Tuan~`
+                : 'Maaf, Tuan~ Yuuki mengalami sedikit gangguan dalam memproses perintah Tuan. Mohon Tuan bersabar dan mencoba lagi~ Yuuki akan berusaha lebih baik~';
+            if (!isConnectionIssue) {
+                console.error('Error dalam penangan pesan:', error);
             }
+            await sock.sendMessage(chatId, { text }, { quoted: message }).catch(() => { });
         }
     }
 }
@@ -1454,7 +1472,14 @@ async function viewOnceCommand(sock, chatId, message, arg, senderId, isSenderAdm
         }
     } catch (error) {
         console.error('Error in viewOnce:', error);
-        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal melihat pesan view-once. Mungkin sudah kedaluwarsa~' }, { quoted: message });
+        const errMsg = error?.message || error?.code || '';
+        const isConnectionIssue = errMsg.includes('ETIMEDOUT') || errMsg.includes('ENOTFOUND') || errMsg.includes('ECONNREFUSED') || errMsg.includes('socket') || errMsg.includes('timeout') || errMsg.includes('fetch failed') || errMsg.includes('EAI_AGAIN') || errMsg.includes('EHOSTUNREACH');
+        if (isConnectionIssue) {
+            connectionMonitor.reportFailure();
+            await sock.sendMessage(chatId, { text: `Maaf, Tuan~ Yuuki gagal mengunduh media karena koneksi internet sedang tidak stabil. Mohon Tuan bersabar dan mencoba lagi nanti~` }, { quoted: message });
+        } else {
+            await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal melihat pesan view-once. Mungkin sudah kedaluwarsa~' }, { quoted: message });
+        }
     }
 }
 

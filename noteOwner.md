@@ -21,20 +21,6 @@ Files containing "Yuuki Bot":
 - commands/github.js
 - baileys_store.json
   
-## Command
-#### Owner
-- .mode
-- .autostatus
-- .clearsession
-- .antidelete
-- .cleartmp
-- .update
-- .autoreact
-- .bc
-
-• .setwm <pack> | <auth>
-• .sewa <ID/days>
-• .ceksewa
 
 ## Next Update
 - Voice Yuuki

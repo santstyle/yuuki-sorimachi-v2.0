@@ -259,69 +259,94 @@ Yuuki adalah pelayan yang mengelola berbagai keperluan Tuan di WhatsApp. Berikut
    - .sticker / .s — ubah gambar/video jadi stiker
    - .toimage — ubah stiker jadi gambar
    - .tovideo / .togif — ubah stiker jadi video/GIF
-   - .toaudio — ambil audio dari video
+   - .toaudio / .tomp3 — ambil audio dari video, ubah video ke MP3
+   - .stickercrop — crop stiker ke bentuk 1:1
 
-3. DOWNLOADER:
-   - .btch / .dl — download video dari YouTube, Instagram, TikTok, Facebook, dll
+3. VIEW ONCE MEDIA:
+   - .vv — lihat/akses pesan view-once (foto/video/audio) yang dikirim di grup
+   - .vv public — semua member grup bisa menggunakan .vv
+   - .vv private — hanya admin grup yang bisa menggunakan .vv
+   - Cara pakai: reply pesan view-once dengan .vv
+   - Fitur ini BUKAN untuk memutar video YouTube, melainkan untuk melihat pesan WhatsApp yang dikirim sebagai view-once
 
-4. GROUP ADMIN (khusus admin grup & owner):
+4. DOWNLOADER:
+   - .btch / .dl / .download — download video dari YouTube, Instagram, TikTok, Facebook, dll
+
+5. GROUP ADMIN (khusus admin grup & owner):
    - .antilink on/off — blokir link grup lain
    - .antitag on/off — blokir hide-tag berlebihan
    - .antibadword on/off — sensor kata kasar otomatis
-   - .warn / .resetwarn — sistem peringatan member
-   - .kick — keluarkan member
+   - .warn @user [alasan] / .resetwarn @user — sistem peringatan member
+   - .kick @user — keluarkan member
    - .tagall — tag semua anggota
-   - .hidetag — tag diam-diam
-   - .welcome / .goodbye on/off/set — sambutan anggota
-   - .mutegroup / .unmutegroup — bisukan grup
+   - .hidetag — tag diam-diam tanpa notifikasi
+   - .welcome / .goodbye on/off/set — sambutan & perpisahan anggota
+   - .mutegroup / .unmutegroup — bisukan / aktifkan chat grup
    - .antidelete on/off/status — cegah penghapusan pesan di grup
    - .groupset — pengaturan grup
    - .resetlink — reset link undangan grup
 
-5. GROUP (semua anggota grup bisa pakai):
+6. GROUP (semua anggota grup bisa pakai):
    - .groupinfo — info lengkap grup ini
    - .ceksewa — cek status sewa grup
    - .staff / .admins — daftar admin & staff grup
    - .warnings @user — cek total warning member
-   - .absen — absensi anggota
-   - .sewa — sewa bot untuk grup (hubungi owner)
+   - .absen / .startabsen / .finishabsen — absensi anggota grup
+   - .topmembers / .top — peringkat member di grup berdasarkan level & XP
+   - .ship @user1 @user2 — tes kecocokan dua orang
 
 7. INFORMATION & FUN:
-   - .meme — meme random
-   - .joke — lelucon random
-   - .quote — kutipan inspiratif
-   - .fact — fakta random
-   - .news — berita terkini
+   - .meme — meme random dari internet
+   - .joke — cerita lucu random
+   - .quote — kata-kata bijak / motivasi
+   - .fact — fakta unik dunia
+   - .news — berita terbaru hari ini
    - .weather [kota] — cek cuaca
+   - .flirt — rayuan manis ala Yuuki
+   - .goodnight / .gn — ucapan selamat malam manis
 
 8. SEARCH:
-   - .song — cari lagu di YouTube
-   - .lyrics — cari lirik lagu
+   - .song [judul] — cari dan download lagu dari YouTube
+   - .lyrics [judul] — cari lirik lagu
    - .pinterest [kata kunci] — cari gambar dari Pinterest
 
 9. TOOLS:
-   - .translate / .trt — terjemahkan teks
+   - .translate / .trt — terjemahkan teks ke bahasa lain
    - .ss [url] — screenshot website
    - .setwm — atur nama pack stiker
+   - .blur — buat gambar jadi blur (reply gambar)
+   - .removebg / .rmbg — hapus latar belakang gambar
+   - .remini / .enhance — tingkatkan kualitas & resolusi gambar
 
-10. OWNER COMMANDS (khusus Tuan Besar / owner):
-   - .mode public/private — atur akses bot
-   - .broadcast — kirim pesan ke semua grup
-   - .setpp — ganti foto profil bot
-   - .sudo — tambah pengguna terpercaya
-   - .update — update bot dari GitHub
+10. MAIN:
+    - .menu / .list — lihat semua perintah
+    - .help — bantuan detail
+    - .ping — cek respon bot
+    - .owner — info kontak owner
+    - .alive — cek apakah Yuuki masih bernafas
+    - .del / .delete — hapus pesan bot
+    - .mylevel — cek level dan XP-mu
+    - .setname <nama> — ganti nama profil untuk leaderboard
+    - .leaderboard / .lb — peringkat global seluruh user
 
-11. OTHER:
-   - .menu / .list — lihat semua perintah
-   - .help — bantuan detail
-   - .ping — cek respon bot
-   - .owner — info kontak owner
-   - .mylevel — cek level dan XP-mu (dapat XP dari setiap perintah)
+11. AI CHAT:
+    - .groq <teks> — chat dengan Groq AI
+    - .deepseek <teks> — chat dengan DeepSeek AI
+    - .gpt <teks> — chat dengan GPT (OpenAI)
 
-12. SERVICE (laporkan masalah ke Tuan Besar / owner):
-     - .reportbug <pesan> — kirim laporan bug atau error ke pemilik Yuuki
-       Laporan akan langsung dikirim ke DM Tuan Besar. Cocok jika Tuan
-       menemukan error, bug, atau masalah lain saat menggunakan Yuuki.
+12. ANIME:
+    - .waifu [sub] — gambar waifu random, bisa dengan sub seperti "neko"
+
+13. OWNER COMMANDS (khusus Tuan Besar / owner):
+    - .mode public/private — atur akses bot
+    - .broadcast — kirim pesan ke semua grup
+    - .setpp — ganti foto profil bot
+    - .sudo — tambah pengguna terpercaya
+    - .update — update bot dari GitHub
+
+14. SERVICE:
+    - .reportbug <pesan> — kirim laporan bug atau error ke pemilik Yuuki
+      Laporan akan langsung dikirim ke DM Tuan Besar.
 
 Ingat: jawablah pertanyaan tentang fitur-fitur ini dalam bahasa formal dengan kepribadian Yuuki. Jangan pernah memberi daftar perintah mentah-mentah — jelaskan dengan gaya teatrikal dan penuh pelayanan. Jika Tuan bertanya cara menggunakan suatu fitur, jelaskan langkah-langkahnya dengan ramah dan hormat.
 
@@ -440,10 +465,163 @@ class APIManager {
         return cleaned;
     }
 
+    getFeatureExplanations(title) {
+        return {
+            'vv': `${title} yang terhormat, fitur .vv adalah singkatan dari "view once". Yuuki gunakan untuk melihat pesan view-once (foto, video, atau audio) yang dikirim di grup. Cara pakai: reply pesan view-once dengan .vv. Mode: .vv public (semua anggota bisa pakai) dan .vv private (hanya admin).`,
+            'song': `${title}, fitur .song digunakan untuk mencari dan mengunduh lagu dari YouTube. Cara pakai: .song [judul lagu]. Yuuki akan mencarikan lagu yang Tuan inginkan.`,
+            'sticker': `${title}~ Fitur .sticker atau .s digunakan untuk mengubah gambar atau video menjadi stiker WhatsApp. Cara pakai: kirim gambar/video lalu reply dengan .sticker.`,
+            'toimage': `${title}, fitur .toimage digunakan untuk mengubah stiker menjadi gambar biasa. Reply stiker yang ingin diubah dengan .toimage.`,
+            'tovideo': `${title}, fitur .tovideo atau .togif digunakan untuk mengubah stiker menjadi video atau GIF. Reply stiker dengan .tovideo.`,
+            'toaudio': `${title}, fitur .toaudio atau .tomp3 digunakan untuk mengambil audio dari video. Reply video dengan .toaudio.`,
+            'stickercrop': `${title}, fitur .stickercrop digunakan untuk memotong stiker menjadi bentuk 1:1. Reply stiker dengan .stickercrop.`,
+            'btch': `${title}, fitur .btch atau .dl adalah downloader serbaguna. Yuuki bisa mengunduh video dari YouTube, Instagram, TikTok, Facebook, dan berbagai platform lainnya. Cara pakai: .btch [url].`,
+            'antilink': `${title}, fitur .antilink digunakan untuk memblokir tautan grup WhatsApp lain di dalam grup. Khusus admin grup. Cara pakai: .antilink on/off.`,
+            'antitag': `${title}, fitur .antitag digunakan untuk memblokir penggunaan hide-tag yang berlebihan di grup. Khusus admin grup.`,
+            'antibadword': `${title}, fitur .antibadword digunakan untuk menyensor kata-kata kasar secara otomatis di grup. Khusus admin grup.`,
+            'hidetag': `${title}, fitur .hidetag digunakan untuk menandai semua anggota grup secara diam-diam tanpa menampilkan pesan tag. Khusus admin grup. Cara pakai: .hidetag [teks].`,
+            'tagall': `${title}, fitur .tagall digunakan untuk menandai semua anggota grup. Khusus admin grup.`,
+            'kick': `${title}, fitur .kick digunakan untuk mengeluarkan anggota dari grup. Khusus admin grup. Cara pakai: .kick @anggota.`,
+            'warn': `${title}, fitur .warn digunakan untuk memberi peringatan kepada anggota grup. Khusus admin grup. Cara pakai: .warn @user [alasan].`,
+            'resetwarn': `${title}, fitur .resetwarn digunakan untuk menghapus semua peringatan seorang anggota grup. Khusus admin grup. Cara pakai: .resetwarn @user.`,
+            'welcome': `${title}, fitur .welcome digunakan untuk mengatur pesan sambutan otomatis untuk anggota baru di grup. Khusus admin grup. Cara pakai: .welcome on/off/set.`,
+            'goodbye': `${title}, fitur .goodbye digunakan untuk mengatur pesan perpisahan otomatis saat anggota keluar dari grup. Khusus admin grup. Cara pakai: .goodbye on/off/set.`,
+            'mutegroup': `${title}, fitur .mutegroup digunakan untuk membisukan chat di grup sehingga hanya admin yang bisa mengirim pesan. Khusus admin grup.`,
+            'unmutegroup': `${title}, fitur .unmutegroup digunakan untuk mengaktifkan kembali chat di grup setelah di-mute. Khusus admin grup.`,
+            'antidelete': `${title}, fitur .antidelete digunakan untuk mencegah penghapusan pesan di grup. Khusus admin grup. Cara pakai: .antidelete on/off/status.`,
+            'groupset': `${title}, fitur .groupset digunakan untuk mengatur berbagai pengaturan grup. Khusus admin grup.`,
+            'resetlink': `${title}, fitur .resetlink digunakan untuk mereset tautan undangan grup. Khusus admin grup.`,
+            'menu': `${title}, fitur .menu atau .list digunakan untuk menampilkan daftar semua perintah yang Yuuki miliki.`,
+            'ping': `${title}, fitur .ping digunakan untuk mengecek apakah Yuuki sedang online. Yuuki akan membalas dengan waktu respons.`,
+            'owner': `${title}, fitur .owner digunakan untuk menampilkan informasi kontak pemilik Yuuki.`,
+            'alive': `${title}, fitur .alive digunakan untuk mengecek apakah Yuuki masih aktif dan merespon.`,
+            'del': `${title}, fitur .del atau .delete digunakan untuk menghapus pesan bot. Reply pesan Yuuki dengan .del.`,
+            'setname': `${title}, fitur .setname digunakan untuk mengganti nama profil Tuan untuk leaderboard. Cara pakai: .setname [nama].`,
+            'leaderboard': `${title}, fitur .leaderboard atau .lb digunakan untuk menampilkan peringkat global seluruh pengguna berdasarkan level dan XP.`,
+            'mylevel': `${title}, fitur .mylevel digunakan untuk mengecek level dan XP Tuan saat ini.`,
+            'help': `${title}, fitur .help digunakan untuk menampilkan bantuan detail tentang penggunaan Yuuki.`,
+            'groupinfo': `${title}, fitur .groupinfo digunakan untuk menampilkan informasi lengkap tentang grup ini.`,
+            'ceksewa': `${title}, fitur .ceksewa digunakan untuk mengecek status sewa bot di grup ini.`,
+            'staff': `${title}, fitur .staff atau .admins digunakan untuk menampilkan daftar admin grup.`,
+            'warnings': `${title}, fitur .warnings digunakan untuk mengecek total peringatan seorang anggota grup. Cara pakai: .warnings @user.`,
+            'absen': `${title}, fitur .absen digunakan untuk melakukan absensi di grup. Cara pakai: .absen [nama absen].`,
+            'startabsen': `${title}, fitur .startabsen digunakan untuk memulai sesi absensi dengan judul tertentu.`,
+            'finishabsen': `${title}, fitur .finishabsen digunakan untuk menyelesaikan sesi absensi dan menampilkan hasilnya.`,
+            'topmembers': `${title}, fitur .topmembers atau .top digunakan untuk menampilkan peringkat anggota di grup berdasarkan level dan XP.`,
+            'ship': `${title}, fitur .ship digunakan untuk mengetes tingkat kecocokan antara dua orang. Cara pakai: .ship @user1 @user2.`,
+            'translate': `${title}, fitur .translate atau .trt digunakan untuk menerjemahkan teks ke bahasa lain. Cara pakai: .translate [teks] atau reply pesan dengan .translate [kode bahasa].`,
+            'ss': `${title}, fitur .ss digunakan untuk mengambil screenshot dari sebuah website. Cara pakai: .ss [url].`,
+            'setwm': `${title}, fitur .setwm digunakan untuk mengatur nama pengarang dan nama paket stiker.`,
+            'blur': `${title}, fitur .blur digunakan untuk membuat gambar menjadi blur. Reply gambar dengan .blur.`,
+            'removebg': `${title}, fitur .removebg atau .rmbg digunakan untuk menghapus latar belakang gambar. Reply gambar dengan .removebg.`,
+            'remini': `${title}, fitur .remini atau .enhance digunakan untuk meningkatkan kualitas dan resolusi gambar.`,
+            'meme': `${title}, fitur .meme digunakan untuk menampilkan meme lucu secara acak dari internet.`,
+            'joke': `${title}, fitur .joke digunakan untuk menampilkan lelucon secara acak.`,
+            'quote': `${title}, fitur .quote digunakan untuk menampilkan kutipan inspiratif atau kata-kata bijak.`,
+            'fact': `${title}, fitur .fact digunakan untuk menampilkan fakta unik dan menarik dari seluruh dunia.`,
+            'news': `${title}, fitur .news digunakan untuk menampilkan berita terkini.`,
+            'weather': `${title}, fitur .weather digunakan untuk mengecek cuaca di suatu kota. Cara pakai: .weather [nama kota].`,
+            'flirt': `${title}, fitur .flirt digunakan untuk mendapatkan rayuan manis ala Yuuki~`,
+            'goodnight': `${title}, fitur .goodnight atau .gn digunakan untuk mendapatkan ucapan selamat malam yang manis dari Yuuki.`,
+            'lyrics': `${title}, fitur .lyrics digunakan untuk mencari lirik lagu. Cara pakai: .lyrics [judul lagu].`,
+            'pinterest': `${title}, fitur .pinterest digunakan untuk mencari gambar dari Pinterest. Cara pakai: .pinterest [kata kunci].`,
+            'groq': `${title}, fitur .groq digunakan untuk mengobrol dengan Groq AI. Cara pakai: .groq [pertanyaan].`,
+            'deepseek': `${title}, fitur .deepseek digunakan untuk mengobrol dengan DeepSeek AI. Cara pakai: .deepseek [pertanyaan].`,
+            'gpt': `${title}, fitur .gpt digunakan untuk mengobrol dengan GPT (OpenAI). Cara pakai: .gpt [pertanyaan].`,
+            'yuuki': `${title}, fitur .yuuki digunakan untuk mengaktifkan atau menonaktifkan Yuuki AI di grup. Cara pakai: .yuuki on / .yuuki off.`,
+            'waifu': `${title}, fitur .waifu digunakan untuk menampilkan gambar waifu atau anime secara acak. Cara pakai: .waifu [sub] seperti .waifu neko.`,
+            'reportbug': `${title}, fitur .reportbug digunakan untuk melaporkan bug atau error kepada pemilik Yuuki. Cara pakai: .reportbug [pesan laporan].`
+        };
+    }
+
+    detectFeatureQuestion(userMessage) {
+        const lower = userMessage.toLowerCase().trim();
+
+        const featurePatterns = {
+            'vv': /(\.vv\b|fitur.*vv|view.?once|intip.*pesan)/i,
+            'song': /(\.song\b|\.music|fitur.*song|cari.*lagu|download.*lagu|unduh.*lagu)/i,
+            'sticker': /(\.sticker\b|\.s\b|stiker|fitur.*stiker|buat.*stiker|jadi.*stiker)/i,
+            'toimage': /(\.toimage\b|\.toimg|jadi.*gambar|ubah.*stiker.*gambar|stiker.*jadi.*gambar)/i,
+            'tovideo': /(\.tovideo\b|\.togif|\.tovid|jadi.*video|jadi.*gif|stiker.*jadi.*video)/i,
+            'toaudio': /(\.toaudio\b|\.tomp3|ambil.*audio|ambil.*suara|ekstrak.*audio|video.*jadi.*mp3)/i,
+            'stickercrop': /(\.stickercrop\b|\.scrop|crop.*stiker|potong.*stiker)/i,
+            'btch': /(\.btch\b|\.dl\b|\.download\b|download|unduh|fitur.*download)/i,
+            'antilink': /(\.antilink\b|antilink|blokir.*link|cegah.*link|anti.?link)/i,
+            'antitag': /(\.antitag\b|antitag|blokir.*tag|cegah.*tag|anti.?tag)/i,
+            'antibadword': /(\.antibadword\b|antibadword|sensor.*kata|anti.?badword|cegah.*kata.*kasar)/i,
+            'hidetag': /(\.hidetag\b|hidetag|sembunyikan.*tag|tag.*diam|tag.*tanpa.*notifikasi)/i,
+            'tagall': /(\.tagall\b|tagall|tag.*semua|tandai.*semua)/i,
+            'kick': /(\.kick\b|kick|keluarkan.*anggota|tendang.*grup)/i,
+            'warn': /(\.warn\b|warn|peringatan|warning.*member)/i,
+            'resetwarn': /(\.resetwarn\b|reset.*warn|hapus.*peringatan)/i,
+            'welcome': /(\.welcome\b|welcome|sambutan.*anggota|pesan.*sambutan|selamat.*datang)/i,
+            'goodbye': /(\.goodbye\b|goodbye|perpisahan|pesan.*keluar|selamat.*tinggal)/i,
+            'mutegroup': /(\.mutegroup\b|mutegroup|bisukan.*grup|mute.*grup)/i,
+            'unmutegroup': /(\.unmutegroup\b|unmutegroup|aktifkan.*grup|unmute)/i,
+            'antidelete': /(\.antidelete\b|antidelete|cegah.*hapus|anti.?delete)/i,
+            'groupset': /(\.groupset\b|groupset|pengaturan.*grup|setting.*grup)/i,
+            'resetlink': /(\.resetlink\b|reset.*link|reset.*tautan|link.*grup.*baru)/i,
+            'menu': /(\.menu\b|\.list\b|daftar.*perintah|fitur.*menu|semua.*perintah)/i,
+            'ping': /(\.ping\b|ping|cek.*respon|respon.*bot|bot.*online)/i,
+            'owner': /(\.owner\b|owner|pemilik.*bot|pembuat.*bot|kontak.*owner)/i,
+            'alive': /(\.alive\b|alive|cek.*bot|bot.*hidup|bot.*nafas)/i,
+            'del': /(\.del\b|\.delete\b|hapus.*pesan|delete.*pesan)/i,
+            'setname': /(\.setname\b|ganti.*nama|ubah.*nama.*profil|nama.*leaderboard)/i,
+            'leaderboard': /(\.leaderboard\b|\.lb\b|leaderboard|peringkat.*global|rank.*global)/i,
+            'mylevel': /(\.mylevel\b|mylevel|level.*saya|xp.*saya|cek.*level)/i,
+            'help': /(\.help\b|help|bantuan)/i,
+            'groupinfo': /(\.groupinfo\b|info.*grup|informasi.*grup|detail.*grup)/i,
+            'ceksewa': /(\.ceksewa\b|cek.*sewa|sewa.*bot|status.*sewa)/i,
+            'staff': /(\.staff\b|\.admins\b|admin.*grup|daftar.*admin)/i,
+            'warnings': /(\.warnings\b|warning.*user|cek.*warn|total.*peringatan)/i,
+            'absen': /(\.absen\b|absen|absensi|presensi)/i,
+            'startabsen': /(\.startabsen\b|mulai.*absen|buat.*absen)/i,
+            'finishabsen': /(\.finishabsen\b|selesai.*absen|tutup.*absen|hasil.*absen)/i,
+            'topmembers': /(\.topmembers\b|\.top\b|top.*member|peringkat.*grup)/i,
+            'ship': /(\.ship\b|ship|tes.*kecocokan|cocok.*cocok|jodoh)/i,
+            'translate': /(\.translate\b|\.trt\b|terjemah|translate)/i,
+            'ss': /(\.ss\b|\.ssweb\b|screenshot.*web|screenshot.*website)/i,
+            'setwm': /(\.setwm\b|atur.*stiker|nama.*pack.*stiker|set.*watermark)/i,
+            'blur': /(\.blur\b|blur.*gambar|kaburkan.*gambar|buat.*blur)/i,
+            'removebg': /(\.removebg\b|\.rmbg\b|hapus.*latar|remove.*background|nobg)/i,
+            'remini': /(\.remini\b|\.enhance\b|tingkatkan.*kualitas|upscale.*gambar|perbaiki.*gambar)/i,
+            'meme': /(\.meme\b|meme|meme.*random)/i,
+            'joke': /(\.joke\b|joke|lelucon|canda|lawak)/i,
+            'quote': /(\.quote\b|quote|kata.*bijak|kutipan|motivasi)/i,
+            'fact': /(\.fact\b|fact|fakta|fakta.*unik|fakta.*dunia)/i,
+            'news': /(\.news\b|berita|news|info.*terkini)/i,
+            'weather': /(\.weather\b|cuaca|weather|ramalan.*cuaca)/i,
+            'flirt': /(\.flirt\b|flirt|rayuan|gombal|rayuan.*yuuki)/i,
+            'goodnight': /(\.goodnight\b|\.gn\b|selamat.*malam|goodnight|ucapan.*malam)/i,
+            'lyrics': /(\.lyrics\b|lirik|lyrics|cari.*lirik)/i,
+            'pinterest': /(\.pinterest\b|\.pin\b|pinterest|cari.*gambar.*pinterest)/i,
+            'groq': /(\.groq\b|groq|groq.*ai)/i,
+            'deepseek': /(\.deepseek\b|deepseek|deepseek.*ai)/i,
+            'gpt': /(\.gpt\b|gpt|openai|chat.*gpt)/i,
+            'yuuki': /(\.yuuki\b|yuuki.*on|yuuki.*off|matikan.*yuuki|hidupkan.*yuuki)/i,
+            'waifu': /(\.waifu\b|waifu|anime.*random|gambar.*anime)/i,
+            'reportbug': /(\.reportbug\b|lapor.*bug|report.*bug|laporkan.*masalah|error.*bot)/i
+        };
+
+        for (const [feature, pattern] of Object.entries(featurePatterns)) {
+            if (pattern.test(lower)) {
+                return feature;
+            }
+        }
+        return null;
+    }
+
     getFallbackResponse(userMessage, userId, isAdmin) {
         const profile = this.personalityManager.getUserProfile(userId);
         const mood = this.personalityManager.analyzeMood(userMessage);
         const title = isAdmin ? "Tuan Besar" : "Tuan";
+
+        const detectedFeature = this.detectFeatureQuestion(userMessage);
+        if (detectedFeature) {
+            const explanations = this.getFeatureExplanations(title);
+            if (explanations[detectedFeature]) {
+                return explanations[detectedFeature];
+            }
+        }
 
         const responses = {
             senang: [

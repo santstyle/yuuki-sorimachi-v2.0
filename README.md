@@ -50,7 +50,7 @@
 | Node.js | 18.x | 20.x LTS |
 | RAM | 1 GB | 2 GB+ |
 | Storage | 1 GB | 2 GB+ |
-| Lainnya | FFmpeg, Git, PM2 | yt-dlp (untuk downloader) |
+| Lainnya | FFmpeg, Git, PM2, yt-dlp | Chromium (untuk fitur screenshot & Pinterest) |
 
 ---
 
@@ -71,7 +71,17 @@ git --version
 
 Output harus seperti `git version 2.x.x`.
 
-### 3. Install Node.js 20.x LTS
+### 3. Install Puppeteer / Chromium Dependencies
+
+Puppeteer digunakan untuk fitur screenshot web (`.ss`) dan pencarian Pinterest (`.pinterest`). Install library pendukung Chromium:
+
+```bash
+sudo apt install -y libnss3 libnspr4 libgbm1 libasound2 libatk1.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libpango-1.0-0 libcairo2 libatk-bridge2.0-0
+```
+
+> Jika skip langkah ini, fitur `.ss` dan `.pinterest` bisa gagal dengan error `Missing shared libraries`.
+
+### 4. Install Node.js 20.x LTS
 
 ```bash
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
@@ -82,7 +92,7 @@ npm --version
 
 Output `node` harus `v20.x.x`, output `npm` harus `10.x.x` atau lebih baru.
 
-### 4. Install PM2
+### 5. Install PM2
 
 PM2 digunakan untuk menjalankan bot di background dan auto-restart jika crash atau VPS reboot.
 
@@ -93,14 +103,14 @@ pm2 --version
 
 Output harus menampilkan versi PM2.
 
-### 5. Clone Repository
+### 6. Clone Repository
 
 ```bash
 git clone https://github.com/santstyle/yuukibot-v2.0.git
 cd yuukibot-v2.0
 ```
 
-### 6. Install FFmpeg
+### 7. Install FFmpeg
 
 FFmpeg diperlukan untuk konversi stiker, video, audio, dan pemrosesan media lainnya.
 
@@ -111,19 +121,21 @@ ffmpeg -version
 
 Output harus menampilkan versi FFmpeg.
 
-### 7. Install yt-dlp
+> **Catatan VPS:** Bot akan otomatis mendeteksi FFmpeg dari system PATH. Jika ada file `ffmpeg/bin/ffmpeg.exe` di folder bot (sisa dari Windows), file itu hanya dipakai di Windows. Di Linux, system `ffmpeg` akan digunakan.
+
+### 8. Install yt-dlp
 
 yt-dlp diperlukan untuk mendownload video/audio dari YouTube dan berbagai platform lain.
 
+**Di Linux VPS**, install via pip atau binary:
+
 ```bash
+# Opsi 1: via pip
 sudo apt install python3 python3-pip -y
 pip3 install yt-dlp
 yt-dlp --version
-```
 
-Atau install via binary langsung:
-
-```bash
+# Opsi 2: via binary langsung
 sudo curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
 sudo chmod a+rx /usr/local/bin/yt-dlp
 yt-dlp --version
@@ -131,7 +143,9 @@ yt-dlp --version
 
 Output harus menampilkan versi yt-dlp.
 
-### 8. Install Project Dependencies
+> **Penting:** Di Windows bot menggunakan `yt-dlp.exe` dari folder project. Di Linux, pastikan `yt-dlp` tersedia di system PATH (via pip atau binary di `/usr/local/bin/yt-dlp`). Bot otomatis fallback ke system `yt-dlp` jika `yt-dlp.exe` tidak ditemukan.
+
+### 9. Install Project Dependencies
 
 ```bash
 npm install
@@ -142,7 +156,7 @@ npm install
 > npm install --legacy-peer-deps
 > ```
 
-### 8a. Download Model Remove Background (Opsional)
+### 9a. Download Model Remove Background (Opsional)
 
 Model AI lokal untuk fitur `.removebg` / `.rmbg` / `.nobg` tanpa API key. Ukuran ~80MB, didownload otomatis saat pertama kali menjalankan perintah.
 
@@ -156,7 +170,7 @@ mkdir -p node_modules/@imgly/background-removal-node/resources/model
 curl -L https://github.com/imgly/background-removal-js/releases/download/v1.4.0/model-medium.onnx -o node_modules/@imgly/background-removal-node/resources/model/model-medium.onnx
 ```
 
-### 9. Setup Environment Variables
+### 10. Setup Environment Variables
 
 ```bash
 nano .env
@@ -167,21 +181,24 @@ Isi minimal yang wajib:
 ```env
 OWNER_NUMBER=62812xxxxxxx       # Nomor HP owner (pakai kode negara, tanpa +)
 BOT_NUMBER=62889xxxxxxx         # Nomor HP bot
-OWNER_LID=18684xxxxxxxx         # LID owner (bisa dikosongkan dulu)
+OWNER_LID=18684xxxxxxxx         # LID owner (bisa dikosongkan dulu, nanti terisi otomatis)
 DATABASE_URL="file:./prisma/database.db"  # Wajib untuk Prisma/SQLite
 ```
 
-API key opsional (kosongi jika tidak butuh fitur AI):
+API key opsional (kosongi jika tidak butuh fitur terkait):
 
 ```env
-GROQ_API_KEY=your_key_here      # Untuk Groq AI (Llama-3.3-70b)
-DEEPSEEK_API_KEY=your_key_here  # Untuk DeepSeek
-OPENAI_API_KEY=your_key_here    # Untuk ChatGPT
+GROQ_API_KEY=your_key_here      # Groq AI (Llama-3.3-70b) — untuk Yuuki AI & .groq
+DEEPSEEK_API_KEY=your_key_here  # DeepSeek AI — untuk .deepseek
+OPENAI_API_KEY=your_key_here    # OpenAI GPT — untuk .gpt
+GIPHY_API_KEY=your_key_here     # Giphy (opsional, untuk sticker/GIF)
+REMBG_API_KEY=your_key_here     # rembg.com (gratis, untuk .removebg)
+REMOVEBG_API_KEY=your_key_here  # remove.bg (fallback, untuk .removebg)
 ```
 
 Simpan file dengan `Ctrl + X`, tekan `Y`, lalu `Enter`.
 
-### 10. Database
+### 11. Database
 
 #### Opsi A: Fresh Install (Database Baru Kosong)
 
@@ -211,7 +228,7 @@ Atau upload manual via SFTP/FileZilla ke `prisma/database.db`.
 
 > **Catatan:** Kalau pakai database existing, cukup `npx prisma generate` aja — **tidak perlu** `npx prisma db push` karena struktur tabel sudah ada di file database.
 
-### 11. Setup Session WhatsApp
+### 12. Setup Session WhatsApp
 
 Jalankan bot untuk scan QR:
 
@@ -227,13 +244,13 @@ npm start
 
 > Folder session akan tersimpan di `./session/`. Backup folder ini jika perlu.
 
-### 12. Jalankan Bot dengan PM2
+### 13. Jalankan Bot dengan PM2
 
 ```bash
 pm2 start ecosystem.config.js
 ```
 
-> **Penting:** File `ecosystem.config.js` memiliki `cwd` (working directory) yang perlu disesuaikan dengan path instalasi kamu di VPS. Buka file tersebut dan ubah nilai `cwd` ke path yang sesuai.
+> **Penting:** File `ecosystem.config.js` memiliki `cwd` (working directory) yang default ke `__dirname`. Jika bot di-clone ke path lain (misal `~/yuukibot-v2.0`), **tidak perlu diubah** karena `__dirname` otomatis sesuai. Namun jika pindah folder setelah clone, update `cwd` manual.
 
 Simpan daftar proses PM2 agar aktif terus:
 
@@ -249,7 +266,7 @@ pm2 startup
 
 Ikuti perintah yang muncul di terminal (biasanya `sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u $USER --hp /home/$USER`).
 
-### 13. Verifikasi
+### 14. Verifikasi
 
 ```bash
 pm2 list
@@ -263,7 +280,7 @@ Cek log untuk memastikan tidak ada error:
 pm2 logs yuuki-bot --lines 20
 ```
 
-Kirim pesan `.ping` ke nomor bot - harus reply `Pong!`.
+Kirim pesan `.ping` ke nomor bot — harus reply `Pong!`.
 
 ---
 

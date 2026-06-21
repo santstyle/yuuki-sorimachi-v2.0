@@ -7,7 +7,7 @@ const util = require('util');
 
 const execPromise = util.promisify(exec);
 
-const ytdlpPath = path.join(__dirname, '../../yt-dlp.exe');
+const ytdlpPath = fs.existsSync(path.join(__dirname, '../../yt-dlp.exe')) ? path.join(__dirname, '../../yt-dlp.exe') : 'yt-dlp';
 
 function extractYouTubeId(url) {
     const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -77,7 +77,9 @@ async function getAudioWithYtDlp(youtubeUrl, title) {
         const outputFile = path.join(tempDir, `audio_${timestamp}.mp3`);
 
         const ffmpegDir = path.join(__dirname, '../../ffmpeg/bin');
-        const command = `"${ytdlpPath}" -x --audio-format mp3 --audio-quality 128K --ffmpeg-location "${ffmpegDir}" -o "${outputFile}" "${youtubeUrl}"`;
+        const hasLocalFfmpeg = fs.existsSync(path.join(ffmpegDir, 'ffmpeg.exe')) || fs.existsSync(path.join(ffmpegDir, 'ffmpeg'));
+        const ffmpegFlag = hasLocalFfmpeg ? `--ffmpeg-location "${ffmpegDir}"` : '';
+        const command = `"${ytdlpPath}" -x --audio-format mp3 --audio-quality 128K ${ffmpegFlag} -o "${outputFile}" "${youtubeUrl}"`;
 
         try {
             await execPromise(command, { timeout: 180000 });
