@@ -43,12 +43,12 @@ async function pingCommand(sock, chatId, message) {
 │
 └───────────────`;
 
-        await sock.sendMessage(chatId, { text: botInfo });
+        await sock.sendMessage(chatId, { text: botInfo }, { quoted: message });
     } catch (error) {
         console.error('Error di ping command:', error);
         await sock.sendMessage(chatId, {
             text: 'Maaf, Tuan~ Sepertinya ada yang mengganggu sihir Yuuki. Yuuki gagal membaca denyut nadi sendiri. Mungkin Tuan bisa memeluk Yuuki sebentar? Yuuki butuh kehangatan~'
-        });
+        }, { quoted: message });
     }
 }
 

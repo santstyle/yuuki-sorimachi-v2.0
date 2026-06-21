@@ -281,7 +281,7 @@ async function handleBadwordDetection(sock, chatId, message, userMessage, sender
         await sock.sendMessage(chatId, {
             text: `${warningText}\n\nPerhatian: Fitur antibadword sedang aktif. Yuuki mengawasi~`,
             mentions: [senderId]
-        });
+        }, { quoted: message });
     } catch (error) {
         console.error('Error di badword detection:', error);
     }

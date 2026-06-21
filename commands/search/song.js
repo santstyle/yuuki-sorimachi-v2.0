@@ -134,14 +134,14 @@ function formatDuration(seconds) {
     return `${minutes}:${secs.toString().padStart(2, '0')}`;
 }
 
-async function updateMessage(sock, chatId, messageKey, newText) {
+async function updateMessage(sock, chatId, messageKey, newText, quotedMsg) {
     try {
         await sock.sendMessage(chatId, {
             text: newText,
             edit: messageKey
         });
     } catch (error) {
-        await sock.sendMessage(chatId, { text: newText });
+        await sock.sendMessage(chatId, { text: newText }, { quoted: quotedMsg });
     }
 }
 
@@ -168,7 +168,8 @@ async function songCommand(sock, chatId, message, input) {
             `Tuan~ Yuuki sedang mengunduh: ${videoInfo.title}\n\n` +
             `Artist: ${videoInfo.artist}\n` +
             `Durasi: ${formatDuration(videoInfo.duration)}\n\n` +
-            `Mohon tunggu, Yuuki sedang memproses audio~`
+            `Mohon tunggu, Yuuki sedang memproses audio~`,
+            message
         );
 
         const audioData = await getAudioUrl(videoInfo);

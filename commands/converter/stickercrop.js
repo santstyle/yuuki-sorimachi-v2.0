@@ -41,7 +41,7 @@ async function stickercropCommand(sock, chatId, message) {
         if (!mediaBuffer) {
             await sock.sendMessage(chatId, {
                 text: 'Maaf, Tuan~ Yuuki gagal mengunduh medianya. Mungkin Tuan bisa coba lagi?'
-            });
+            }, { quoted: messageToQuote });
             return;
         }
 
@@ -125,7 +125,7 @@ async function stickercropCommand(sock, chatId, message) {
         console.error('Error di stickercrop command:', error);
         await sock.sendMessage(chatId, {
             text: 'Maaf, Tuan~ Yuuki gagal crop stikernya. Mungkin Tuan bisa coba dengan gambar saja~'
-        });
+        }, { quoted: messageToQuote });
     }
 }
 

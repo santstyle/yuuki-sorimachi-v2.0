@@ -47,11 +47,11 @@ async function debugLevelUp(sock, message, chatId, senderId, pushName) {
 
             await sock.sendMessage(chatId, levelUpMessage, { quoted: message });
         } else {
-            await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal memicu level up~' });
+            await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal memicu level up~' }, { quoted: message });
         }
     } catch (error) {
         console.error('[DEBUG LEVELUP] Error:', error);
-        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki mengalami error saat testing level up~' });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki mengalami error saat testing level up~' }, { quoted: message });
     }
 }
 

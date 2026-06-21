@@ -13,7 +13,7 @@ async function tagAllCommand(sock, chatId, senderId) {
             const title = await getUserTitle(sock, chatId, senderId);
             await sock.sendMessage(chatId, {
                 text: `Maaf ${title}, hanya admin yang bisa menggunakan tagall. Yuuki mohon maaf, tapi aturan tetap aturan~`
-            });
+            }, { quoted: message });
             return;
         }
 
@@ -24,7 +24,7 @@ async function tagAllCommand(sock, chatId, senderId) {
             const title = await getUserTitle(sock, chatId, senderId);
             await sock.sendMessage(chatId, {
                 text: `${title}... grup ini kosong. Yuuki bisa merasakan kehampaannya~ Tidak ada yang bisa di-tag.`
-            });
+            }, { quoted: message });
             return;
         }
 
@@ -37,14 +37,14 @@ async function tagAllCommand(sock, chatId, senderId) {
         await sock.sendMessage(chatId, {
             text: message,
             mentions: participants.map(p => p.id)
-        });
+        }, { quoted: message });
 
     } catch (error) {
         console.error('Error di tagall:', error);
         const title = await getUserTitle(sock, chatId, senderId);
         await sock.sendMessage(chatId, {
             text: `Maaf ${title}, Yuuki gagal memanggil semua orang. Sepertinya ada yang menghalangi Yuuki... atau mungkin Yuuki yang tidak kompeten?`
-        });
+        }, { quoted: message });
     }
 }
 

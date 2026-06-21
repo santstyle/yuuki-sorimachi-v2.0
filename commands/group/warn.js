@@ -78,7 +78,7 @@ async function warnCommand(sock, chatId, senderId, mentionedJids, message, reaso
             await sock.sendMessage(chatId, {
                 text: kickText,
                 mentions: [userToWarn]
-            });
+            }, { quoted: message });
         }
     } catch (error) {
         console.error('Error in warn command:', error);

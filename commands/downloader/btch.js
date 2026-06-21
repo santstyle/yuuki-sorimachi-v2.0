@@ -7,6 +7,23 @@ const { exec } = require('child_process');
 const util = require('util');
 const execPromise = util.promisify(exec);
 
+function isNetworkError(message) {
+    const networkPatterns = [
+        /ENOTFOUND/, /ETIMEOUT/, /ECONNREFUSED/, /ECONNRESET/,
+        /ENETUNREACH/, /EAI_AGAIN/, /socket hang up/, /network/i,
+        /timeout.*exceeded/i, /connect ETIMEDOUT/, /read ECONNRESET/,
+        /getaddrinfo/, /Hostname.*not found/, /Name or service not known/
+    ];
+    return networkPatterns.some(p => p.test(message));
+}
+
+function getFriendlyErrorMessage(originalMessage) {
+    if (isNetworkError(originalMessage)) {
+        return 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~';
+    }
+    return `Maaf, Tuan~ Yuuki mengalami kesalahan saat memproses downloader\n\nError: ${originalMessage}`;
+}
+
 async function sendMessageWithRetry(sock, chatId, content, options = {}, maxRetries = 3) {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
@@ -125,8 +142,11 @@ async function btchCommand(sock, chatId, message, url) {
         const result = await btch(url, 'video');
 
         if (!result.status || !result.result || result.result.length === 0) {
+            const errMsg = result.message || 'Media tidak ditemukan';
             await sock.sendMessage(chatId, {
-                text: `Maaf, Tuan~ Yuuki gagal memproses link\n\nError: ${result.message || 'Media tidak ditemukan'}`,
+                text: isNetworkError(errMsg)
+                    ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~'
+                    : `Maaf, Tuan~ Yuuki gagal memproses link\n\nError: ${errMsg}`,
                 edit: statusMessage.key
             });
             return;
@@ -368,7 +388,7 @@ async function btchCommand(sock, chatId, message, url) {
             } catch (downloadError) {
                 console.log(`  Download  Item ${i + 1} failed: ${downloadError.message}`);
                 await sendMessageWithRetry(sock, chatId, {
-                    text: `Maaf, Tuan~ Yuuki gagal mengunduh media ${i + 1}: ${downloadError.message}`
+                    text: `Maaf, Tuan~ Yuuki gagal mengunduh media ${i + 1}: ${isNetworkError(downloadError.message) ? 'Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~' : downloadError.message}`
                 }, { quoted: message });
             }
 
@@ -384,14 +404,15 @@ async function btchCommand(sock, chatId, message, url) {
 
     } catch (error) {
         console.log(`  Download  Error: ${error.message}`);
+        const friendlyMsg = getFriendlyErrorMessage(error.message);
         if (statusMessage) {
             await sock.sendMessage(chatId, {
-                text: `Maaf, Tuan~ Yuuki mengalami kesalahan saat memproses downloader\n\nError: ${error.message}`,
+                text: friendlyMsg,
                 edit: statusMessage.key
             });
         } else {
             await sendMessageWithRetry(sock, chatId, {
-                text: `Maaf, Tuan~ Yuuki mengalami kesalahan saat memproses downloader\n\nError: ${error.message}`
+                text: friendlyMsg
             }, { quoted: message });
         }
     } finally {

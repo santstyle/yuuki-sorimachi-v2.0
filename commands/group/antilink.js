@@ -188,7 +188,7 @@ async function handleLinkDetection(sock, chatId, message, userMessage, senderId)
         await sock.sendMessage(chatId, {
             text: `${warningText}\n\nPerhatian: Fitur antilink sedang aktif. Yuuki terus mengawasi~`,
             mentions: [senderId]
-        });
+        }, { quoted: message });
     } catch (error) {
         console.error('Error di link detection:', error);
     }

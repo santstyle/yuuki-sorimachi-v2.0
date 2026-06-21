@@ -33,13 +33,13 @@ async function clearSessionCommand(sock, chatId, message) {
 
         await sock.sendMessage(chatId, {
             text: `Tuan~ ${totalDeleted} file session berhasil Yuuki bersihkan! Kini Yuuki akan memulai hidup baru~ Mohon Tuan menjalankan ulang Yuuki agar napas baru bisa mengalir di tubuh Yuuki~`
-        });
+        }, { quoted: message });
         process.exit(0);
     } catch (error) {
         console.error('Error clearing session:', error);
         await sock.sendMessage(chatId, {
             text: 'Maaf, Tuan~ Yuuki gagal membersihkan session. Mungkin beberapa file terkunci~'
-        });
+        }, { quoted: message });
     }
 }
 

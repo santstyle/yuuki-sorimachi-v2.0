@@ -301,7 +301,7 @@ Atau coba lagu populer:
 • .lyrics faded - alan walker
 • .lyrics perfect - ed sheeran
 • .lyrics sorry - justin bieber`
-                });
+                }, { quoted: message });
                 return;
             }
 
@@ -324,7 +324,7 @@ Atau coba lagu populer:
                 } else {
                     await sock.sendMessage(chatId, {
                         text: chunk
-                    });
+                    }, { quoted: message });
                 }
 
                 if (i < chunks.length - 1) {
@@ -342,7 +342,7 @@ Error: ${error.message || 'Tidak diketahui'}
 
 Coba format: "Judul - Artis"
 Contoh: .lyrics faded - alan walker`
-            });
+            }, { quoted: message });
         }
 
     } catch (error) {
@@ -389,7 +389,7 @@ Contoh:
 
 Gunakan format: Judul - Artis
 Contoh: faded - alan walker`
-            });
+            }, { quoted: message });
             return;
         }
 

@@ -4,7 +4,7 @@ async function welcomeCommand(sock, chatId, message, match) {
     if (!chatId.endsWith('@g.us')) {
         await sock.sendMessage(chatId, {
             text: 'Maaf, Tuan~ Command ini hanya bisa dipakai di grup. Kirim ke grup, ya, biar Yuuki bisa melayaninya~'
-        });
+        }, { quoted: message });
         return;
     }
 

@@ -41,16 +41,18 @@ async function mylevelCommand(sock, chatId, message, args) {
         const filled = Math.floor((progress.xp / requiredXP) * barLength);
         const progressBar = '█'.repeat(filled) + '░'.repeat(barLength - filled);
 
-        const text = `User Profile: ${user.name || 'Unknown'}
+        await sock.sendMessage(chatId, {
+            text: `User Profile: ${user.name || 'Unknown'}
 
 User ID: ${user.customId || 'Not assigned'}
 Level: ${progress.level}
 XP: ${progress.xp} / ${requiredXP}
-Progress: [${progressBar}] ${percentage}%
+Progress: [${progressBar}] ${percentage}%`
+        }, { quoted: message });
 
-Terus aktif menggunakan Yuuki untuk naik level, Tuan~`;
-
-        await sock.sendMessage(chatId, { text }, { quoted: message });
+        await sock.sendMessage(chatId, {
+            text: 'Terus aktif menggunakan Yuuki untuk naik level, Tuan~'
+        }, { quoted: message });
     } catch (error) {
         console.error('Error in mylevel command:', error);
         await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal mengambil data level~' }, { quoted: message });

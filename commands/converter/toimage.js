@@ -29,7 +29,7 @@ const convertSticker = async (sock, message, chatId, sender, args) => {
         if (!stickerMessage) {
             await sock.sendMessage(chatId, {
                 text: 'Tuan~ Balas stiker dengan *.toimage* atau *.tovideo* untuk Yuuki konversi~'
-            });
+            }, { quoted: message });
             return;
         }
 

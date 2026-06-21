@@ -4,7 +4,7 @@ async function goodbyeCommand(sock, chatId, message, match) {
     if (!chatId.endsWith('@g.us')) {
         await sock.sendMessage(chatId, {
             text: 'Maaf, Tuan~ Command ini hanya untuk grup, ya. Yuuki tidak bisa melayaninya di sini~'
-        });
+        }, { quoted: message });
         return;
     }
 

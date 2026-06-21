@@ -8,7 +8,7 @@ async function broadcastCommand(sock, chatId, message, args, fromMe, senderId) {
         const quotedMsg = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
 
         if (!bcText && !quotedMsg) {
-            return sock.sendMessage(chatId, { text: 'Tuan~ Yuuki perlu tahu pesan apa yang ingin di-broadcast, atau reply media yang ingin di-broadcast. Contoh: .bc Halo semua~' });
+            return sock.sendMessage(chatId, { text: 'Tuan~ Yuuki perlu tahu pesan apa yang ingin di-broadcast, atau reply media yang ingin di-broadcast. Contoh: .bc Halo semua~' }, { quoted: message });
         }
 
         const senderRaw = senderId.split('@')[0].replace(/[^0-9]/g, '');
@@ -68,10 +68,10 @@ async function broadcastCommand(sock, chatId, message, args, fromMe, senderId) {
 
         await sock.sendMessage(chatId, {
             text: `Tuan~ Broadcast telah Yuuki selesaikan!\nSukses: ${success}, Gagal: ${failed}\n\nYuuki berharap semua pesan Tuan sampai dengan indah~`
-        });
+        }, { quoted: message });
     } catch (error) {
         console.error('[BROADCAST ERROR]:', error);
-        await sock.sendMessage(chatId, { text: `Maaf, Tuan~ Broadcast gagal: ${error.message}` });
+        await sock.sendMessage(chatId, { text: `Maaf, Tuan~ Broadcast gagal: ${error.message}` }, { quoted: message });
     }
 }
 

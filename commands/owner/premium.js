@@ -43,7 +43,7 @@ async function addPremCommand(sock, chatId, message, args) {
         }
 
         if (!targetJid) {
-            await sock.sendMessage(chatId, { text: 'Tuan~ Sebutkan user yang ingin dibuat premium. Contoh: .addprem @user 30' });
+            await sock.sendMessage(chatId, { text: 'Tuan~ Sebutkan user yang ingin dibuat premium. Contoh: .addprem @user 30' }, { quoted: message });
             return;
         }
 
@@ -62,10 +62,10 @@ async function addPremCommand(sock, chatId, message, args) {
         await sock.sendMessage(chatId, {
             text: `Tuan~ @${targetJid.split('@')[0]} telah menjadi *user premium* selama ${days} hari! Selamat menikmati fitur eksklusif~`,
             mentions: [targetJid]
-        });
+        }, { quoted: message });
     } catch (error) {
         console.error('Error in addprem command:', error);
-        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal menambahkan user premium~' });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal menambahkan user premium~' }, { quoted: message });
     }
 }
 
@@ -79,7 +79,7 @@ async function listPremCommand(sock, chatId, message) {
         const expiredPrem = users.filter(([_, v]) => v.expiresAt && new Date(v.expiresAt) <= now);
 
         if (activePrem.length === 0) {
-            await sock.sendMessage(chatId, { text: 'Tuan~ Saat ini tidak ada user premium yang aktif. Yuuki merasa kesepian~' });
+            await sock.sendMessage(chatId, { text: 'Tuan~ Saat ini tidak ada user premium yang aktif. Yuuki merasa kesepian~' }, { quoted: message });
             return;
         }
 
@@ -99,10 +99,10 @@ async function listPremCommand(sock, chatId, message) {
         await sock.sendMessage(chatId, {
             text,
             mentions: activePrem.map(([jid]) => jid)
-        });
+        }, { quoted: message });
     } catch (error) {
         console.error('Error in listprem command:', error);
-        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal menampilkan daftar premium~' });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal menampilkan daftar premium~' }, { quoted: message });
     }
 }
 

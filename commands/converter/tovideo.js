@@ -8,7 +8,7 @@ async function convertToVideo(sock, message, chatId, sender) {
         const extendedTextMsg = message.message?.extendedTextMessage;
         
         if (!extendedTextMsg) {
-            return sock.sendMessage(chatId, { text: 'Tuan~ Reply stiker yang mau Yuuki ubah ke video dengan .tovideo~' });
+            return sock.sendMessage(chatId, { text: 'Tuan~ Reply stiker yang mau Yuuki ubah ke video dengan .tovideo~' }, { quoted: message });
         }
 
         const contextInfo = extendedTextMsg.contextInfo;
@@ -16,12 +16,12 @@ async function convertToVideo(sock, message, chatId, sender) {
 
         // 2. Cek apakah data reply valid
         if (!contextInfo || !contextInfo.stanzaId) {
-            return sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal membaca data reply. Pastikan Tuan membalas stiker dengan benar~' });
+            return sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal membaca data reply. Pastikan Tuan membalas stiker dengan benar~' }, { quoted: message });
         }
 
         // 3. Cek apakah yang di-reply adalah STIKER
         if (!quotedMessage || !quotedMessage.stickerMessage) {
-            return sock.sendMessage(chatId, { text: 'Tuan~ Yang Tuan reply bukan stiker! Reply stiker animasi ya~' });
+            return sock.sendMessage(chatId, { text: 'Tuan~ Yang Tuan reply bukan stiker! Reply stiker animasi ya~' }, { quoted: message });
         }
 
         await sock.sendMessage(chatId, { text: 'Mohon tunggu, Tuan~ Yuuki sedang mengonversi stiker ke video~' }, { quoted: message });
@@ -77,7 +77,7 @@ async function convertToVideo(sock, message, chatId, sender) {
 
     } catch (error) {
         console.error('Error tovideo:', error);
-        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal mengonversi stiker. Mungkin lain kali~' });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal mengonversi stiker. Mungkin lain kali~' }, { quoted: message });
     }
 }
 

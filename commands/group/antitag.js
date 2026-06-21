@@ -209,7 +209,7 @@ async function handleTagDetection(sock, chatId, message, senderId) {
         await sock.sendMessage(chatId, {
             text: `${warningText}\n\nPerhatian: Fitur antitag sedang aktif. Yuuki terus mengawasi~`,
             mentions: [senderId]
-        });
+        }, { quoted: message });
     } catch (error) {
         console.error('Error di tag detection:', error);
     }

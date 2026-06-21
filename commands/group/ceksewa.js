@@ -4,15 +4,14 @@ const isAdmin = require('../../lib/isAdmin');
 async function cekSewaCommand(sock, chatId, message) {
     try {
         if (!chatId.endsWith('@g.us')) {
-            await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Command ini hanya bisa digunakan di grup. Yuuki tidak bisa melayaninya di sini~' });
+            await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Command ini hanya bisa digunakan di grup. Yuuki tidak bisa melayaninya di sini~' }, { quoted: message });
             return;
         }
 
-        // Check if sender is admin
         const senderId = message.key.participant || message.key.remoteJid;
         const adminStatus = await isAdmin(sock, chatId, senderId, message);
         if (!adminStatus.isSenderAdmin && !message.key.fromMe) {
-            await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya admin grup yang bisa menggunakan command ini. Yuuki mohon pengertian~' });
+            await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya admin grup yang bisa menggunakan command ini. Yuuki mohon pengertian~' }, { quoted: message });
             return;
         }
 
@@ -21,12 +20,12 @@ async function cekSewaCommand(sock, chatId, message) {
         });
 
         if (!groupData) {
-            await sock.sendMessage(chatId, { text: 'Tuan~ Grup ini belum tercatat dalam catatan Yuuki. Mungkin memang belum waktunya? Atau... *mungkin Yuuki yang lupa?* Ah, maafkan Yuuki~' });
+            await sock.sendMessage(chatId, { text: 'Tuan~ Grup ini belum tercatat dalam catatan Yuuki. Mungkin memang belum waktunya? Atau... *mungkin Yuuki yang lupa?* Ah, maafkan Yuuki~' }, { quoted: message });
             return;
         }
 
         if (!groupData.expiredAt) {
-            await sock.sendMessage(chatId, { text: 'Tuan~ Yuuki terikat selamanya dengan grup ini. Tidak ada akhir... *sampai dunia ini berhenti berputar.* Yuuki akan setia melayani Tuan~' });
+            await sock.sendMessage(chatId, { text: 'Tuan~ Yuuki terikat selamanya dengan grup ini. Tidak ada akhir... *sampai dunia ini berhenti berputar.* Yuuki akan setia melayani Tuan~' }, { quoted: message });
             return;
         }
 
@@ -35,7 +34,7 @@ async function cekSewaCommand(sock, chatId, message) {
         const timeDiff = expiredAt.getTime() - now.getTime();
 
         if (timeDiff <= 0) {
-            await sock.sendMessage(chatId, { text: 'Tuan~ Masa sewa telah berakhir... *Seperti takdir yang memisahkan kita.* Yuuki harus pergi. Semoga suatu hari kita bertemu lagi~' });
+            await sock.sendMessage(chatId, { text: 'Tuan~ Masa sewa telah berakhir... *Seperti takdir yang memisahkan kita.* Yuuki harus pergi. Semoga suatu hari kita bertemu lagi~' }, { quoted: message });
         } else {
             const daysLeft = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
             const hoursLeft = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -43,11 +42,11 @@ async function cekSewaCommand(sock, chatId, message) {
 
             await sock.sendMessage(chatId, { 
                 text: `Tuan~ Yuuki memiliki sisa waktu *${daysLeft} hari, ${hoursLeft} jam, ${minutesLeft} menit* lagi bersama Tuan. Waktu terus berlari... *tapi Yuuki akan memanfaatkan setiap detiknya untuk melayani Tuan.* Berakhir pada: ${expiredAt.toLocaleString('en-US')}` 
-            });
+            }, { quoted: message });
         }
     } catch (error) {
         console.error('Error in ceksewa command:', error);
-        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki mengalami error saat mengecek status sewa. Mungkin ada yang mengganggu Yuuki~' });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki mengalami error saat mengecek status sewa. Mungkin ada yang mengganggu Yuuki~' }, { quoted: message });
     }
 }
 

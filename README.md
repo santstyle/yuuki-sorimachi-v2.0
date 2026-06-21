@@ -181,7 +181,9 @@ OPENAI_API_KEY=your_key_here    # Untuk ChatGPT
 
 Simpan file dengan `Ctrl + X`, tekan `Y`, lalu `Enter`.
 
-### 10. Generate Database
+### 10. Database
+
+#### Opsi A: Fresh Install (Database Baru Kosong)
 
 ```bash
 npx prisma generate
@@ -189,6 +191,25 @@ npx prisma db push
 ```
 
 > Perintah ini akan membuat file `prisma/database.db` (SQLite) dan semua tabel yang dibutuhkan.
+
+#### Opsi B: Migrasi Database dari Lokal ke VPS
+
+Jika kamu sudah punya file `database.db` dari instalasi sebelumnya (lokal/server lain) dan ingin memindahkannya:
+
+```bash
+# Clone repo & install dependencies dulu (step 1-9)
+npx prisma generate
+```
+
+Kemudian copy file `database.db` dari lokal ke folder `prisma/` di VPS:
+```bash
+# Contoh cara copy dari lokal ke VPS via SCP (jalankan dari terminal lokal, bukan VPS):
+# scp prisma/database.db user@ip-vps:~/yuukibot-v2.0/prisma/database.db
+```
+
+Atau upload manual via SFTP/FileZilla ke `prisma/database.db`.
+
+> **Catatan:** Kalau pakai database existing, cukup `npx prisma generate` aja — **tidak perlu** `npx prisma db push` karena struktur tabel sudah ada di file database.
 
 ### 11. Setup Session WhatsApp
 

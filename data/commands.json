@@ -27,11 +27,17 @@
         {
           "name": ".del",
           "alias": ".delete",
-          "desc": "Hapus pesan Yuuki"
+          "desc": "Hapus pesan"
         },
         {
           "name": ".mylevel",
           "desc": "Cek level & XP Tuan"
+        },
+        {
+          "name": ".setname",
+          "desc": "Ganti nama profil untuk leaderboard",
+          "usage": ".setname <nama>",
+          "example": ".setname SantStyle"
         },
         {
           "name": ".leaderboard",
@@ -229,7 +235,7 @@
         {
           "name": ".stickercrop",
           "alias": ".scrop",
-          "desc": "Crop stiker ke bentuk lain"
+          "desc": "Crop stiker ke bentuk 1:1"
         }
       ]
     },
@@ -355,117 +361,9 @@
       "commands": [
         {
           "name": ".waifu",
-          "desc": "Gambar waifu/neko random",
+          "desc": "Gambar waifu random",
           "usage": ".waifu [sub]",
-          "example": ".waifu hug, .waifu kiss, .waifu neko"
-        }
-      ]
-    },
-    {
-      "id": "owner",
-      "name": "*OWNER*",
-      "commands": [
-        {
-          "name": ".mode",
-          "desc": "Atur mode bot public/private"
-        },
-        {
-          "name": ".self",
-          "desc": "Mode self (hanya owner bisa pakai bot)",
-          "usage": ".self on/off/status"
-        },
-        {
-          "name": ".autoread",
-          "desc": "Auto read pesan otomatis",
-          "usage": ".autoread on/off/status"
-        },
-        {
-          "name": ".autostatus",
-          "desc": "Auto view status WA",
-          "usage": ".autostatus on/off/status"
-        },
-        {
-          "name": ".areact",
-          "alias": ".autoreact, .autoreaction",
-          "desc": "Toggle auto reaction pada setiap command"
-        },
-        {
-          "name": ".bc",
-          "alias": ".broadcast",
-          "desc": "Kirim broadcast ke semua grup",
-          "usage": ".bc <teks>"
-        },
-        {
-          "name": ".cleartmp",
-          "desc": "Bersihkan folder temporary"
-        },
-        {
-          "name": ".clearsession",
-          "desc": "Bersihkan session bot (butuh restart)"
-        },
-        {
-          "name": ".cleanup",
-          "desc": "Bersihkan database (history/users/warnings)",
-          "usage": ".cleanup [history/users/warnings/all] [hari]"
-        },
-        {
-          "name": ".setpp",
-          "desc": "Ganti foto profil bot (reply gambar)"
-        },
-        {
-          "name": ".debuglevelup",
-          "desc": "Testing trigger level-up & thumbnail"
-        },
-        {
-          "name": ".addsudo",
-          "desc": "Tambah user ke daftar sudo",
-          "usage": ".addsudo @user"
-        },
-        {
-          "name": ".listsudo",
-          "desc": "Lihat daftar sudo"
-        },
-        {
-          "name": ".delsudo",
-          "desc": "Hapus user dari daftar sudo",
-          "usage": ".delsudo @user"
-        },
-        {
-          "name": ".sudo",
-          "desc": "Toggle sudo user (add/remove)"
-        },
-        {
-          "name": ".addprem",
-          "desc": "Tambah user premium",
-          "usage": ".addprem @user [hari]"
-        },
-        {
-          "name": ".listprem",
-          "desc": "Lihat daftar premium"
-        },
-        {
-          "name": ".ban",
-          "desc": "Blokir user dari bot",
-          "usage": ".ban @user"
-        },
-        {
-          "name": ".unban",
-          "desc": "Buka blokir user",
-          "usage": ".unban @user"
-        },
-        {
-          "name": ".sewa",
-          "desc": "Atur masa aktif sewa grup",
-          "usage": ".sewa <hari/permanent>"
-        },
-        {
-          "name": ".join",
-          "desc": "Gabung ke grup via link",
-          "usage": ".join <link>"
-        },
-        {
-          "name": ".leave",
-          "desc": "Keluar dari grup"
+          "example": ".waifu neko"
         }
       ]
     },

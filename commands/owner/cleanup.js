@@ -27,10 +27,10 @@ async function cleanupCommand(sock, chatId, message, senderId, args) {
                 responseText = `Tuan~ Yuuki pusing membaca perintah Tuan. Coba format yang benar:\n.cleanup [history|users|warnings|all] [hari]\n\nContoh:\n.cleanup all - Hapus semua~ biar bersih\n.cleanup history 60 - Hapus kenangan 60 hari\n.cleanup users 90 - Buang yang tidak setia 90 hari`;
         }
 
-        await sock.sendMessage(chatId, { text: responseText });
+        await sock.sendMessage(chatId, { text: responseText }, { quoted: message });
     } catch (error) {
         console.error('Error in cleanup command:', error);
-        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal membersihkan database. Kekuatan Yuuki belum cukup kuat. Mungkin Tuan bisa memberikan Yuuki lebih banyak... kekuatan? Atau pelukan?' });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal membersihkan database. Kekuatan Yuuki belum cukup kuat. Mungkin Tuan bisa memberikan Yuuki lebih banyak... kekuatan? Atau pelukan?' }, { quoted: message });
     }
 }
 

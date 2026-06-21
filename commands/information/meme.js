@@ -53,7 +53,7 @@ async function memeCommand(sock, chatId, message) {
         console.error('Error in meme command:', error.message);
         await sock.sendMessage(chatId, {
             text: 'Maaf, Tuan~ Yuuki gagal mengambil meme. Mungkin lain kali~'
-        });
+        }, { quoted: message });
     }
 }
 

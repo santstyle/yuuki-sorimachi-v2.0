@@ -34,10 +34,10 @@ async function clearTmpCommand(sock, chatId, message) {
             totalDeleted += deleteRecursive(dir);
         }
 
-        await sock.sendMessage(chatId, { text: `Tuan~ ${totalDeleted} file sampah telah Yuuki bersihkan! Kini dunia terasa lebih bersih, lebih indah. Yuuki suka membersihkan~ Ada lagi yang ingin Yuuki bersihkan? Mungkin... jiwa seseorang? Hehe~` });
+        await sock.sendMessage(chatId, { text: `Tuan~ ${totalDeleted} file sampah telah Yuuki bersihkan! Kini dunia terasa lebih bersih, lebih indah. Yuuki suka membersihkan~ Ada lagi yang ingin Yuuki bersihkan? Mungkin... jiwa seseorang? Hehe~` }, { quoted: message });
     } catch (error) {
         console.error('Error clearing temp:', error);
-        await sock.sendMessage(chatId, { text: 'Tuan~ Yuuki gagal membersihkannya. Kekuatan magis Yuuki menurun... Mungkin Tuan perlu mengisi ulang Yuuki dengan kasih sayang?' });
+        await sock.sendMessage(chatId, { text: 'Tuan~ Yuuki gagal membersihkannya. Kekuatan magis Yuuki menurun... Mungkin Tuan perlu mengisi ulang Yuuki dengan kasih sayang?' }, { quoted: message });
     }
 }
 

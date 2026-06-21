@@ -7,7 +7,7 @@ async function leaveCommand(sock, chatId, message, args) {
             if (input.endsWith('@g.us')) {
                 targetGroup = input;
             } else if (input.includes('chat.whatsapp.com')) {
-                await sock.sendMessage(chatId, { text: 'Tuan~ Untuk keluar dari grup, gunakan .leave di dalam grup yang ingin ditinggalkan, atau gunakan ID grup (bukan link)~' });
+                await sock.sendMessage(chatId, { text: 'Tuan~ Untuk keluar dari grup, gunakan .leave di dalam grup yang ingin ditinggalkan, atau gunakan ID grup (bukan link)~' }, { quoted: message });
                 return;
             } else {
                 targetGroup = input.replace(/[^0-9]/g, '') + '@g.us';
@@ -15,7 +15,7 @@ async function leaveCommand(sock, chatId, message, args) {
         }
 
         if (!targetGroup.endsWith('@g.us')) {
-            await sock.sendMessage(chatId, { text: 'Tuan~ Command .leave hanya bisa digunakan di dalam grup atau dengan menyertakan ID grup~' });
+            await sock.sendMessage(chatId, { text: 'Tuan~ Command .leave hanya bisa digunakan di dalam grup atau dengan menyertakan ID grup~' }, { quoted: message });
             return;
         }
 
@@ -23,11 +23,11 @@ async function leaveCommand(sock, chatId, message, args) {
         await sock.groupLeave(targetGroup);
 
         if (targetGroup !== chatId) {
-            await sock.sendMessage(chatId, { text: `Tuan~ Yuuki sudah keluar dari grup ${targetGroup}~` });
+            await sock.sendMessage(chatId, { text: `Tuan~ Yuuki sudah keluar dari grup ${targetGroup}~` }, { quoted: message });
         }
     } catch (error) {
         console.error('Error in leave command:', error);
-        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal keluar dari grup. Mungkin Yuuki masih dibutuhkan di sana~ Atau Yuuki bukan admin~' });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal keluar dari grup. Mungkin Yuuki masih dibutuhkan di sana~ Atau Yuuki bukan admin~' }, { quoted: message });
     }
 }
 

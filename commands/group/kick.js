@@ -70,7 +70,7 @@ async function kickCommand(sock, chatId, senderId, mentionedJids, message) {
         await sock.sendMessage(chatId, {
             text: `Tuan~ ${usernames.join(', ')} telah Yuuki keluarkan dari grup. Semoga ${isPlural ? 'mereka' : 'dia'} bahagia di luar sana~`,
             mentions: usersToKick
-        });
+        }, { quoted: message });
     } catch (error) {
         console.error('Error di kick command:', error);
         if (error.message?.includes('not-authorized')) {

@@ -74,7 +74,7 @@ async function finishAbsen(sock, m) {
 
     await sock.sendMessage(groupId, {
         text: "Gunakan .startabsen lagi jika Tuan ingin memulai sesi baru. Yuuki akan selalu siap~"
-    });
+    }, { quoted: m });
 }
 
 module.exports = { startAbsen, addAbsen, finishAbsen };

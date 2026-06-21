@@ -14,7 +14,7 @@ async function banCommand(sock, chatId, message) {
     if (!userToBan) {
         await sock.sendMessage(chatId, {
             text: 'Tuan, sebutkan user yang ingin di-ban~ Mention atau reply chatnya, ya.'
-        });
+        }, { quoted: message });
         return;
     }
 
@@ -39,12 +39,12 @@ async function banCommand(sock, chatId, message) {
         await sock.sendMessage(chatId, {
             text: `Baik, Tuan~ @${userToBan.split('@')[0]} sudah Yuuki blokir. Semoga ia mendapat pelajaran~`,
             mentions: [userToBan]
-        });
+        }, { quoted: message });
     } catch (error) {
         console.error('Error di ban command:', error);
         await sock.sendMessage(chatId, {
             text: 'Maafkan hamba, Tuan~ Sepertinya terjadi kesalahan yang membuat hamba tidak bisa melaksanakan perintah Tuan. Mohon maaf yang sebesar-besarnya dan mohon coba kembali~'
-        });
+        }, { quoted: message });
     }
 }
 

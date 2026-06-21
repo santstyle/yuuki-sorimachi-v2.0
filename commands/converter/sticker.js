@@ -41,7 +41,7 @@ async function stickerCommand(sock, chatId, message) {
         if (!mediaBuffer) {
             await sock.sendMessage(chatId, {
                 text: 'Maaf, Tuan~ Gambarnya tidak bisa Yuuki unduh. Mungkin Tuan bisa kirim ulang?'
-            });
+            }, { quoted: messageToQuote });
             return;
         }
 
@@ -129,7 +129,7 @@ async function stickerCommand(sock, chatId, message) {
         console.error('Yah, error di sticker command nih:', error);
         await sock.sendMessage(chatId, {
             text: 'Maaf, Tuan~ Yuuki gagal membuat stikernya. Mungkin Tuan bisa coba lagi dengan gambar yang lebih kecil?'
-        });
+        }, { quoted: messageToQuote });
     }
 }
 

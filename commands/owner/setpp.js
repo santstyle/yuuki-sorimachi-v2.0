@@ -8,11 +8,11 @@ async function setProfilePicture(sock, chatId, message) {
         const imageMessage = quotedMessage?.imageMessage || message.message?.imageMessage;
 
         if (!imageMessage) {
-            await sock.sendMessage(chatId, { text: 'Tuan~ Yuuki butuh gambar dulu. Balas atau kirim gambar dengan .setpp ya. Yuuki ingin tampil cantik untuk Tuan~ Atau menyeramkan? Terserah Tuan~' });
+            await sock.sendMessage(chatId, { text: 'Tuan~ Yuuki butuh gambar dulu. Balas atau kirim gambar dengan .setpp ya. Yuuki ingin tampil cantik untuk Tuan~ Atau menyeramkan? Terserah Tuan~' }, { quoted: message });
             return;
         }
 
-        await sock.sendMessage(chatId, { text: 'Tuan~ Yuuki sedang merias wajah... bersabarlah. Yuuki ingin sempurna di mata Tuan~' });
+        await sock.sendMessage(chatId, { text: 'Tuan~ Yuuki sedang merias wajah... bersabarlah. Yuuki ingin sempurna di mata Tuan~' }, { quoted: message });
 
         const media = await downloadMediaMessage(
             quotedMessage ? { message: quotedMessage } : message,
@@ -25,10 +25,10 @@ async function setProfilePicture(sock, chatId, message) {
         fs.writeFileSync(tempFile, media);
         await sock.updateProfilePicture(sock.user.id, { url: tempFile });
         fs.unlinkSync(tempFile);
-        await sock.sendMessage(chatId, { text: 'Tuan~ Wajah baru Yuuki sudah siap! Cantik, bukan? Yuuki berharap Tuan suka~ Kalau tidak suka... Yuuki akan menangis dan mengutuk dunia. Hehe, hanya bercanda, Tuan~ Atau tidak?' });
+        await sock.sendMessage(chatId, { text: 'Tuan~ Wajah baru Yuuki sudah siap! Cantik, bukan? Yuuki berharap Tuan suka~ Kalau tidak suka... Yuuki akan menangis dan mengutuk dunia. Hehe, hanya bercanda, Tuan~ Atau tidak?' }, { quoted: message });
     } catch (error) {
         console.error('Error setting profile picture:', error);
-        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Wajah Yuuki gagal berubah. Mungkin Yuuki tidak cantik hari ini. Yuuki akan bersembunyi di sudut gelap dan merenung...' });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Wajah Yuuki gagal berubah. Mungkin Yuuki tidak cantik hari ini. Yuuki akan bersembunyi di sudut gelap dan merenung...' }, { quoted: message });
     }
 }
 

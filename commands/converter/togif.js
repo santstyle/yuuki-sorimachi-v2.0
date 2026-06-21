@@ -23,11 +23,11 @@ async function toGif(sock, message, chatId) {
         const quotedMsg = contextInfo?.quotedMessage;
 
         if (!contextInfo || !contextInfo.stanzaId) {
-            return sock.sendMessage(chatId, { text: 'Tuan~ Reply stiker animasi dengan .togif untuk Yuuki ubah jadi GIF~' });
+            return sock.sendMessage(chatId, { text: 'Tuan~ Reply stiker animasi dengan .togif untuk Yuuki ubah jadi GIF~' }, { quoted: message });
         }
 
         if (!quotedMsg || !quotedMsg.stickerMessage) {
-            return sock.sendMessage(chatId, { text: 'Tuan~ Yang Tuan reply bukan stiker! Reply stiker animasi ya~' });
+            return sock.sendMessage(chatId, { text: 'Tuan~ Yang Tuan reply bukan stiker! Reply stiker animasi ya~' }, { quoted: message });
         }
 
         await sock.sendMessage(chatId, { text: 'Mohon tunggu, Tuan~ Yuuki sedang mengonversi stiker ke GIF~' }, { quoted: message });
@@ -110,7 +110,7 @@ async function toGif(sock, message, chatId) {
 
     } catch (error) {
         console.error('Error togif:', error);
-        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal mengonversi stiker ke GIF. Mungkin lain kali~' });
+        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal mengonversi stiker ke GIF. Mungkin lain kali~' }, { quoted: message });
     }
 }
 

@@ -47,7 +47,7 @@ Yuuki harap informasi ini bermanfaat untuk Tuan~`.trim();
             console.error('Error di groupinfo command:', error);
             await sock.sendMessage(chatId, {
                 text: 'Maaf, Tuan~ Yuuki gagal mengambil informasi grup. Mungkin ada yang menghalangi Yuuki~'
-            }).catch(() => {});
+            }, { quoted: msg }).catch(() => {});
         }
     }
 }
