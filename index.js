@@ -2,6 +2,7 @@ require('./settings')
 const { Boom } = require('@hapi/boom')
 const fs = require('fs')
 const chalk = require('chalk')
+const statsSync = require('./lib/statsSync')
 
 // Filter log bawaan Baileys yang berisik dan tidak relevan untuk developer
 const _originalConsoleError = console.error;
@@ -260,8 +261,10 @@ async function startXeonBotInc() {
         }
 
         if (connection === 'open') {
-            console.log('\n' + chalk.bgGreen.black(' SUCCESS ') + chalk.green(' Bot connected successfully!'));
-            console.log(chalk.cyan('═'.repeat(40)));
+            const ts = chalk.cyan('[' + require('moment-timezone')().tz('Asia/Jakarta').format('HH:mm:ss') + ']');
+            console.log('\n' + ts + ' ' + chalk.bgGreen.black(' ONLINE ') + chalk.green(' Bot connected successfully!'));
+            console.log(chalk.cyan('════════════════════════════════════════'));
+            statsSync.start()
             connectionAttempts = 0
         }
 
@@ -383,6 +386,7 @@ process.on('unhandledRejection', (err) => {
 const prisma = require('./lib/db');
 async function shutdown() {
     console.log('Shutting down gracefully...');
+    statsSync.stop()
     try {
         await prisma.$disconnect();
         console.log('Prisma disconnected.');
