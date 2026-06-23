@@ -253,6 +253,26 @@ npm start
 
 > Folder session akan tersimpan di `./session/`. Backup folder ini jika perlu.
 
+### 12a. Setup File Data (Wajib)
+
+Beberapa file JSON di folder `data/` tidak ikut terbawa git clone karena ada di `.gitignore`. Jalankan perintah ini sekali saja:
+
+```bash
+cd ~/yuuki-sorimachi-v2.0
+mkdir -p data
+echo '{"totalMessages":0,"todayMessages":0,"dailyLog":{}}' > data/messageCount.json
+echo '{}' > data/commands.json
+echo '[]' > data/antidelete.json
+echo '[]' > data/autoread.json
+echo '[]' > data/autostatus.json
+echo '{}' > data/chatbotConfig.json
+echo '{}' > data/joinConfig.json
+echo '[]' > data/premium.json
+echo '[]' > data/reports.json
+echo '{}' > data/userGroupData.json
+echo '{}' > data/vvConfig.json
+```
+
 ### 13. Jalankan Bot dengan PM2
 
 ```bash
@@ -275,13 +295,33 @@ pm2 startup
 
 Ikuti perintah yang muncul di terminal (biasanya `sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u $USER --hp /home/$USER`).
 
-### 14. Verifikasi
+### 14. Admin Panel (Database Web UI)
+
+Admin panel untuk lihat & edit database dari browser, tanpa perlu `npx prisma studio`.
+
+Pastikan di `.env` sudah ada:
+```env
+ADMIN_PORT=3456
+ADMIN_USER=admin
+ADMIN_PASSWORD=ganti_password_lo
+```
+
+Admin panel otomatis jalan bareng bot lewat PM2 (lihat step 13). Atau jalanin manual:
+```bash
+node admin/server.js
+```
+
+Akses: `http://<ip-tailscale>:3456/admin`
+
+> **Catatan:** Admin panel cuma bisa diakses lewat Tailscale IP atau localhost. Pastikan Tailscale sudah terinstall & jalan.
+
+### 15. Verifikasi
 
 ```bash
 pm2 list
 ```
 
-Pastikan status bot **online**.
+Pastikan status bot dan admin **online**.
 
 Cek log untuk memastikan tidak ada error:
 
@@ -306,6 +346,9 @@ Kirim pesan `.ping` ke nomor bot — harus reply `Pong!`.
 | `GROQ_API_KEY` | Tidak | Untuk fitur `.groq` (LLaMA-3.3-70b) |
 | `DEEPSEEK_API_KEY` | Tidak | Untuk fitur `.deepseek` |
 | `OPENAI_API_KEY` | Tidak | Untuk fitur `.gpt` |
+| `ADMIN_PORT` | Tidak | Port admin panel (default: 3000) |
+| `ADMIN_USER` | Tidak | Username login admin panel (default: admin) |
+| `ADMIN_PASSWORD` | Tidak | Password login admin panel (default: admin123) |
 | `REMBG_API_KEY` | Tidak | API key rembg.com (gratis, untuk `.removebg`). Dapatkan di https://www.rembg.com/api-usage |
 | `REMOVEBG_API_KEY` | Tidak | API key remove.bg (fallback jika rembg gagal). Dapatkan di https://www.remove.bg/ |
 | `GIPHY_API_KEY` | Tidak | API key Giphy untuk sticker/GIF |
