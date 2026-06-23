@@ -231,6 +231,23 @@ app.delete('/api/model/:name/:id', authenticate, async (req, res) => {
   }
 });
 
+app.post('/api/sync-names', authenticate, async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({ where: { name: { not: null } } });
+    let synced = 0;
+    for (const u of users) {
+      const [p, h] = await Promise.all([
+        prisma.userProgress.updateMany({ where: { userId: u.id, userName: { not: u.name } }, data: { userName: u.name } }),
+        prisma.history.updateMany({ where: { userId: u.id, userName: { not: u.name } }, data: { userName: u.name } }),
+      ]);
+      if (p.count > 0 || h.count > 0) synced++;
+    }
+    res.json({ ok: true, synced, total: users.length });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/model/:name/related/:field', authenticate, async (req, res) => {
   const modelName = toPascalCase(req.params.name);
   const field = req.params.field;
