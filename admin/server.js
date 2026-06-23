@@ -16,6 +16,7 @@ const ADMIN_PASSWORD_HASH = bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/assets', express.static(path.join(__dirname, '..', 'assets')));
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -204,6 +205,9 @@ app.post('/api/model/:name/bulk-delete', authenticate, async (req, res) => {
     await delegate.deleteMany({ where: { [idField]: { in: parsedIds } } });
     res.json({ ok: true, deleted: ids.length });
   } catch (err) {
+    if (err.code === 'P2003') {
+      return res.status(400).json({ error: 'Cannot delete: record has related data (foreign key constraint). Delete the related records first.' });
+    }
     res.status(500).json({ error: err.message });
   }
 });
@@ -220,6 +224,9 @@ app.delete('/api/model/:name/:id', authenticate, async (req, res) => {
     await delegate.delete({ where: { [idField]: isNaN(req.params.id) ? req.params.id : parseInt(req.params.id) } });
     res.json({ ok: true });
   } catch (err) {
+    if (err.code === 'P2003') {
+      return res.status(400).json({ error: 'Cannot delete: record has related data. Delete related records first.' });
+    }
     res.status(500).json({ error: err.message });
   }
 });
