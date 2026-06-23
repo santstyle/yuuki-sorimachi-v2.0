@@ -81,33 +81,42 @@ sudo apt install -y libnss3 libnspr4 libgbm1 libasound2 libatk1.0-0 libcups2 lib
 
 > Jika skip langkah ini, fitur `.ss` dan `.pinterest` bisa gagal dengan error `Missing shared libraries`.
 
-### 4. Install Node.js 20.x LTS
+### 4. Install Node.js 22.x LTS
 
+> **Catatan:** Jangan gunakan `apt install nodejs` karena versinya terlalu lama (v12). Gunakan NodeSource atau NVM.
+
+**Opsi A — NodeSource (recommended):**
 ```bash
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt install -y nodejs
-node --version
-npm --version
+node --version    # Harus v22.x.x
 ```
 
-Output `node` harus `v20.x.x`, output `npm` harus `10.x.x` atau lebih baru.
+**Opsi B — NVM (jika butuh gonta-ganti versi):**
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+source ~/.bashrc
+nvm install 22
+nvm use 22
+node --version    # Harus v22.x.x
+```
 
 ### 5. Install PM2
 
 PM2 digunakan untuk menjalankan bot di background dan auto-restart jika crash atau VPS reboot.
 
 ```bash
-npm install -g pm2
+sudo npm install -g pm2
 pm2 --version
 ```
 
-Output harus menampilkan versi PM2.
+Output harus menampilkan versi PM2. (Gunakan `sudo` karena Ubuntu membatasi akses ke `/usr/local/lib/node_modules`).
 
 ### 6. Clone Repository
 
-```bashopen
-git clone https://github.com/santstyle/yuukibot-v2.0.git
-cd yuukibot-v2.0
+```bash
+git clone https://github.com/santstyle/yuuki-sorimachi-v2.0.git
+cd yuuki-sorimachi-v2.0
 ```
 
 ### 7. Install FFmpeg
@@ -221,7 +230,7 @@ npx prisma generate
 Kemudian copy file `database.db` dari lokal ke folder `prisma/` di VPS:
 ```bash
 # Contoh cara copy dari lokal ke VPS via SCP (jalankan dari terminal lokal, bukan VPS):
-# scp prisma/database.db user@ip-vps:~/yuukibot-v2.0/prisma/database.db
+# scp prisma/database.db user@ip-vps:~/yuuki-sorimachi-v2.0/prisma/database.db
 ```
 
 Atau upload manual via SFTP/FileZilla ke `prisma/database.db`.
@@ -367,7 +376,7 @@ pm2 start yuuki-bot
 
 ```bash
 # Masuk ke directory bot
-cd ~/yuukibot-v2.0
+cd ~/yuuki-sorimachi-v2.0
 
 # Backup data
 cp -r session session-backup
@@ -437,8 +446,8 @@ npx prisma db push
 ### Permission Denied
 
 ```bash
-sudo chown -R $(whoami):$(whoami) ~/yuukibot-v2.0
-chmod -R 755 ~/yuukibot-v2.0
+sudo chown -R $(whoami):$(whoami) ~/yuuki-sorimachi-v2.0
+chmod -R 755 ~/yuuki-sorimachi-v2.0
 ```
 
 ### RAM Usage Tinggi
