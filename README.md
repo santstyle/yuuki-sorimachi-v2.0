@@ -105,7 +105,7 @@ Output harus menampilkan versi PM2.
 
 ### 6. Clone Repository
 
-```bash
+```bashopen
 git clone https://github.com/santstyle/yuukibot-v2.0.git
 cd yuukibot-v2.0
 ```
