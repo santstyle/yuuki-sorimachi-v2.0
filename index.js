@@ -265,10 +265,12 @@ async function startXeonBotInc() {
             console.log('\n' + ts + ' ' + chalk.bgGreen.black(' ONLINE ') + chalk.green(' Bot connected successfully!'));
             console.log(chalk.cyan('════════════════════════════════════════'));
             statsSync.start()
+            statsSync.pushOnline()
             connectionAttempts = 0
         }
 
         if (connection === 'close') {
+            statsSync.pushOffline()
             const statusCode = lastDisconnect?.error?.output?.statusCode
             const errorMessage = lastDisconnect?.error?.message || ''
 
