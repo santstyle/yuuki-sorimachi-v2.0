@@ -43,5 +43,28 @@ module.exports = {
     max_memory_restart: "4G",
 
     time: true
+  }, {
+    name: "yuuki-admin",
+    version: "2.0.0",
+    script: "./admin/server.js",
+    cwd: __dirname,
+
+    log_date_format: "YYYY-MM-DD HH:mm:ss",
+    error_file: "./logs/admin-error.log",
+    out_file: "./logs/admin-out.log",
+
+    autorestart: true,
+    restart_delay: 5000,
+    max_restarts: 10,
+    min_uptime: "10s",
+
+    env: {
+      NODE_ENV: "production"
+    },
+
+    exec_mode: "fork",
+    watch: false,
+
+    time: true
   }]
 }
