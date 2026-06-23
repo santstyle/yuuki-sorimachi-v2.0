@@ -77,7 +77,9 @@ const SORTABLE = {
 
 const SEARCHABLE = {
   User: ['id', 'name'],
+  UserProgress: ['userId', 'userName'],
   Group: ['id', 'name'],
+  GroupSettings: ['groupId', 'groupName'],
   WarningRecord: ['userId', 'userName', 'reason', 'moderatorName'],
   History: ['userId', 'userName', 'command', 'chatId'],
 };
@@ -107,7 +109,13 @@ app.get('/api/model/:name', authenticate, async (req, res) => {
     const limitNum = Math.min(200, Math.max(1, parseInt(limit)));
 
     const allowedSort = SORTABLE[modelName] || [];
-    const orderBy = sort && allowedSort.includes(sort) ? { [sort]: order === 'asc' ? 'asc' : 'desc' } : { createdAt: 'desc' };
+    let orderBy;
+    if (sort && allowedSort.includes(sort)) {
+      orderBy = { [sort]: order === 'asc' ? 'asc' : 'desc' };
+    } else {
+      const defaultSort = allowedSort.includes('createdAt') ? 'createdAt' : (allowedSort[0] || 'id');
+      orderBy = { [defaultSort]: 'desc' };
+    }
 
     const where = {};
     if (search && SEARCHABLE[modelName]) {
@@ -177,6 +185,24 @@ app.put('/api/model/:name/:id', authenticate, async (req, res) => {
       data: req.body,
     });
     res.json(record);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/model/:name/bulk-delete', authenticate, async (req, res) => {
+  const modelName = toPascalCase(req.params.name);
+  const delegate = prisma[modelName];
+  if (!delegate?.deleteMany) return res.status(404).json({ error: 'Model not found' });
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || !ids.length) return res.status(400).json({ error: 'ids array required' });
+    const dmmf = prisma._dmmf?.datamodel?.models;
+    const schema = dmmf?.find(m => m.name === modelName);
+    const idField = schema?.fields?.find(f => f.isId)?.name || 'id';
+    const parsedIds = ids.map(id => isNaN(id) ? id : parseInt(id));
+    await delegate.deleteMany({ where: { [idField]: { in: parsedIds } } });
+    res.json({ ok: true, deleted: ids.length });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
