@@ -1517,12 +1517,15 @@ async function retryWithFallback(apis, maxRetries = 2) {
 async function removebgCommand(sock, chatId, message, args) {
     try {
         const quoted = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
-        if (!quoted?.imageMessage) {
-            await sock.sendMessage(chatId, { text: 'Tuan~ Balas sebuah *gambar* dengan .removebg untuk menghapus latar belakang~' }, { quoted: message });
+        const imgMsg = quoted?.imageMessage || message.message?.imageMessage;
+        if (!imgMsg) {
+            await sock.sendMessage(chatId, { text: 'Tuan~ Kirim gambar dengan caption *.removebg* atau reply gambar dengan *.removebg* untuk menghapus latar belakang~' }, { quoted: message });
             return;
         }
         await sock.sendMessage(chatId, { text: 'Tuan~ Yuuki sedang menghapus latar belakang. Mohon tunggu~' }, { quoted: message });
-        const buffer = await downloadMediaMessage({ message: quoted }, 'buffer', {}, { logger: console });
+
+        const sourceMsg = quoted?.imageMessage ? { message: quoted } : message;
+        const buffer = await downloadMediaMessage(sourceMsg, 'buffer', {}, { logger: console });
 
         try {
             const form = new FormData();
@@ -1543,12 +1546,16 @@ async function removebgCommand(sock, chatId, message, args) {
                 await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Kuota bulanan fitur removebg Yuuki sudah habis. Mohon ditunggu hingga bulan depan agar kuota kembali terisi~ Yuuki turut berduka~' }, { quoted: message });
             } else {
                 console.error('FAPIhub failed:', fapiErr.message);
-                await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Fitur removebg Yuuki sedang bermasalah. Silakan coba lagi nanti~' }, { quoted: message });
+                const errMsg = fapiErr?.message || '';
+                const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
+                await sock.sendMessage(chatId, { text: isNetworkIssue ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~' : 'Maaf, Tuan~ Fitur removebg Yuuki sedang bermasalah. Silakan coba lagi nanti~' }, { quoted: message });
             }
         }
     } catch (error) {
         console.error('Error in removebg:', error);
-        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal menghapus latar belakang~' }, { quoted: message });
+        const errMsg = error?.message || error?.toString() || '';
+        const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
+        await sock.sendMessage(chatId, { text: isNetworkIssue ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~' : 'Maaf, Tuan~ Yuuki gagal menghapus latar belakang~' }, { quoted: message });
     }
 }
 

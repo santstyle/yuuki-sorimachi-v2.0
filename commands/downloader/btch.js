@@ -21,7 +21,10 @@ function getFriendlyErrorMessage(originalMessage) {
     if (isNetworkError(originalMessage)) {
         return 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~';
     }
-    return `Maaf, Tuan~ Yuuki mengalami kesalahan saat memproses downloader\n\nError: ${originalMessage}`;
+    if (/Command failed|yt-dlp|ffmpeg|HTTP Error|unable to download/i.test(originalMessage)) {
+        return 'Maaf, Tuan~ Yuuki gagal mengunduh media. Mungkin link-nya bermasalah atau server sedang sibuk. Coba lagi nanti~';
+    }
+    return 'Maaf, Tuan~ Yuuki mengalami kesalahan saat memproses downloader. Coba lagi nanti~';
 }
 
 async function sendMessageWithRetry(sock, chatId, content, options = {}, maxRetries = 3) {
@@ -144,9 +147,7 @@ async function btchCommand(sock, chatId, message, url) {
         if (!result.status || !result.result || result.result.length === 0) {
             const errMsg = result.message || 'Media tidak ditemukan';
             await sock.sendMessage(chatId, {
-                text: isNetworkError(errMsg)
-                    ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~'
-                    : `Maaf, Tuan~ Yuuki gagal memproses link\n\nError: ${errMsg}`,
+                text: getFriendlyErrorMessage(errMsg),
                 edit: statusMessage.key
             });
             return;

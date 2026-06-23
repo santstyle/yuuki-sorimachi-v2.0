@@ -22,7 +22,13 @@ async function deepseekCommand(sock, chatId, message, input) {
 
     } catch (error) {
         console.error('Deepseek error:', error.response?.data || error.message);
-        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal memprosesnya. Mungkin lain kali~' }, { quoted: message });
+        const errMsg = error?.message || error?.toString() || '';
+        const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
+        await sock.sendMessage(chatId, {
+            text: isNetworkIssue
+                ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~'
+                : 'Maaf, Tuan~ Yuuki gagal memprosesnya. Mungkin lain kali~'
+        }, { quoted: message });
     }
 }
 

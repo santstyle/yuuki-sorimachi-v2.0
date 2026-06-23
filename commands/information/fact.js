@@ -43,8 +43,12 @@ module.exports = async function (sock, chatId, message) {
         await sock.sendMessage(chatId, { text: `Tuan~ Yuuki punya fakta: ${fact}` }, { quoted: message });
     } catch (error) {
         console.error('Error fetching fact:', error.message);
+        const errMsg = error?.message || error?.toString() || '';
+        const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
         await sock.sendMessage(chatId, {
-            text: 'Maaf, Tuan~ Yuuki gagal mengambil fakta. Mungkin lain kali~'
+            text: isNetworkIssue
+                ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~'
+                : 'Maaf, Tuan~ Yuuki gagal mengambil fakta. Mungkin lain kali~'
         }, { quoted: message });
     }
 };

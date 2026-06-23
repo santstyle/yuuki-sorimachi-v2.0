@@ -273,7 +273,16 @@ async function songCommand(sock, chatId, message, input) {
 
     } catch (error) {
         console.error("[SONG ERROR]:", error);
-        await sock.sendMessage(chatId, { text: `Maaf, Tuan~ Error: ${error.message}` }, { quoted: message });
+        const errMsg = error?.message || error?.toString() || '';
+        const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
+        const isYtdlError = /Command failed|yt-dlp|ffmpeg|HTTP Error|unable to download/i.test(errMsg);
+        await sock.sendMessage(chatId, {
+            text: isNetworkIssue
+                ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~'
+                : isYtdlError
+                    ? 'Maaf, Tuan~ Yuuki gagal mengunduh lagu. Mungkin link-nya bermasalah. Coba lagi nanti~'
+                    : 'Maaf, Tuan~ Yuuki gagal memproses lagu. Coba lagi nanti~'
+        }, { quoted: message });
     }
 }
 

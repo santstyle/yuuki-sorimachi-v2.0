@@ -51,8 +51,12 @@ async function memeCommand(sock, chatId, message) {
 
     } catch (error) {
         console.error('Error in meme command:', error.message);
+        const errMsg = error?.message || error?.toString() || '';
+        const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
         await sock.sendMessage(chatId, {
-            text: 'Maaf, Tuan~ Yuuki gagal mengambil meme. Mungkin lain kali~'
+            text: isNetworkIssue
+                ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~'
+                : 'Maaf, Tuan~ Yuuki gagal mengambil meme. Mungkin lain kali~'
         }, { quoted: message });
     }
 }

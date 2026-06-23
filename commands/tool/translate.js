@@ -105,8 +105,12 @@ async function handleTranslateCommand(sock, chatId, message, match) {
 
     } catch (error) {
         console.error('Aduh, error di translate command nih:', error);
+        const errMsg = error?.message || error?.toString() || '';
+        const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
         await sock.sendMessage(chatId, {
-            text: 'Maaf, Tuan~ Yuuki gagal menerjemahkan. Mungkin lain kali~',
+            text: isNetworkIssue
+                ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~'
+                : 'Maaf, Tuan~ Yuuki gagal menerjemahkan. Mungkin lain kali~',
             quoted: message
         });
     }

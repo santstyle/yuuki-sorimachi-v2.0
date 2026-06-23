@@ -61,13 +61,22 @@ async function hidetagCommand(sock, m, prefix) {
                 const imgData = { image: imageBuffer, mentions: participants };
                 if (textAfterCommand) imgData.caption = textAfterCommand;
                 await sock.sendMessage(m.key.remoteJid, imgData);
-            } catch (error) {
-                console.error("[HIDETAG] Image download failed:", error.message);
-                await sock.sendMessage(m.key.remoteJid, {
-                    text: textAfterCommand || `Dengan hormat, Yuuki memanggil semua anggota di sini`,
-                    mentions: participants
-                });
-            }
+    } catch (error) {
+        console.error("[HIDETAG] Image download failed:", error.message);
+        const errMsg = error?.message || error?.toString() || '';
+        const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN/i.test(errMsg);
+        if (isNetworkIssue) {
+            await sock.sendMessage(m.key.remoteJid, {
+                text: 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~',
+                mentions: participants
+            });
+        } else {
+            await sock.sendMessage(m.key.remoteJid, {
+                text: textAfterCommand || `Dengan hormat, Yuuki memanggil semua anggota di sini`,
+                mentions: participants
+            });
+        }
+    }
         } else if (m.message?.videoMessage) {
             try {
                 const videoStream = await downloadContentFromMessage(m.message.videoMessage, "video");
@@ -80,10 +89,19 @@ async function hidetagCommand(sock, m, prefix) {
                 await sock.sendMessage(m.key.remoteJid, vidData);
             } catch (error) {
                 console.error("[HIDETAG] Video download failed:", error.message);
-                await sock.sendMessage(m.key.remoteJid, {
-                    text: textAfterCommand || `Dengan hormat, Yuuki memanggil semua anggota di sini`,
-                    mentions: participants
-                });
+                const errMsg2 = error?.message || error?.toString() || '';
+                const isNetworkIssue2 = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN/i.test(errMsg2);
+                if (isNetworkIssue2) {
+                    await sock.sendMessage(m.key.remoteJid, {
+                        text: 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~',
+                        mentions: participants
+                    });
+                } else {
+                    await sock.sendMessage(m.key.remoteJid, {
+                        text: textAfterCommand || `Dengan hormat, Yuuki memanggil semua anggota di sini`,
+                        mentions: participants
+                    });
+                }
             }
         } else if (m.message?.documentMessage || m.message?.documentWithCaptionMessage) {
             const doc = m.message?.documentMessage || m.message?.documentWithCaptionMessage?.message?.documentMessage;
@@ -103,10 +121,19 @@ async function hidetagCommand(sock, m, prefix) {
                     });
                 } catch (error) {
                     console.error("[HIDETAG] Document download failed:", error.message);
-                    await sock.sendMessage(m.key.remoteJid, {
-                        text: textAfterCommand || `Dengan hormat, Yuuki memanggil semua anggota di sini`,
-                        mentions: participants
-                    });
+                    const errMsg3 = error?.message || error?.toString() || '';
+                    const isNetworkIssue3 = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN/i.test(errMsg3);
+                    if (isNetworkIssue3) {
+                        await sock.sendMessage(m.key.remoteJid, {
+                            text: 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~',
+                            mentions: participants
+                        });
+                    } else {
+                        await sock.sendMessage(m.key.remoteJid, {
+                            text: textAfterCommand || `Dengan hormat, Yuuki memanggil semua anggota di sini`,
+                            mentions: participants
+                        });
+                    }
                 }
             }
         } else {
@@ -121,8 +148,11 @@ async function hidetagCommand(sock, m, prefix) {
     } catch (error) {
         console.error("Error di hidetag:", error);
         try {
+            const errMsg = error?.message || error?.toString() || '';
+            const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN/i.test(errMsg);
             await sock.sendMessage(m.key.remoteJid, {
-                text: `Maaf Tuan, Yuuki mengalami kesalahan. Sepertinya ada yang mengganggu Yuuki... ` + error.message
+                text: isNetworkIssue ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~'
+                    : `Maaf Tuan, Yuuki mengalami kesalahan. Sepertinya ada yang mengganggu Yuuki... ` + error.message
             });
         } catch (e) {
             console.error("Gagal kirim error message:", e);
@@ -237,6 +267,14 @@ async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterComm
                 return;
             } catch (error) {
                 console.error("[HIDETAG] Download failed:", error.message);
+                const errMsg = error?.message || error?.toString() || '';
+                if (/ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN/i.test(errMsg)) {
+                    await sock.sendMessage(remoteJid, {
+                        text: 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~',
+                        mentions: participants
+                    });
+                    return;
+                }
             }
             await sock.sendMessage(remoteJid, {
                 text: textAfterCommand || `Dengan hormat, Yuuki sampaikan ini kepada semua ${title}~`,
@@ -266,6 +304,14 @@ async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterComm
                     return;
                 } catch (error) {
                     console.error("[HIDETAG] Document download failed:", error.message);
+                    const errMsg = error?.message || error?.toString() || '';
+                    if (/ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN/i.test(errMsg)) {
+                        await sock.sendMessage(remoteJid, {
+                            text: 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~',
+                            mentions: participants
+                        });
+                        return;
+                    }
                 }
             }
             const docText = textAfterCommand || `Dengan hormat, Yuuki sampaikan ini kepada semua ${title}~`;
@@ -281,6 +327,14 @@ async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterComm
                 return;
             } catch (error) {
                 console.error("[HIDETAG] Sticker download failed:", error.message);
+                const errMsg = error?.message || error?.toString() || '';
+                if (/ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN/i.test(errMsg)) {
+                    await sock.sendMessage(remoteJid, {
+                        text: 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~',
+                        mentions: participants
+                    });
+                    return;
+                }
             }
             const stkText = textAfterCommand || `Dengan hormat, Yuuki sampaikan ini kepada semua ${title}~`;
             await sock.sendMessage(remoteJid, { text: stkText, mentions: participants });
@@ -295,6 +349,14 @@ async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterComm
                 return;
             } catch (error) {
                 console.error("[HIDETAG] Audio download failed:", error.message);
+                const errMsg = error?.message || error?.toString() || '';
+                if (/ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN/i.test(errMsg)) {
+                    await sock.sendMessage(remoteJid, {
+                        text: 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~',
+                        mentions: participants
+                    });
+                    return;
+                }
             }
             const audText = textAfterCommand || `Dengan hormat, Yuuki sampaikan ini kepada semua ${title}~`;
             await sock.sendMessage(remoteJid, { text: audText, mentions: participants });
@@ -312,7 +374,10 @@ async function handleQuotedMessage(sock, remoteJid, quotedMessage, textAfterComm
 
     } catch (error) {
         console.error("Error processing quoted message:", error);
-        const fallbackText = textAfterCommand || `Dengan hormat, Yuuki sampaikan ini kepada semua ${title}~`;
+        const errMsg = error?.message || error?.toString() || '';
+        const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN/i.test(errMsg);
+        const fallbackText = isNetworkIssue ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~'
+            : (textAfterCommand || `Dengan hormat, Yuuki sampaikan ini kepada semua ${title}~`);
         try {
             await sock.sendMessage(remoteJid, {
                 text: fallbackText,

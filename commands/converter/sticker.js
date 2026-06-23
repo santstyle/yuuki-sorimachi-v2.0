@@ -127,8 +127,12 @@ async function stickerCommand(sock, chatId, message) {
 
     } catch (error) {
         console.error('Yah, error di sticker command nih:', error);
+        const errMsg = error?.message || error?.toString() || '';
+        const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
         await sock.sendMessage(chatId, {
-            text: 'Maaf, Tuan~ Yuuki gagal membuat stikernya. Mungkin internet sedang lambat, Tuan bisa coba lagi nanti'
+            text: isNetworkIssue
+                ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~'
+                : 'Maaf, Tuan~ Yuuki gagal membuat stikernya. Pastikan stikernya valid~'
         }, { quoted: messageToQuote });
     }
 }

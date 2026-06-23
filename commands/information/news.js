@@ -44,6 +44,12 @@ module.exports = async function (sock, chatId, message) {
         await sock.sendMessage(chatId, { text: newsMessage }, { quoted: message });
     } catch (error) {
         console.error('Error ambil berita:', error);
+        const errMsg = error?.message || error?.toString() || '';
+        const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
+        if (isNetworkIssue) {
+            await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~' }, { quoted: message });
+            return;
+        }
         const fallback = FALLBACK_NEWS.sort(() => Math.random() - 0.5).slice(0, 5);
         let newsMessage = 'Tuan~ Berita terbaru untuk Tuan\n\n';
         fallback.forEach((article, index) => {

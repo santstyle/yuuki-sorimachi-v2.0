@@ -68,14 +68,18 @@ async function setWmCommand(sock, chatId, message, args, senderId) {
                 await sock.sendMessage(chatId, { sticker: finalBuffer }, { quoted: message });
             } catch (error) {
                 console.error('Sticker modification error:', error);
-                await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal mengubah watermark stiker~' }, { quoted: message });
+                const errMsg = error?.message || error?.toString() || '';
+                const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
+                await sock.sendMessage(chatId, { text: isNetworkIssue ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~' : 'Maaf, Tuan~ Yuuki gagal mengubah watermark stiker~' }, { quoted: message });
             }
         } else {
             await sock.sendMessage(chatId, { text: `Tuan~ Watermark stiker berhasil Yuuki simpan!\n\n*Packname:* ${packname}` }, { quoted: message });
         }
     } catch (error) {
         console.error('Error in setwm command:', error);
-        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki mengalami kesalahan saat memproses watermark~' }, { quoted: message });
+        const errMsg = error?.message || error?.toString() || '';
+        const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
+        await sock.sendMessage(chatId, { text: isNetworkIssue ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~' : 'Maaf, Tuan~ Yuuki mengalami kesalahan saat memproses watermark~' }, { quoted: message });
     }
 }
 

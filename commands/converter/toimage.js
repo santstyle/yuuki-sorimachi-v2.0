@@ -60,8 +60,12 @@ const convertSticker = async (sock, message, chatId, sender, args) => {
 
     } catch (error) {
         console.error('Error converting sticker:', error);
+        const errMsg = error?.message || error?.toString() || '';
+        const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
         await sock.sendMessage(chatId, {
-            text: 'Maaf, Tuan~ Yuuki gagal mengonversi stiker. Pastikan stikernya valid~'
+            text: isNetworkIssue
+                ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~'
+                : 'Maaf, Tuan~ Yuuki gagal mengonversi stiker. Pastikan stikernya valid~'
         }, { quoted: message });
     }
 };
@@ -94,8 +98,12 @@ const convertToImage = async (sock, message, chatId, stickerFilePath, isAnimated
         scheduleFileDeletion(stickerFilePath);
     } catch (error) {
         console.error('Error converting to image:', error);
+        const errMsg = error?.message || error?.toString() || '';
+        const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
         await sock.sendMessage(chatId, {
-            text: 'Maaf, Tuan~ Yuuki gagal mengonversi ke gambar. Pastikan stikernya tidak rusak~'
+            text: isNetworkIssue
+                ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~'
+                : 'Maaf, Tuan~ Yuuki gagal mengonversi ke gambar. Pastikan stikernya tidak rusak~'
         }, { quoted: message });
         scheduleFileDeletion(stickerFilePath);
     }

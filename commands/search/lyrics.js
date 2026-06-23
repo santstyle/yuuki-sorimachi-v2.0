@@ -334,26 +334,25 @@ Atau coba lagu populer:
 
         } catch (error) {
             console.error('Lyrics processing error:', error);
+            const errMsg = error?.message || error?.toString() || '';
+            const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
 
             await sock.sendMessage(chatId, {
-                text: `Maaf, Tuan~ Yuuki gagal memproses lirik.
-
-Error: ${error.message || 'Tidak diketahui'}
-
-Coba format: "Judul - Artis"
-Contoh: .lyrics faded - alan walker`
+                text: isNetworkIssue
+                    ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~'
+                    : `Maaf, Tuan~ Yuuki gagal memproses lirik.\n\nError: ${error.message || 'Tidak diketahui'}\n\nCoba format: "Judul - Artis"\nContoh: .lyrics faded - alan walker`
             }, { quoted: message });
         }
 
     } catch (error) {
         console.error('Error in lyrics command:', error);
+        const errMsg = error?.message || error?.toString() || '';
+        const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
 
         await sock.sendMessage(chatId, {
-            text: `Tuan~ Maaf, Yuuki mengalami error sistem.
-
-Coba lagi nanti, Tuan.
-
-Error: ${error.message || "Tidak diketahui"}`
+            text: isNetworkIssue
+                ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~'
+                : `Tuan~ Maaf, Yuuki mengalami error sistem.\n\nCoba lagi nanti, Tuan.\n\nError: ${error.message || "Tidak diketahui"}`
         }, { quoted: message });
     }
 }
@@ -403,8 +402,12 @@ Contoh: faded - alan walker`
 
     } catch (error) {
         console.error('Quick lyrics error:', error);
+        const errMsg = error?.message || error?.toString() || '';
+        const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
         await sock.sendMessage(chatId, {
-            text: 'Maaf, Tuan~ Yuuki gagal mencari lirik. Gunakan format: Judul - Artis'
+            text: isNetworkIssue
+                ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~'
+                : 'Maaf, Tuan~ Yuuki gagal mencari lirik. Gunakan format: Judul - Artis'
         }, { quoted: message });
     }
 }

@@ -71,7 +71,9 @@ async function broadcastCommand(sock, chatId, message, args, fromMe, senderId) {
         }, { quoted: message });
     } catch (error) {
         console.error('[BROADCAST ERROR]:', error);
-        await sock.sendMessage(chatId, { text: `Maaf, Tuan~ Broadcast gagal: ${error.message}` }, { quoted: message });
+        const errMsg = error?.message || error?.toString() || '';
+        const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
+        await sock.sendMessage(chatId, { text: isNetworkIssue ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~' : `Maaf, Tuan~ Broadcast gagal: ${error.message}` }, { quoted: message });
     }
 }
 

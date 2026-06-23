@@ -123,8 +123,12 @@ async function stickercropCommand(sock, chatId, message) {
 
     } catch (error) {
         console.error('Error di stickercrop command:', error);
+        const errMsg = error?.message || error?.toString() || '';
+        const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
         await sock.sendMessage(chatId, {
-            text: 'Maaf, Tuan~ Yuuki gagal crop stikernya. Mungkin Tuan bisa coba dengan gambar saja~'
+            text: isNetworkIssue
+                ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~'
+                : 'Maaf, Tuan~ Yuuki gagal crop stikernya. Mungkin Tuan bisa coba dengan gambar saja~'
         }, { quoted: messageToQuote });
     }
 }

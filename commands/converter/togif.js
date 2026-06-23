@@ -110,7 +110,13 @@ async function toGif(sock, message, chatId) {
 
     } catch (error) {
         console.error('Error togif:', error);
-        await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal mengonversi stiker ke GIF. Mungkin lain kali~' }, { quoted: message });
+        const errMsg = error?.message || error?.toString() || '';
+        const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
+        await sock.sendMessage(chatId, {
+            text: isNetworkIssue
+                ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~'
+                : 'Maaf, Tuan~ Yuuki gagal mengonversi stiker ke GIF. Mungkin lain kali~'
+        }, { quoted: message });
     }
 }
 

@@ -439,7 +439,10 @@ class APIManager {
 
         } catch (error) {
             console.error('Error dari API:', error.message);
-            if (error.response) {
+            const errMsg = error?.message || error?.toString() || '';
+            if (/ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo')) {
+                console.log('   ↓ Jaringan lambat, pakai fallback response');
+            } else if (error.response) {
                 console.error('Status:', error.response.status);
                 console.error('Data:', error.response.data);
             }
@@ -767,8 +770,10 @@ Perintah:
 
     } catch (error) {
         console.error('Error di Yuuki command:', error);
+        const errMsg = error?.message || error?.toString() || '';
+        const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
         return sock.sendMessage(chatId, {
-            text: `Maaf${title ? ' ' + title : ', Tuan'}~ Yuuki mengalami sedikit gangguan. Mohon maaf, coba lagi~`,
+            text: isNetworkIssue ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~' : `Maaf${title ? ' ' + title : ', Tuan'}~ Yuuki mengalami sedikit gangguan. Mohon maaf, coba lagi~`,
             quoted: message
         });
     }
@@ -920,6 +925,14 @@ async function handleYuukiResponse(sock, chatId, message, userMessage, senderId)
 
     } catch (error) {
         console.error('Error di Yuuki response:', error);
+        const errMsg = error?.message || error?.toString() || '';
+        const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
+        try {
+            await sock.sendMessage(chatId, {
+                text: isNetworkIssue ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~' : 'Maaf, Tuan~ Yuuki mengalami sedikit gangguan. Mohon maaf, coba lagi~',
+                quoted: message
+            });
+        } catch (e) {}
     }
 }
 

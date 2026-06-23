@@ -11,8 +11,12 @@ module.exports = async function (sock, chatId, city, message) {
         await sock.sendMessage(chatId, { text: weatherText }, { quoted: message });
     } catch (error) {
         console.error('Wah, ada error waktu ambil data cuaca nih:', error);
+        const errMsg = error?.message || error?.toString() || '';
+        const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
         await sock.sendMessage(chatId, {
-            text: 'Maaf, Tuan~ Yuuki gagal mendapatkan data cuaca. Mungkin Tuan bisa cek nama kotanya lagi~'
+            text: isNetworkIssue
+                ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~'
+                : 'Maaf, Tuan~ Yuuki gagal mendapatkan data cuaca. Mungkin Tuan bisa cek nama kotanya lagi~'
         }, { quoted: message });
     }
 };
