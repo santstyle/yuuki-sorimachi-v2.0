@@ -15,6 +15,7 @@
     "admin": "node admin/server.js",
     "admin:pm2": "pm2 start admin/server.js --name yuuki-admin --watch --ignore-watch=\"node_modules logs session temp tmp .git\"",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "push-stats": "node scripts/push-stats.js",
     "docker:build": "docker build -t yuuki-bot.",
     "docker:run": "docker run -e SESSION_ID=$SESSION_ID yuuki-bot"
   },
