@@ -1311,9 +1311,9 @@ async function leaderboardCommand(sock, chatId, message) {
         }
         let text = '━━━「 *TOP 10 LEADERBOARD GLOBAL* 」━━━\n\n';
         top.slice(0, 10).forEach((u, i) => {
-            const name = (u.user?.name || u.userName || '').replace(/[^a-zA-Z0-9\s]/g, '').trim();
+            const rawName = (u.user?.name || u.userName || '').trim();
             const displayId = u.user?.customId || u.userId.split('@')[0].slice(-4);
-            text += `${i + 1}. ${name || `User#${displayId}`} — Level ${u.level} (${u.xp} XP)\n`;
+            text += `${i + 1}. ${rawName || `User#${displayId}`} — Level ${u.level} (${u.xp} XP)\n`;
         });
         await sock.sendMessage(chatId, { text }, { quoted: message });
     } catch (error) {
