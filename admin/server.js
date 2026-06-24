@@ -1,4 +1,5 @@
 const express = require('express');
+const fs = require('fs');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -44,6 +45,15 @@ function authenticate(req, res, next) {
 
 app.get('/api/check', authenticate, (req, res) => {
   res.json({ ok: true, user: req.user.username });
+});
+
+app.get('/api/bot-status', async (req, res) => {
+  try {
+    const data = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'botStatus.json'), 'utf8'));
+    res.json(data);
+  } catch {
+    res.json({ online: false, updatedAt: null });
+  }
 });
 
 app.post('/api/login', async (req, res) => {
@@ -112,10 +122,12 @@ app.get('/api/model/:name', authenticate, async (req, res) => {
     const allowedSort = SORTABLE[modelName] || [];
     let orderBy;
     if (sort && allowedSort.includes(sort)) {
-      orderBy = { [sort]: order === 'asc' ? 'asc' : 'desc' };
+      const dir = order === 'asc' ? 'asc' : 'desc';
+      orderBy = [{ [sort]: dir }];
+      if (sort === 'level') orderBy.push({ xp: dir });
     } else {
       const defaultSort = allowedSort.includes('createdAt') ? 'createdAt' : (allowedSort[0] || 'id');
-      orderBy = { [defaultSort]: 'desc' };
+      orderBy = [{ [defaultSort]: 'desc' }];
     }
 
     const where = {};

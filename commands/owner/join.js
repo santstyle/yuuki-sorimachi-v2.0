@@ -40,23 +40,40 @@ async function joinCommand(sock, chatId, message, args, senderIsSudo, senderId) 
         }
 
         const code = inviteMatch[1];
-        const groupId = await sock.groupAcceptInvite(code);
 
         let groupName = 'Grup';
+        let groupId = null;
         try {
-            const metadata = await sock.groupMetadata(groupId);
-            groupName = metadata.subject || 'Grup';
+            const inviteInfo = await sock.groupGetInviteInfo(code);
+            groupName = inviteInfo.subject || 'Grup';
+            groupId = inviteInfo.id;
         } catch (e) { }
+
+        await sock.groupAcceptInvite(code);
 
         await sock.sendMessage(chatId, {
             text: `Berhasil, Tuan~ Yuuki sudah bergabung ke grup *${groupName}*. Kirim .menu untuk melihat fitur Yuuki~`
         }, { quoted: message });
 
-        try {
-            await sock.sendMessage(groupId, {
-                text: 'Halo, semuanya~ Ada pelayan baru di sini! Yuuki Sorimachi hadir untuk melayani Tuan-Tuan semua di grup ini.\n\nUntuk melihat semua fitur Yuuki, ketik *.menu* atau *.help* di grup ini. Yuuki siap melayani~'
-            });
-        } catch (e) { }
+        async function sendWelcome() {
+            if (!groupId) return;
+            try {
+                await sock.sendMessage(groupId, {
+                    text: 'Halo, semuanya~ Ada pelayan baru di sini! Yuuki Sorimachi hadir untuk melayani Tuan-Tuan semua di grup ini.\n\nUntuk melihat semua fitur Yuuki, ketik *.menu* atau *.help* di grup ini. Yuuki siap melayani~'
+                });
+            } catch {
+                const poll = setInterval(async () => {
+                    try {
+                        await sock.groupMetadata(groupId);
+                        await sock.sendMessage(groupId, {
+                            text: 'Halo, semuanya~ Ada pelayan baru di sini! Yuuki Sorimachi hadir untuk melayani Tuan-Tuan semua di grup ini.\n\nUntuk melihat semua fitur Yuuki, ketik *.menu* atau *.help* di grup ini. Yuuki siap melayani~'
+                        });
+                        clearInterval(poll);
+                    } catch {}
+                }, 5000);
+            }
+        }
+        sendWelcome();
 
         await sock.sendMessage(chatId, {
             text: `Tuan~ Jika Tuan merasa terbantu dengan kehadiran Yuuki, dukung pengembang Yuuki dengan follow Instagram di:\nhttps://www.instagram.com/santstyle.mv\n\nTerima kasih, Tuan~`

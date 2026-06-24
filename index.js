@@ -267,10 +267,12 @@ async function startXeonBotInc() {
             statsSync.start()
             statsSync.pushOnline()
             connectionAttempts = 0
+            try { fs.writeFileSync('./data/botStatus.json', JSON.stringify({ online: true, updatedAt: new Date().toISOString() })) } catch (e) {}
         }
 
         if (connection === 'close') {
             statsSync.pushOffline()
+            try { fs.writeFileSync('./data/botStatus.json', JSON.stringify({ online: false, updatedAt: new Date().toISOString() })) } catch (e) {}
             const statusCode = lastDisconnect?.error?.output?.statusCode
             const errorMessage = lastDisconnect?.error?.message || ''
 

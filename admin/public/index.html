@@ -250,7 +250,7 @@ th .cb-all{accent-color:var(--blue);width:15px;height:15px;cursor:pointer;vertic
         <span class="topbar-badge" id="modelBadge" style="display:none"></span>
       </div>
       <div class="topbar-right">
-        <div class="connection"><span class="dot"></span><span id="dbInfo">Connected</span></div>
+        <div class="connection"><span class="dot" id="statusDot"></span><span id="dbInfo">Checking...</span></div>
       </div>
     </div>
 
@@ -676,10 +676,31 @@ function showLogin() {
   document.getElementById('app').style.display = 'none';
 }
 
+async function fetchBotStatus() {
+  try {
+    const res = await api('/api/bot-status');
+    const dot = document.getElementById('statusDot');
+    const info = document.getElementById('dbInfo');
+    if (res.online) {
+      dot.style.background = 'var(--green)';
+      info.textContent = 'Online';
+    } else {
+      dot.style.background = 'var(--red)';
+      info.textContent = 'Offline';
+    }
+  } catch {
+    const dot = document.getElementById('statusDot');
+    dot.style.background = 'var(--text3)';
+    document.getElementById('dbInfo').textContent = 'Unknown';
+  }
+}
+
 async function boot() {
   try {
     const res = await api('/api/check');
     if (res.ok) initApp();
+    fetchBotStatus();
+    setInterval(fetchBotStatus, 10000);
   } catch { showLogin(); }
 }
 boot();

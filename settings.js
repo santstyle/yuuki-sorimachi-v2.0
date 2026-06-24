@@ -7,7 +7,7 @@ const settings = {
   maxStoreMessages: 20,
   storeWriteInterval: 10000,
   description: "-",
-  version: "2.0.0",
+  version: "2.0.1",
   removebgApiKey: '', // Get your free API key at https://www.remove.bg/api (50 free/month)
 };
 

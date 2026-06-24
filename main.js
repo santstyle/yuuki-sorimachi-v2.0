@@ -1002,8 +1002,6 @@ async function handleGroupParticipantUpdate(sock, update) {
 
         if (!id.endsWith('@g.us')) return;
 
-
-
         if (action === 'add') {
             const isWelcomeEnabled = await isWelcomeOn(id);
             if (!isWelcomeEnabled) return;
@@ -1311,10 +1309,11 @@ async function leaderboardCommand(sock, chatId, message) {
             await sock.sendMessage(chatId, { text: 'Tuan~ Belum ada data user untuk membuat peringkat global. Ayo lebih aktif menggunakan Yuuki~' }, { quoted: message });
             return;
         }
-        let text = '━━━「 *LEADERBOARD GLOBAL* 」━━━\n\n';
+        let text = '━━━「 *TOP 10 LEADERBOARD GLOBAL* 」━━━\n\n';
         top.slice(0, 10).forEach((u, i) => {
-            const name = (u.user?.name || u.userName || u.userId.split('@')[0]).replace(/[^a-zA-Z0-9\s]/g, '').trim();
-            text += `${i + 1}. ${name || 'User#' + u.userId.split('@')[0]} — Level ${u.level} (${u.xp} XP)\n`;
+            const name = (u.user?.name || u.userName || '').replace(/[^a-zA-Z0-9\s]/g, '').trim();
+            const displayId = u.user?.customId || u.userId.split('@')[0].slice(-4);
+            text += `${i + 1}. ${name || `User#${displayId}`} — Level ${u.level} (${u.xp} XP)\n`;
         });
         await sock.sendMessage(chatId, { text }, { quoted: message });
     } catch (error) {
