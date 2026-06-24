@@ -16,8 +16,12 @@ const ADMIN_PASSWORD_HASH = bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/assets', express.static(path.join(__dirname, '..', 'assets')));
+app.use('/api', (req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+  next();
+});
+app.use(express.static(path.join(__dirname, 'public'), { etag: false, maxAge: 0 }));
+app.use('/assets', express.static(path.join(__dirname, '..', 'assets'), { etag: false, maxAge: 0 }));
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
