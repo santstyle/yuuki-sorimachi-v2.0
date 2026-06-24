@@ -128,7 +128,7 @@ app.get('/api/model/:name', authenticate, async (req, res) => {
     if (sort && allowedSort.includes(sort)) {
       const dir = order === 'asc' ? 'asc' : 'desc';
       orderBy = [{ [sort]: dir }];
-      if (sort === 'level') orderBy.push({ xp: dir });
+      if (sort === 'level' && modelName === 'UserProgress') orderBy.push({ xp: dir });
     } else {
       const defaultSort = allowedSort.includes('createdAt') ? 'createdAt' : (allowedSort[0] || 'id');
       orderBy = [{ [defaultSort]: 'desc' }];
@@ -143,6 +143,15 @@ app.get('/api/model/:name', authenticate, async (req, res) => {
       delegate.count({ where }),
       delegate.findMany({ where, orderBy, skip: (pageNum - 1) * limitNum, take: limitNum }),
     ]);
+
+    // Tambahan JS sort buat jaga-jaga kalo Prisma orderBy array ga respected
+    if (modelName === 'UserProgress') {
+      data.sort((a, b) => {
+        const primary = sort === 'level' || !sort ? b.level - a.level : (sort === 'xp' || !sort ? b.xp - a.xp : 0);
+        if (primary !== 0) return primary;
+        return b.xp - a.xp;
+      });
+    }
 
     const modelFields = Object.keys(prisma[modelName].fields || prisma._dmmf?.datamodel?.models?.find(m => m.name === modelName)?.fields || (data.length ? Object.keys(data[0]) : []));
 
