@@ -1,6 +1,7 @@
 const isAdmin = require('../../lib/isAdmin');
 const { addWarning, getWarningCount, getMaxWarnLevel } = require('../../lib/warningManager');
 const { getGroupSettings } = require('../../lib/groupSettings');
+const prisma = require('../../lib/db');
 
 async function warnCommand(sock, chatId, senderId, mentionedJids, message, reason = 'Tidak ada alasan') {
     try {
@@ -50,7 +51,8 @@ async function warnCommand(sock, chatId, senderId, mentionedJids, message, reaso
         }
 
         const senderName = message.pushName || 'Admin';
-        const targetName = message.message?.extendedTextMessage?.contextInfo?.participant || userToWarn.split('@')[0];
+        const userRecord = await prisma.user.findUnique({ where: { id: userToWarn } });
+        const targetName = userRecord?.name || userToWarn.split('@')[0];
 
         await addWarning(userToWarn, targetName, chatId, reason, message.key.id, senderId, senderName);
 

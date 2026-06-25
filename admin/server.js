@@ -261,11 +261,12 @@ app.post('/api/sync-names', authenticate, async (req, res) => {
     const users = await prisma.user.findMany({ where: { name: { not: null } } });
     let synced = 0;
     for (const u of users) {
-      const [p, h] = await Promise.all([
+      const [p, h, w] = await Promise.all([
         prisma.userProgress.updateMany({ where: { userId: u.id, userName: { not: u.name } }, data: { userName: u.name } }),
         prisma.history.updateMany({ where: { userId: u.id, userName: { not: u.name } }, data: { userName: u.name } }),
+        prisma.warningRecord.updateMany({ where: { userId: u.id, userName: { not: u.name } }, data: { userName: u.name } }),
       ]);
-      if (p.count > 0 || h.count > 0) synced++;
+      if (p.count > 0 || h.count > 0 || w.count > 0) synced++;
     }
     res.json({ ok: true, synced, total: users.length });
   } catch (err) {
