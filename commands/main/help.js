@@ -32,7 +32,7 @@ function buildHelp() {
         lines.push('┗━━━━━━━━━━━━━━━━━━━━');
         parts.push(lines.join('\n'));
     }
-    parts.push('╭───「 TIPS 」───\n│ • Untuk sticker/reply, kirim gambar dulu lalu reply dengan command\n│ • .dl / .btch otomatis deteksi platform dari link\n╰───────────────────────────\n> *Pelayanmu yang setia dan selalu kepo — Yuuki Sorimachi*');
+    parts.push('╭───「 TIPS 」───\n│ • Untuk sticker/reply, kirim gambar dulu lalu reply dengan command\n│ • .dl / .download otomatis deteksi platform dari link\n╰───────────────────────────\n> *Pelayanmu yang setia dan selalu kepo — Yuuki Sorimachi*');
     return parts.join('\n\n');
 }
 

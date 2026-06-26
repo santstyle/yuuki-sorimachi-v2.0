@@ -23,8 +23,8 @@ Files containing "Yuuki Bot":
   
 
 ## Next Update
-- Voice Yuuki
 - Screnshoot dari kata tidak hanya url
+- TikTok `/photo/` post — library `btch-downloader` (`ttdl()`) gak support download gambar dari TikTok photo post, cuma balikin audio. Cari alternative scraper atau fallback.
 
 ## Feature Requests dari User
 ### Security & Anti-Features
@@ -42,7 +42,3 @@ Files containing "Yuuki Bot":
 - **Nama grup di .join jadi "Grup"** — Pake `groupGetInviteInfo` sebelum accept invite.
 - **Welcome message ilang pas di-approve admin** — Pake `inviteInfo.id` soalnya `groupAcceptInvite` return JID corrupt buat approval grup.
 - **Warn error foreign key** — `addWarning` sekarang otomatis bikin `GroupSettings` dulu.
-
-### Upcoming
-- Voice Yuuki
-- Screnshoot dari kata tidak hanya url

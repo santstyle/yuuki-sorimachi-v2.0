@@ -944,9 +944,15 @@ async function handleMessages(sock, messageUpdate, printLog) {
                             await downloadQueue.add(sock, chatId, message, input, btchCommand);
                         }
                     } else {
-                        await sock.sendMessage(chatId, {
-                            text: `Tuan~ Yuuki bisa mencarikan lagu untuk Tuan~\n\n\`${prefix} <judul lagu>\`\n\nContoh:\n${prefix} Alan Walker Faded\n\nYuuki akan mencarikan untuk Tuan~`
-                        }, { quoted: message });
+                        if (prefix === '.song' || prefix === '.music') {
+                            await sock.sendMessage(chatId, {
+                                text: `Tuan~ Yuuki bisa mencarikan lagu untuk Tuan~\n\n\`${prefix} <judul lagu>\`\n\nContoh:\n${prefix} Alan Walker Faded\n\nYuuki akan mencarikan untuk Tuan~`
+                            }, { quoted: message });
+                        } else {
+                            await sock.sendMessage(chatId, {
+                                text: `Tuan~ Yuuki bisa mengunduh media untuk Tuan~\n\n\`${prefix} <url>\`\n\nContoh:\n${prefix} https://youtube.com/watch?v=...\n\nYuuki support YouTube, Instagram, TikTok, Facebook, dan lainnya~`
+                            }, { quoted: message });
+                        }
                     }
                 }
                 break;

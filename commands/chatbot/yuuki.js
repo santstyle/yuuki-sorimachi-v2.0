@@ -270,7 +270,7 @@ Yuuki adalah pelayan yang mengelola berbagai keperluan Tuan di WhatsApp. Berikut
    - Fitur ini BUKAN untuk memutar video YouTube, melainkan untuk melihat pesan WhatsApp yang dikirim sebagai view-once
 
 4. DOWNLOADER:
-   - .btch / .dl / .download — download video dari YouTube, Instagram, TikTok, Facebook, dll
+    - .dl / .download — download video dari YouTube, Instagram, TikTok, Facebook, dll
 
 5. GROUP ADMIN (khusus admin grup & owner):
    - .antilink on/off — blokir link grup lain
@@ -477,7 +477,7 @@ class APIManager {
             'tovideo': `${title}, fitur .tovideo atau .togif digunakan untuk mengubah stiker menjadi video atau GIF. Reply stiker dengan .tovideo.`,
             'toaudio': `${title}, fitur .toaudio atau .tomp3 digunakan untuk mengambil audio dari video. Reply video dengan .toaudio.`,
             'stickercrop': `${title}, fitur .stickercrop digunakan untuk memotong stiker menjadi bentuk 1:1. Reply stiker dengan .stickercrop.`,
-            'btch': `${title}, fitur .btch atau .dl adalah downloader serbaguna. Yuuki bisa mengunduh video dari YouTube, Instagram, TikTok, Facebook, dan berbagai platform lainnya. Cara pakai: .btch [url].`,
+            'btch': `${title}, fitur .dl atau .download adalah downloader serbaguna. Yuuki bisa mengunduh video dari YouTube, Instagram, TikTok, Facebook, dan berbagai platform lainnya. Cara pakai: .dl [url].`,
             'antilink': `${title}, fitur .antilink digunakan untuk memblokir tautan grup WhatsApp lain di dalam grup. Khusus admin grup. Cara pakai: .antilink on/off.`,
             'antitag': `${title}, fitur .antitag digunakan untuk memblokir penggunaan hide-tag yang berlebihan di grup. Khusus admin grup.`,
             'antibadword': `${title}, fitur .antibadword digunakan untuk menyensor kata-kata kasar secara otomatis di grup. Khusus admin grup.`,

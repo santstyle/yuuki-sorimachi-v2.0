@@ -45,10 +45,6 @@ async function stickerCommand(sock, chatId, message) {
             return;
         }
 
-        await sock.sendMessage(chatId, {
-            text: 'Mohon tunggu sebentar, Tuan~ Yuuki sedang menyulapnya menjadi stiker untuk Tuan~'
-        }, { quoted: messageToQuote });
-
         const tmpDir = path.join(process.cwd(), 'tmp');
         if (!fs.existsSync(tmpDir)) {
             fs.mkdirSync(tmpDir, { recursive: true });

@@ -246,11 +246,7 @@
         {
           "name": ".dl",
           "alias": ".download",
-          "desc": "Download dari link media"
-        },
-        {
-          "name": ".btch",
-          "desc": "Download universal (YouTube, IG, TikTok, dll)"
+          "desc": "Download dari link media (YouTube, IG, TikTok, dll)"
         }
       ]
     },
