@@ -23,11 +23,15 @@ async function deepseekCommand(sock, chatId, message, input) {
     } catch (error) {
         console.error('Deepseek error:', error.response?.data || error.message);
         const errMsg = error?.message || error?.toString() || '';
+        const statusCode = error?.response?.status;
         const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
+        const isRateLimit = statusCode === 429 || errMsg.includes('rate_limit') || errMsg.includes('Rate limit');
         await sock.sendMessage(chatId, {
-            text: isNetworkIssue
-                ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~'
-                : 'Maaf, Tuan~ Yuuki gagal memprosesnya. Mungkin lain kali~'
+            text: isRateLimit
+                ? 'Maaf, Tuan~ Layanan DeepSeek sedang mencapai batas limit. Silakan coba lagi beberapa saat lagi~'
+                : isNetworkIssue
+                    ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~'
+                    : 'Maaf, Tuan~ Yuuki gagal memprosesnya. Mungkin lain kali~'
         }, { quoted: message });
     }
 }

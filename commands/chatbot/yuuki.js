@@ -29,7 +29,7 @@ const API_CONFIGS = {
     }
 };
 
-const ACTIVE_API = 'GROQ'; 
+const API_FALLBACK_ORDER = ['GROQ', 'DEEPSEEK', 'OPENAI'];
 class YuukiPersonalityManager {
     constructor() {
         this.personality = this.createYuukiPersonality();
@@ -373,81 +373,66 @@ JAWABLAH SEBAGAI YUUKI SORIMACHI — PELAYAN YANG SETIA DAN RENDAH HATI:`.trim()
 
 class APIManager {
     constructor() {
-        this.config = API_CONFIGS[ACTIVE_API];
         this.personalityManager = new YuukiPersonalityManager();
-
-        if (!this.config) {
-            console.error(`API ${ACTIVE_API} tidak ditemukan! Ganti ke DEEPSEEK atau GROQ`);
-            process.exit(1);
-        }
     }
 
     async getAPIResponse(userMessage, userId, isAdmin) {
-        try {
-            this.personalityManager.updateUserProfile(userId, userMessage);
+        this.personalityManager.updateUserProfile(userId, userMessage);
+        this.personalityManager.addToHistory(userId, 'user', userMessage);
 
-            const systemPrompt = this.personalityManager.buildPersonalityPrompt(userMessage, userId, isAdmin);
+        const systemPrompt = this.personalityManager.buildPersonalityPrompt(userMessage, userId, isAdmin);
+        const ts = () => chalk.cyan('[' + moment().tz('Asia/Jakarta').format('HH:mm:ss') + ']');
 
-            if (!this.config.apiKey) {
-                console.error(`API key untuk ${ACTIVE_API} tidak ditemukan!`);
-                console.error(`Simpan di .env sebagai: ${ACTIVE_API}_API_KEY=your_key_here`);
-                return this.getFallbackResponse(userMessage, userId, isAdmin);
-            }
+        for (const apiName of API_FALLBACK_ORDER) {
+            const config = API_CONFIGS[apiName];
+            if (!config || !config.apiKey) continue;
 
-            this.personalityManager.addToHistory(userId, 'user', userMessage);
+            try {
 
-            const ts = () => chalk.cyan('[' + moment().tz('Asia/Jakarta').format('HH:mm:ss') + ']');
-            console.log(`${ts()} ${chalk.bgBlue(' API  ')} ${ACTIVE_API} -> ${chalk.green('Mengirim request...')}`);
+                console.log(`${ts()} ${chalk.bgBlue(' API  ')} ${apiName} -> ${chalk.green('Mengirim request...')}`);
 
-            const requestData = {
-                model: this.config.model,
-                messages: [
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: userMessage }
-                ],
-                temperature: 0.7,
-                stream: false
-            };
-
-            const response = await axios.post(
-                this.config.url,
-                requestData,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${this.config.apiKey}`,
-                        'Content-Type': 'application/json',
-                    'User-Agent': 'Yuuki-Bot'
+                const response = await axios.post(
+                    config.url,
+                    {
+                        model: config.model,
+                        messages: [
+                            { role: "system", content: systemPrompt },
+                            { role: "user", content: userMessage }
+                        ],
+                        temperature: 0.7,
+                        stream: false
                     },
-                    timeout: 30000 
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${config.apiKey}`,
+                            'Content-Type': 'application/json',
+                            'User-Agent': 'Yuuki-Bot'
+                        },
+                        timeout: 30000
+                    }
+                );
+
+                if (response.data?.choices?.[0]?.message?.content) {
+                    const cleanedResponse = this.cleanResponse(response.data.choices[0].message.content);
+                    this.personalityManager.addToHistory(userId, 'assistant', cleanedResponse);
+
+                    if (this.personalityManager.getUserProfile(userId).interactionCount % 10 === 0) {
+                        this.personalityManager.saveConfig();
+                    }
+
+                    return cleanedResponse;
                 }
-            );
-
-            if (response.data?.choices?.[0]?.message?.content) {
-                const aiResponse = response.data.choices[0].message.content;
-                const cleanedResponse = this.cleanResponse(aiResponse);
-
-                this.personalityManager.addToHistory(userId, 'assistant', cleanedResponse);
-
-                if (this.personalityManager.getUserProfile(userId).interactionCount % 10 === 0) {
-                    this.personalityManager.saveConfig();
+            } catch (error) {
+                const errMsg = error?.message || error?.toString() || '';
+                console.error(`${ts()} ${chalk.bgRed(' API  ')} ${apiName} gagal: ${error.message}`);
+                if (error.response) {
+                    console.error(`   Status: ${error.response.status}`);
                 }
-
-                return cleanedResponse;
-            } else {
-                throw new Error('Format respons tidak valid');
+                continue;
             }
-
-        } catch (error) {
-            console.error('Error dari API:', error.message);
-            const errMsg = error?.message || error?.toString() || '';
-            if (/ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo')) {
-                console.log('   ↓ Jaringan lambat, pakai fallback response');
-            } else if (error.response) {
-                console.error('Status:', error.response.status);
-                console.error('Data:', error.response.data);
-            }
-            return this.getFallbackResponse(userMessage, userId);
         }
+
+        return this.getFallbackResponse(userMessage, userId, isAdmin);
     }
 
     cleanResponse(response) {
@@ -614,43 +599,8 @@ class APIManager {
     }
 
     getFallbackResponse(userMessage, userId, isAdmin) {
-        const profile = this.personalityManager.getUserProfile(userId);
-        const mood = this.personalityManager.analyzeMood(userMessage);
         const title = isAdmin ? "Tuan Besar" : "Tuan";
-
-        const detectedFeature = this.detectFeatureQuestion(userMessage);
-        if (detectedFeature) {
-            const explanations = this.getFeatureExplanations(title);
-            if (explanations[detectedFeature]) {
-                return explanations[detectedFeature];
-            }
-        }
-
-        const responses = {
-            senang: [
-                `Dengan hormat, ${title}, Yuuki turut senang mendengar kebahagiaan ${title}~ Tapi boleh Yuuki bertanya: kapan terakhir kali ${title} menangis karena bahagia?`,
-                `Kebahagiaan ${title} membuat Yuuki ikut terharu. ${title} yang baik hati, apa hal paling absurd yang pernah ${title} lakukan saat senang?`,
-                `Yuuki senang melihat ${title} bahagia~ Izinkan Yuuki bertanya: kalau ${title} bisa jadi hewan selama sehari, ${title} pilih apa dan kenapa?`
-            ],
-            sedih: [
-                `${title}... Yuuki merasakan kesedihanmu. Mau cerita? Yuuki siap mendengarkan dengan penuh penghormatan~`,
-                `Dengan segala hormat, Yuuki tahu ${title} sedang tidak baik. Jangan dipendam sendiri... atau boleh juga, kalau ${title} mau~`,
-                `${title} yang terhormat, Yuuki ada di sini untukmu. Pertanyaan: apa hal terakhir yang membuat ${title} merasa benar-benar tenang?`
-            ],
-            lapar: [
-                `${title} lapar? Sebagai pelayan, Yuuki seharusnya menyediakan makanan... Tapi sayangnya Yuuki hanya ada di sini. Boleh bertanya: makanan apa yang paling ${title} rindukan?`,
-                `Lapar di tengah kesibukan... Yuuki paham, ${title}. Tapi pertanyaannya: kalau dunia berakhir besok, makanan apa yang mau ${title} makan terakhir kali?`
-            ],
-            netral: [
-                `Dengan hormat, Yuuki mengerti, ${title}~ Tapi sebelum lanjut, boleh Yuuki bertanya: apa rahasia yang paling ${title} sembunyikan dari orang terdekat?`,
-                `Yuuki mendengar baik-baic, ${title}. Hmm... pertanyaan random untuk Anda: kalau ${title} bisa baca pikiran satu orang, siapa yang ${title} pilih?`,
-                `Menarik sekali, ${title}. Yuuki selalu siap melayani. Tapi izinkan Yuuki bertanya dulu: apa mimpi paling aneh yang pernah ${title} ingat?`,
-                `${title} yang terhormat, Yuuki mencatat semua yang ${title} katakan~ Pertanyaan untuk Anda: berapa kali ${title} berbohong hari ini?`
-            ]
-        };
-
-        const moodResponses = responses[mood] || responses.netral;
-        return moodResponses[Math.floor(Math.random() * moodResponses.length)];
+        return `${title} yang terhormat, mohon maaf, Yuuki sedang tidak dapat menjawab pertanyaan ${title} saat ini karena semua layanan AI sedang mengalami keterbatasan. Mohon coba lagi beberapa saat lagi~ Yuuki pasti akan segera kembali melayani ${title}.`;
     }
 }
 
