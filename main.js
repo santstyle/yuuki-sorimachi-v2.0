@@ -159,11 +159,12 @@ async function showTypingAfterCommand(sock, chatId) {
 
 async function handleMessages(sock, messageUpdate, printLog) {
     let chatId = null;
+    let message = null;
     try {
         const { messages, type } = messageUpdate;
         if (type !== 'notify') return;
 
-        const message = messages[0];
+        message = messages[0];
         if (!message?.message) return;
 
 
@@ -173,7 +174,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             return;
         }
 
-        const senderId = message.key.fromMe ? sock.user.id : (message.key.participant || message.key.remoteJid);
+        const senderId = message.key.fromMe ? (sock.user?.id || message.key.participant || message.key.remoteJid) : (message.key.participant || message.key.remoteJid);
         chatId = message.key.remoteJid;
         const isGroup = chatId.endsWith('@g.us');
         const senderIsSudo = await isSudo(senderId);

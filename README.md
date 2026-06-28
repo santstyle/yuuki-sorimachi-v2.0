@@ -398,6 +398,33 @@ pm2 start yuuki-bot
 # Scan QR lagi
 ```
 
+### History Database Tidak Update Setelah Reconnect
+
+Setelah bot logout & reconnect, history chat mungkin berhenti tersimpan karena bug `message is not defined`. Fix sudah diterapkan di `main.js`:
+
+- `message` dipindah ke function scope biar kebaca di catch block
+- `sock.user` dikasih null safety (`sock.user?.id`)
+
+Cukup `git pull` lalu `pm2 restart yuuki-bot`.
+
+> **Catatan:** Command `.menu`, `.ping`, `.help`, `.alive`, `.bot`, `.list`, `.reportbug` sengaja **tidak** disimpan ke history (skip list).
+
+### Bot Tiba-tiba Logout (QR Code Sudah Muncul di Log)
+
+Bot otomatis hapus session dan restart saat mendeteksi logout (status 401). QR code baru langsung digenerate — kamu tinggal scan:
+
+```bash
+# Lihat QR code di log (cari pola kotak ASCII)
+pm2 log yuuki-bot --lines 100
+
+# Atau tail log real-time
+tail -f ~/yuuki-sorimachi-v2.0/logs/out.log
+```
+
+Scan QR dengan **WhatsApp > 3 titik > Perangkat Tertaut > Tautkan Perangkat**.
+
+> Bot **tidak perlu di-restart** — QR sudah muncul otomatis. Tinggal scan.
+
 ### Backup Session
 
 ```bash
