@@ -889,22 +889,23 @@ async function handleYuukiResponse(sock, chatId, message, userMessage, senderId)
 const W = 50; // total inner width
 const pad = (text, len) => text + ' '.repeat(Math.max(0, len - text.length));
 
-const modelLine   = pad(`  Model   : ${ACTIVE_API}`, W);
-const apiKey      = API_CONFIGS[ACTIVE_API]?.apiKey;
-const statusText  = apiKey ? 'READY' : 'MISSING API KEY';
-const statusLine  = pad(`  Status  : ${statusText}`, W);
+const primaryApi = API_FALLBACK_ORDER[0];
+const availableApis = API_FALLBACK_ORDER.filter(name => API_CONFIGS[name]?.apiKey);
+const apiStatus = availableApis.length > 0
+    ? chalk.green(pad(`READY (${availableApis.join(', ')})`, W - 12))
+    : chalk.red(pad('ALL MISSING — Yuuki tidak bisa melayani Tuan', W - 12));
 
 console.log('');
 console.log(chalk.cyan('╔' + '═'.repeat(W) + '╗'));
 console.log(chalk.cyan('║') + chalk.bold.magenta(pad('       YUUKI SORIMACHI — MAID ENGINE v2.0', W)) + chalk.cyan('║'));
 console.log(chalk.cyan('╠' + '═'.repeat(W) + '╣'));
-console.log(chalk.cyan('║') + chalk.white('  Model   : ') + chalk.yellow(pad(ACTIVE_API, W - 12)) + chalk.cyan('║'));
-console.log(chalk.cyan('║') + chalk.white('  Status  : ') + (apiKey ? chalk.green(pad('READY — Siap Melayani Tuan', W - 12)) : chalk.red(pad('MISSING API KEY', W - 12))) + chalk.cyan('║'));
+console.log(chalk.cyan('║') + chalk.white('  Fallback: ') + chalk.yellow(pad(API_FALLBACK_ORDER.join(' → '), W - 12)) + chalk.cyan('║'));
+console.log(chalk.cyan('║') + chalk.white('  Status  : ') + apiStatus + chalk.cyan('║'));
 console.log(chalk.cyan('╚' + '═'.repeat(W) + '╝'));
 console.log('');
 
-if (!API_CONFIGS[ACTIVE_API]?.apiKey) {
-    console.log(chalk.bgRed.white.bold(' WARNING ') + chalk.red(` API Key for ${ACTIVE_API} is missing in .env — Yuuki tidak bisa melayani Tuan~`));
+if (availableApis.length === 0) {
+    console.log(chalk.bgRed.white.bold(' WARNING ') + chalk.red(` Semua API Key tidak ditemukan di .env — Fallback: ${API_FALLBACK_ORDER.join(', ')}`));
 }
 
 module.exports = {
