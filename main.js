@@ -177,12 +177,13 @@ async function handleMessages(sock, messageUpdate, printLog) {
         chatId = message.key.remoteJid;
         let senderId = message.key.fromMe ? (sock.user?.id || message.key.participant || message.key.remoteJid) : (message.key.participant || message.key.remoteJid);
 
-        // Resolve LID → phone JID hanya untuk senderId (admin/sudo check)
+        // Resolve LID → phone JID — session encryption butuh phone JID, bukan @lid
         const knownLid = process.env.OWNER_LID;
         const knownPhone = process.env.OWNER_NUMBER;
         if (knownLid && knownPhone) {
             if (chatId.endsWith('@lid') && chatId.split('@')[0] === knownLid) {
-                console.log(chalk.cyan(`[${moment().tz('Asia/Jakarta').format('HH:mm:ss')}]`) + chalk.bgMagenta.white(' LID  ') + chalk.white(`chatId ${chatId} → ${knownPhone}@s.whatsapp.net`));
+                console.log(chalk.cyan(`[${moment().tz('Asia/Jakarta').format('HH:mm:ss')}]`) + chalk.bgMagenta.white(' LID  ') + chalk.white(`Resolve ${chatId} → ${knownPhone}@s.whatsapp.net`));
+                chatId = knownPhone + '@s.whatsapp.net';
             }
             const sid = senderId || '';
             if (sid.endsWith('@lid') && sid.split('@')[0] === knownLid) {
