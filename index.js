@@ -146,7 +146,7 @@ async function startXeonBotInc() {
 
     const msgRetryCounterCache = new NodeCache()
 
-    const logger = pino({ level: 'silent' })
+    const logger = pino({ level: 'warn' })
 
     const XeonBotInc = makeWASocket({
         version,
@@ -248,6 +248,28 @@ async function startXeonBotInc() {
         for (let contact of update) {
             let id = XeonBotInc.decodeJid(contact.id)
             if (store && store.contacts) store.contacts[id] = { id, name: contact.notify }
+        }
+    })
+
+    // Log message delivery updates — tangkap error/ack dari server
+    XeonBotInc.ev.on('messages.update', updates => {
+        for (const update of updates) {
+            const key = update.key;
+            const id = key?.id;
+            const remoteJid = key?.remoteJid;
+            const status = update.update?.status;
+            const errors = update.update?.errors;
+            if (status || errors) {
+                console.log(`[MSG UPDATE] id=${id} to=${remoteJid} status=${status || 'none'} errors=${errors ? JSON.stringify(errors) : 'none'}`);
+            }
+        }
+    })
+
+    // Log delivery receipts — kirim/read/sent status
+    XeonBotInc.ev.on('message-receipt.update', updates => {
+        for (const update of updates) {
+            const key = update.key;
+            console.log(`[MSG RECEIPT] id=${key?.id} from=${update.receipt?.remoteJid} participant=${update.receipt?.participant} type=${update.receipt?.type} status=${update.receipt?.status}`);
         }
     })
 

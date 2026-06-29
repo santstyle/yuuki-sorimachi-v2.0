@@ -158,6 +158,28 @@ async function showTypingAfterCommand(sock, chatId) {
 
 
 async function handleMessages(sock, messageUpdate, printLog) {
+    // Monkey-patch sendMessage sekali per socket biar bisa catch error stack trace
+    if (!sock._debugPatched) {
+        sock._debugPatched = true;
+        const origSend = sock.sendMessage.bind(sock);
+        sock.sendMessage = async function(jid, content, options) {
+            const isPrivateChat = jid && !jid.endsWith('@g.us') && !jid.endsWith('@broadcast');
+            if (isPrivateChat) {
+                console.log(`[SENDMSG DEBUG] to=${jid} type=${Object.keys(content || {})[0]}`);
+            }
+            try {
+                const result = await origSend(jid, content, options);
+                if (isPrivateChat) {
+                    console.log(`[SENDMSG DEBUG] OK id=${result?.key?.id}`);
+                }
+                return result;
+            } catch (error) {
+                console.error(`[SENDMSG DEBUG] FAILED to=${jid}`, error?.stack || error?.message || error);
+                throw error;
+            }
+        };
+    }
+
     let chatId = null;
     let message = null;
     try {

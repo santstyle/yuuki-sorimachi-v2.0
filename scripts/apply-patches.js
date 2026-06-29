@@ -22,26 +22,49 @@ function revertPatches(content) {
 }
 
 function applyPatches(content) {
+    const results = {};
+
     // Apply first hunk: add destUser after jidDecode
+    const h1Before = content;
     content = content.replace(
         'const { user, server } = jidDecode(jid);\n        const statusJid = \'status@broadcast\';',
         'const { user, server } = jidDecode(jid);\n        const destUser = user;\n        const statusJid = \'status@broadcast\';'
     );
+    results['hunk1_destUser'] = content !== h1Before;
 
     // Apply second hunk: change server assignment
+    const h2Before = content;
     content = content.replace(
         'const server = isMe ? \'s.whatsapp.net\' : isLid ? \'lid\' : \'s.whatsapp.net\';',
         'const isDest = user === destUser;\n                    const server = isMe ? \'s.whatsapp.net\' : (isDest && isLid) ? \'lid\' : \'s.whatsapp.net\';'
     );
+    results['hunk2_isDest'] = content !== h2Before;
 
     // Apply third hunk: skip bare { user } entry if USync already provided device-specific entries
-    // Prevents establishing phantom sessions for device 0 that can block delivery
+    const h3Before = content;
     content = content.replace(
         'for (const { user, device } of devices) {\n                    const isMe = user === meUser;\n                    const isDest = user === destUser;\n                    const server = isMe ? \'s.whatsapp.net\' : (isDest && isLid) ? \'lid\' : \'s.whatsapp.net\';',
         'for (const { user, device } of devices) {\n                    if (device === undefined && devices.some(d => d.user === user && d.device !== undefined)) {\n                        continue;\n                    }\n                    const isMe = user === meUser;\n                    const isDest = user === destUser;\n                    const server = isMe ? \'s.whatsapp.net\' : (isDest && isLid) ? \'lid\' : \'s.whatsapp.net\';'
     );
+    results['hunk3_bareDeviceSkip'] = content !== h3Before;
 
-    return content;
+    // Apply fourth hunk: debug logging after createParticipantNodes
+    const h4Before = content;
+    content = content.replace(
+        'participants.push(...meNodes);\n                participants.push(...otherNodes);\n                shouldIncludeDeviceIdentity = shouldIncludeDeviceIdentity || s1 || s2;',
+        'participants.push(...meNodes);\n                participants.push(...otherNodes);\n                shouldIncludeDeviceIdentity = shouldIncludeDeviceIdentity || s1 || s2;\n                if (!isGroup) {\n                    const participantJids = participants.map(p => p?.attrs?.jid).filter(Boolean);\n                    console.log(`[RELAY DEBUG] isLid=${isLid} isGroup=${isGroup} to=${destinationJid} participants=${participantJids.length} jids=[${participantJids.join(\", \")}]`);\n                }'
+    );
+    results['hunk4_relayDebug1'] = content !== h4Before;
+
+    // Apply fifth hunk: debug logging before sendNode
+    const h5Before = content;
+    content = content.replace(
+        'await sendNode(stanza);',
+        'if (!isGroup) { const encTypes = []; for (const p of participants) { const enc = p?.content?.[0]; encTypes.push(`${p?.attrs?.jid}:${enc?.attrs?.type || \'?\'}`); } console.log(`[RELAY DEBUG] SEND to=${stanza.attrs.to} enc=[${encTypes.join(\", \")}] id=${stanza.attrs.id}`); }\n            await sendNode(stanza);'
+    );
+    results['hunk5_relayDebug2'] = content !== h5Before;
+
+    return { content, results };
 }
 
 const targetFile = path.join(rootDir, 'node_modules/@whiskeysockets/baileys/lib/Socket/messages-send.js');
@@ -56,15 +79,30 @@ let content = fs.readFileSync(targetFile, 'utf8');
 content = content.replace(/\r\n/g, '\n');
 
 content = revertPatches(content);
-content = applyPatches(content);
+const { content: patchedContent, results } = applyPatches(content);
+content = patchedContent;
 
 fs.writeFileSync(targetFile, content, 'utf8');
 
+// Report per-hunk results
+for (const [name, ok] of Object.entries(results)) {
+    console.log(`  ${ok ? '✓' : '✗'} ${name}`);
+}
+
 const hasDestUser = content.includes('const destUser');
 const hasIsDest = content.includes('const isDest');
+const hasBareDeviceSkip = content.includes('device === undefined && devices.some');
+const hasRelayDebug1 = content.includes('[RELAY DEBUG]');
+const hasRelayDebug2 = content.includes('isGroup) { const encTypes');
 
-if (hasDestUser && hasIsDest) {
-    console.log('  ✓ Patch applied successfully');
+console.log('');
+if (hasDestUser && hasIsDest && hasBareDeviceSkip) {
+    console.log('  ✓ Core patches applied successfully');
 } else {
-    console.log(`  ✗ Patch incomplete — destUser: ${hasDestUser}, isDest: ${hasIsDest}`);
+    console.log(`  ✗ Core patches incomplete — destUser: ${hasDestUser}, isDest: ${hasIsDest}, bareDeviceSkip: ${hasBareDeviceSkip}`);
+}
+if (hasRelayDebug1 || hasRelayDebug2) {
+    console.log('  ✓ Debug logs present');
+} else {
+    console.log('  ✗ Debug logs not found');
 }
