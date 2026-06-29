@@ -6,6 +6,9 @@ const rootDir = path.join(__dirname, '..');
 
 // Reset Baileys messages-send.js ke original dulu (kalo patch sebelumnya pernah diapply)
 function revertPatches(content) {
+    // Revert third hunk: remove bare-device skip
+    content = content.replace(/\n\s+if \(device === undefined && devices\.some\(d => d\.user === user && d\.device !== undefined\)\) \{\n\s+continue;\n\s+}/, '');
+
     // Revert first hunk: remove destUser line
     content = content.replace(/\n\s+const destUser = user;\n/, '\n');
 
@@ -29,6 +32,13 @@ function applyPatches(content) {
     content = content.replace(
         'const server = isMe ? \'s.whatsapp.net\' : isLid ? \'lid\' : \'s.whatsapp.net\';',
         'const isDest = user === destUser;\n                    const server = isMe ? \'s.whatsapp.net\' : (isDest && isLid) ? \'lid\' : \'s.whatsapp.net\';'
+    );
+
+    // Apply third hunk: skip bare { user } entry if USync already provided device-specific entries
+    // Prevents establishing phantom sessions for device 0 that can block delivery
+    content = content.replace(
+        'for (const { user, device } of devices) {\n                    const isMe = user === meUser;\n                    const isDest = user === destUser;\n                    const server = isMe ? \'s.whatsapp.net\' : (isDest && isLid) ? \'lid\' : \'s.whatsapp.net\';',
+        'for (const { user, device } of devices) {\n                    if (device === undefined && devices.some(d => d.user === user && d.device !== undefined)) {\n                        continue;\n                    }\n                    const isMe = user === meUser;\n                    const isDest = user === destUser;\n                    const server = isMe ? \'s.whatsapp.net\' : (isDest && isLid) ? \'lid\' : \'s.whatsapp.net\';'
     );
 
     return content;
