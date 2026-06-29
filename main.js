@@ -182,22 +182,27 @@ async function handleMessages(sock, messageUpdate, printLog) {
         chatId = message.key.remoteJid;
         let senderId = message.key.fromMe ? (sock.user?.id || message.key.participant || message.key.remoteJid) : (message.key.participant || message.key.remoteJid);
 
-        // Resolve LID ke phone JID untuk semua user (biar ga duplikat di DB)
+        // Normalisasi senderId: resolve LID → phone, strip device suffix
         // chatId TIDAK di-resolve — tetap LID JID supaya tcToken ke-attach oleh Baileys
-        if (senderId && senderId.endsWith('@lid')) {
-            try {
-                const pn = await sock.signalRepository.lidMapping.getPNForLID(senderId);
-                if (pn) {
-                    // Strip device suffix (e.g. "628123:0@s.whatsapp.net" → "628123@s.whatsapp.net")
-                    const phoneNum = pn.split('@')[0].split(':')[0];
-                    const phoneJid = phoneNum + '@s.whatsapp.net';
-                    if (senderId !== phoneJid) {
-                        console.log(chalk.cyan(`[${moment().tz('Asia/Jakarta').format('HH:mm:ss')}]`) + chalk.bgMagenta.white(' LID  ') + chalk.white(`Resolve ${senderId} → ${phoneJid}`));
-                        senderId = phoneJid;
+        if (senderId) {
+            if (senderId.endsWith('@lid')) {
+                // LID → phone JID
+                try {
+                    const pn = await sock.signalRepository.lidMapping.getPNForLID(senderId);
+                    if (pn) {
+                        const phoneNum = pn.split('@')[0].split(':')[0];
+                        const phoneJid = phoneNum + '@s.whatsapp.net';
+                        if (senderId !== phoneJid) {
+                            console.log(chalk.cyan(`[${moment().tz('Asia/Jakarta').format('HH:mm:ss')}]`) + chalk.bgMagenta.white(' LID  ') + chalk.white(`Resolve ${senderId} → ${phoneJid}`));
+                            senderId = phoneJid;
+                        }
                     }
-                }
-            } catch (e) {
-                // fallback: kalau resolve gagal, tetap pake LID
+                } catch (e) {}
+            }
+            // Strip device suffix dari phone JID (e.g. "628xxx:0@s.whatsapp.net" → "628xxx@s.whatsapp.net")
+            if (senderId.endsWith('@s.whatsapp.net') && senderId.includes(':')) {
+                const cleanNum = senderId.split(':')[0];
+                senderId = cleanNum + '@s.whatsapp.net';
             }
         }
 
