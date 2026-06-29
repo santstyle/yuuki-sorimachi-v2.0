@@ -709,7 +709,7 @@ Perintah:
             }
 
             groupData.chatbot = groupData.chatbot || {};
-            delete groupData.chatbot[chatId];
+            groupData.chatbot[chatId] = false;
             saveUserGroupData(groupData);
 
             return sock.sendMessage(chatId, {
@@ -740,12 +740,9 @@ async function handleYuukiResponse(sock, chatId, message, userMessage, senderId)
 
         if (!userMessage || !userMessage.trim()) return;
 
-        if (isGroup) {
-            const groupData = loadUserGroupData();
-            if (!groupData.chatbot || !groupData.chatbot[chatId]) {
-                return;
-            }
-        }
+        const groupData = loadUserGroupData();
+        if (groupData.chatbot?.[chatId] === false) return;
+        if (isGroup && (!groupData.chatbot || !groupData.chatbot[chatId])) return;
 
         if (!global.__botJidCache) global.__botJidCache = {};
         if (message.key.fromMe) {
@@ -773,7 +770,7 @@ async function handleYuukiResponse(sock, chatId, message, userMessage, senderId)
 
         let triggerReason = isGroup ? 'none' : 'private_chat';
 
-        if (botNumber && cleanedMessage.includes(`@${botNumber}`)) {
+        if (isGroup && botNumber && cleanedMessage.includes(`@${botNumber}`)) {
             isForYuuki = true;
             triggerReason = 'mention_text';
             cleanedMessage = cleanedMessage.replace(new RegExp(`@${botNumber}`, 'gi'), '').trim();
@@ -798,7 +795,7 @@ async function handleYuukiResponse(sock, chatId, message, userMessage, senderId)
         const botGroupJid = chatMessages?.find(m => m.key.fromMe && m.key.participant)?.key?.participant;
         if (botGroupJid) allBotJids.add(botGroupJid);
 
-        if (!isForYuuki) {
+        if (!isForYuuki && isGroup) {
             const contextInfo = message.message?.extendedTextMessage?.contextInfo
                 || message.message?.contextInfo;
 
@@ -817,16 +814,6 @@ async function handleYuukiResponse(sock, chatId, message, userMessage, senderId)
                     try {
                         const quotedMsg = await store.loadMessage(chatId, contextInfo.stanzaId);
                             if (quotedMsg?.key?.fromMe) {
-                                const origCtx = quotedMsg.message?.extendedTextMessage?.contextInfo
-                                    || quotedMsg.message?.contextInfo;
-                                if (origCtx?.stanzaId) {
-                                    const origMsg = await store.loadMessage(chatId, origCtx.stanzaId);
-                                    const origText = origMsg?.message?.conversation
-                                        || origMsg?.message?.extendedTextMessage?.text || '';
-                                    if (origText.startsWith('.')) {
-                                        return;
-                                    }
-                                }
                                 isForYuuki = true;
                                 triggerReason = 'reply';
                                 if (contextInfo.participant) {
