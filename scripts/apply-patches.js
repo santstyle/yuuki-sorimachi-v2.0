@@ -90,19 +90,25 @@ function applyPatches(content) {
     results['hunk5_relayDebug2'] = content !== h5Before;
 
     // Hunk 6: tcToken store — listen to chats.update to capture privacy tokens
+    // Idempotency: skip if already applied
     const h6Before = content;
-    content = content.replace(
-        'const { ev, authState, processingMutex, signalRepository, upsertMessage, query, fetchPrivacySettings, sendNode, groupMetadata, groupToggleEphemeral } = sock;',
-        'const { ev, authState, processingMutex, signalRepository, upsertMessage, query, fetchPrivacySettings, sendNode, groupMetadata, groupToggleEphemeral } = sock;\n    // tcToken store: simpan privacy token dari chats.update event\n    const tcTokenStore = new Map();\n    ev.on(\'chats.update\', (_updates) => {\n        for (const u of _updates) {\n            if (u.tcToken && u.id) {\n                tcTokenStore.set(jidNormalizedUser(u.id), u.tcToken);\n                console.log(`[TC TOKEN] Stored for ${u.id} (store size: ${tcTokenStore.size})`);\n            }\n        }\n    });'
-    );
+    if (!content.includes('const tcTokenStore')) {
+        content = content.replace(
+            'const { ev, authState, processingMutex, signalRepository, upsertMessage, query, fetchPrivacySettings, sendNode, groupMetadata, groupToggleEphemeral } = sock;',
+            'const { ev, authState, processingMutex, signalRepository, upsertMessage, query, fetchPrivacySettings, sendNode, groupMetadata, groupToggleEphemeral } = sock;\n    // tcToken store: simpan privacy token dari chats.update event\n    const tcTokenStore = new Map();\n    ev.on(\'chats.update\', (_updates) => {\n        for (const u of _updates) {\n            if (u.tcToken && u.id) {\n                tcTokenStore.set(jidNormalizedUser(u.id), u.tcToken);\n                console.log(`[TC TOKEN] Stored for ${u.id} (store size: ${tcTokenStore.size})`);\n            }\n        }\n    });'
+        );
+    }
     results['hunk6_tcTokenStore'] = content !== h6Before;
 
     // Hunk 7: tcToken injection — attach privacy token to outgoing 1:1 messages
+    // Idempotency: skip if already applied
     const h7Before = content;
-    content = content.replace(
-        '            const stanza = {\n                tag: \'message\',',
-        '            // tcToken: attach privacy token for 1:1 messages to prevent error 463\n            if (!isGroup && !isStatus && !isNewsletter) {\n                const _tcToken = tcTokenStore.get(jidNormalizedUser(destinationJid));\n                if (_tcToken) {\n                    binaryNodeContent.unshift({ tag: \'token\', attrs: {}, content: _tcToken });\n                    console.log(`[TC TOKEN] Injected for ${destinationJid}`);\n                } else {\n                    console.log(`[TC TOKEN] MISSING for ${destinationJid} (store size: ${tcTokenStore.size})`);\n                }\n            }\n            const stanza = {\n                tag: \'message\','
-    );
+    if (!content.includes('binaryNodeContent.unshift')) {
+        content = content.replace(
+            '            const stanza = {\n                tag: \'message\',',
+            '            // tcToken: attach privacy token for 1:1 messages to prevent error 463\n            if (!isGroup && !isStatus && !isNewsletter) {\n                const _tcToken = tcTokenStore.get(jidNormalizedUser(destinationJid));\n                if (_tcToken) {\n                    binaryNodeContent.unshift({ tag: \'token\', attrs: {}, content: _tcToken });\n                    console.log(`[TC TOKEN] Injected for ${destinationJid}`);\n                } else {\n                    console.log(`[TC TOKEN] MISSING for ${destinationJid} (store size: ${tcTokenStore.size})`);\n                }\n            }\n            const stanza = {\n                tag: \'message\','
+        );
+    }
     results['hunk7_tcTokenInject'] = content !== h7Before;
 
     return { content, results };
