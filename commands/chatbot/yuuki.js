@@ -382,6 +382,7 @@ class APIManager {
 
         const systemPrompt = this.personalityManager.buildPersonalityPrompt(userMessage, userId, isAdmin);
         const ts = () => chalk.cyan('[' + moment().tz('Asia/Jakarta').format('HH:mm:ss') + ']');
+        const failedApis = [];
 
         for (const apiName of API_FALLBACK_ORDER) {
             const config = API_CONFIGS[apiName];
@@ -424,6 +425,9 @@ class APIManager {
                 }
             } catch (error) {
                 const errMsg = error?.message || error?.toString() || '';
+                const statusCode = error?.response?.status;
+                const isRateLimit = statusCode === 429 || /rate_limit|Rate limit/i.test(errMsg);
+                failedApis.push(`${apiName}${isRateLimit ? ' (limit)' : ` (${statusCode || 'error'})`}`);
                 console.error(`${ts()} ${chalk.bgRed(' API  ')} ${apiName} gagal: ${error.message}`);
                 if (error.response) {
                     console.error(`   Status: ${error.response.status}`);
@@ -432,7 +436,7 @@ class APIManager {
             }
         }
 
-        return this.getFallbackResponse(userMessage, userId, isAdmin);
+        return this.getFallbackResponse(userMessage, userId, isAdmin, failedApis);
     }
 
     cleanResponse(response) {
@@ -598,9 +602,10 @@ class APIManager {
         return null;
     }
 
-    getFallbackResponse(userMessage, userId, isAdmin) {
+    getFallbackResponse(userMessage, userId, isAdmin, failedApis = []) {
         const title = isAdmin ? "Tuan Besar" : "Tuan";
-        return `${title} yang terhormat, mohon maaf, Yuuki sedang tidak dapat menjawab pertanyaan ${title} saat ini karena semua layanan AI sedang mengalami keterbatasan. Mohon coba lagi beberapa saat lagi~ Yuuki pasti akan segera kembali melayani ${title}.`;
+        const statusStr = failedApis.length ? ` (${failedApis.join(' › ')})` : '';
+        return `${title} yang terhormat, mohon maaf, Yuuki tidak bisa menjawab sekarang karena semua layanan AI sedang mengalami keterbatasan. Silakan coba lagi dalam 5-10 menit~${statusStr}`;
     }
 }
 

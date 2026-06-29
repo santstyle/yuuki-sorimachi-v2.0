@@ -1,6 +1,6 @@
 {
   "name": "yuuki-bot",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "WhatsApp Bot",
   "main": "index.js",
   "scripts": {
@@ -12,6 +12,7 @@
     "start:fresh": "npm run reset-session && npm start",
     "install:panel": "npm install --legacy-peer-deps",
     "install:force": "npm install --force",
+    "postinstall": "node scripts/apply-patches.js",
     "admin": "node admin/server.js",
     "admin:pm2": "pm2 start admin/server.js --name yuuki-admin --watch --ignore-watch=\"node_modules logs session temp tmp .git\"",
     "test": "echo \"Error: no test specified\" && exit 1",

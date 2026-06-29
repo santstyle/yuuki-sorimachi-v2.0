@@ -118,6 +118,32 @@ async function startXeonBotInc() {
 
     let { version, isLatest } = await fetchLatestBaileysVersion()
     const { state, saveCreds } = await useMultiFileAuthState('./session')
+
+    // Fix registrationId if 0 (can cause private message failures)
+    const crypto = require('crypto');
+    if (!state.creds.registrationId) {
+        state.creds.registrationId = (crypto.randomBytes(2).readUInt16LE(0) & 0x3FFF) || 1;
+        console.log(chalk.yellow('⚠ Fix registrationId:'), state.creds.registrationId);
+        fs.writeFileSync('./session/creds.json', JSON.stringify(state.creds, null, 2));
+    }
+
+    // Force refresh owner sessions jika bot identity berubah (re-pairing)
+    const ownerNumber = process.env.OWNER_NUMBER;
+    const ownerLid = process.env.OWNER_LID;
+    if (ownerNumber || ownerLid) {
+        const sessionFiles = fs.readdirSync('./session').filter(f =>
+            (ownerNumber && f.startsWith(`session-${ownerNumber}`)) ||
+            (ownerLid && f.startsWith(`session-${ownerLid}`))
+        );
+        if (sessionFiles.length > 0) {
+            console.log(chalk.yellow(`⚠ Menghapus ${sessionFiles.length} session stale owner untuk force refresh...`));
+            sessionFiles.forEach(f => {
+                fs.unlinkSync(`./session/${f}`);
+                console.log(chalk.gray(`  🗑 ${f}`));
+            });
+        }
+    }
+
     const msgRetryCounterCache = new NodeCache()
 
     const logger = pino({ level: 'silent' })

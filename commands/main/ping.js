@@ -22,21 +22,13 @@ function formatTime(seconds) {
 async function pingCommand(sock, chatId, message) {
     try {
         const start = performance.now();
-
         const uptimeFormatted = formatTime(process.uptime());
-
         const usedMemory = (process.memoryUsage().rss / 1024 / 1024).toFixed(2);
         const totalMemory = (os.totalmem() / 1024 / 1024).toFixed(2);
 
-        await sock.sendMessage(chatId, {
-            text: 'Mengukur denyut nadi Yuuki...'
-        }, { quoted: message });
-
-        const ping = Math.round(performance.now() - start);
-
         const botInfo = `┌── 「 Status Yuuki 」
 │
-│  Ping     : ${ping} ms
+│  Ping     : ${Math.round(performance.now() - start)} ms
 │  Uptime   : ${uptimeFormatted}
 │  Memory   : ${usedMemory} MB / ${totalMemory} MB
 │  Version  : v${settings.version}

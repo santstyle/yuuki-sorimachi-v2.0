@@ -1,0 +1,20 @@
+--- a/node_modules/@whiskeysockets/baileys/lib/Socket/messages-send.js
++++ b/node_modules/@whiskeysockets/baileys/lib/Socket/messages-send.js
+@@ -255,6 +255,7 @@ export const makeMessagesSocket = (config) => {
+         const meId = authState.creds.me.id;
+         let shouldIncludeDeviceIdentity = false;
+         const { user, server } = jidDecode(jid);
++        const destUser = user;
+         const statusJid = 'status@broadcast';
+         const isGroup = server === 'g.us';
+         const isStatus = jid === statusJid;
+@@ -409,7 +410,8 @@ export const makeMessagesSocket = (config) => {
+                 const otherJids = [];
+                 for (const { user, device } of devices) {
+                     const isMe = user === meUser;
+-                    const server = isMe ? 's.whatsapp.net' : isLid ? 'lid' : 's.whatsapp.net';
++                    const isDest = user === destUser;
++                    const server = isMe ? 's.whatsapp.net' : (isDest && isLid) ? 'lid' : 's.whatsapp.net';
+                     const jid = jidEncode(user, server, device);
+                     if (isMe) {
+                         meJids.push(jid);
