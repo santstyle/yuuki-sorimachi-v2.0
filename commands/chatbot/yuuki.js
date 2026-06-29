@@ -773,7 +773,7 @@ async function handleYuukiResponse(sock, chatId, message, userMessage, senderId)
 
         let triggerReason = isGroup ? 'none' : 'private_chat';
 
-        if (botNumber && cleanedMessage.includes(`@${botNumber}`)) {
+        if (isGroup && botNumber && cleanedMessage.includes(`@${botNumber}`)) {
             isForYuuki = true;
             triggerReason = 'mention_text';
             cleanedMessage = cleanedMessage.replace(new RegExp(`@${botNumber}`, 'gi'), '').trim();
@@ -798,7 +798,7 @@ async function handleYuukiResponse(sock, chatId, message, userMessage, senderId)
         const botGroupJid = chatMessages?.find(m => m.key.fromMe && m.key.participant)?.key?.participant;
         if (botGroupJid) allBotJids.add(botGroupJid);
 
-        if (!isForYuuki) {
+        if (!isForYuuki && isGroup) {
             const contextInfo = message.message?.extendedTextMessage?.contextInfo
                 || message.message?.contextInfo;
 
@@ -817,16 +817,6 @@ async function handleYuukiResponse(sock, chatId, message, userMessage, senderId)
                     try {
                         const quotedMsg = await store.loadMessage(chatId, contextInfo.stanzaId);
                             if (quotedMsg?.key?.fromMe) {
-                                const origCtx = quotedMsg.message?.extendedTextMessage?.contextInfo
-                                    || quotedMsg.message?.contextInfo;
-                                if (origCtx?.stanzaId) {
-                                    const origMsg = await store.loadMessage(chatId, origCtx.stanzaId);
-                                    const origText = origMsg?.message?.conversation
-                                        || origMsg?.message?.extendedTextMessage?.text || '';
-                                    if (origText.startsWith('.')) {
-                                        return;
-                                    }
-                                }
                                 isForYuuki = true;
                                 triggerReason = 'reply';
                                 if (contextInfo.participant) {

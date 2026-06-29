@@ -392,11 +392,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
         }
 
         try {
-            const dir = './data';
-            if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-            if (!fs.existsSync('./data/messageCount.json')) {
-                fs.writeFileSync('./data/messageCount.json', JSON.stringify({}));
-            }
             const data = JSON.parse(fs.readFileSync('./data/messageCount.json'));
             if (!data.isPublic && !message.key.fromMe && !senderIsSudo) {
                 return;
@@ -1116,11 +1111,6 @@ async function handleMessageRevocation(sock, message) {
 
 function incrementMessageCount(chatId, senderId) {
     try {
-        const dir = './data';
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-        if (!fs.existsSync('./data/messageCount.json')) {
-            fs.writeFileSync('./data/messageCount.json', JSON.stringify({}));
-        }
         const data = JSON.parse(fs.readFileSync('./data/messageCount.json', 'utf8'));
 
         if (!data[chatId]) {
