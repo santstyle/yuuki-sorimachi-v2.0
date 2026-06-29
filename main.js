@@ -188,8 +188,9 @@ async function handleMessages(sock, messageUpdate, printLog) {
             try {
                 const pn = await sock.signalRepository.lidMapping.getPNForLID(senderId);
                 if (pn) {
-                    const resolvedPhone = pn.split('@')[0];
-                    const phoneJid = resolvedPhone + '@s.whatsapp.net';
+                    // Strip device suffix (e.g. "628123:0@s.whatsapp.net" → "628123@s.whatsapp.net")
+                    const phoneNum = pn.split('@')[0].split(':')[0];
+                    const phoneJid = phoneNum + '@s.whatsapp.net';
                     if (senderId !== phoneJid) {
                         console.log(chalk.cyan(`[${moment().tz('Asia/Jakarta').format('HH:mm:ss')}]`) + chalk.bgMagenta.white(' LID  ') + chalk.white(`Resolve ${senderId} → ${phoneJid}`));
                         senderId = phoneJid;
