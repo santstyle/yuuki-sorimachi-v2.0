@@ -20,13 +20,12 @@ function formatTime(seconds) {
 }
 
 async function pingCommand(sock, chatId, message) {
-    try {
-        const start = performance.now();
-        const uptimeFormatted = formatTime(process.uptime());
-        const usedMemory = (process.memoryUsage().rss / 1024 / 1024).toFixed(2);
-        const totalMemory = (os.totalmem() / 1024 / 1024).toFixed(2);
+    const start = performance.now();
+    const uptimeFormatted = formatTime(process.uptime());
+    const usedMemory = (process.memoryUsage().rss / 1024 / 1024).toFixed(2);
+    const totalMemory = (os.totalmem() / 1024 / 1024).toFixed(2);
 
-        const botInfo = `┌── 「 Status Yuuki 」
+    const botInfo = `┌── 「 Status Yuuki 」
 │
 │  Ping     : ${Math.round(performance.now() - start)} ms
 │  Uptime   : ${uptimeFormatted}
@@ -35,12 +34,19 @@ async function pingCommand(sock, chatId, message) {
 │
 └───────────────`;
 
-        await sock.sendMessage(chatId, { text: botInfo }, { quoted: message });
+    console.log(`[PING DEBUG] chatId=${chatId} isGroup=${chatId.endsWith('@g.us')} remoteJid=${message.key?.remoteJid}`);
+    console.log(`[PING DEBUG] Attempting sendMessage to ${chatId}...`);
+
+    try {
+        const result = await sock.sendMessage(chatId, { text: botInfo });
+        console.log(`[PING DEBUG] sendMessage OK id=${result?.key?.id}`);
     } catch (error) {
-        console.error('Error di ping command:', error);
-        await sock.sendMessage(chatId, {
-            text: 'Maaf, Tuan~ Sepertinya ada yang mengganggu sihir Yuuki. Yuuki gagal membaca denyut nadi sendiri. Mungkin Tuan bisa memeluk Yuuki sebentar? Yuuki butuh kehangatan~'
-        }, { quoted: message });
+        console.error(`[PING DEBUG] sendMessage FAILED:`, error?.message || error);
+        try {
+            await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki error: ' + (error?.message || 'unknown') });
+        } catch (e2) {
+            console.error(`[PING DEBUG] Error message ALSO failed:`, e2?.message);
+        }
     }
 }
 
