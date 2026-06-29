@@ -199,8 +199,8 @@ async function handleMessages(sock, messageUpdate, printLog) {
         chatId = message.key.remoteJid;
         let senderId = message.key.fromMe ? (sock.user?.id || message.key.participant || message.key.remoteJid) : (message.key.participant || message.key.remoteJid);
 
-        // Resolve known LIDs ke phone JID untuk senderId (sudo/admin check) DAN chatId (sendMessage)
-        // supaya session encryption pake phone JID beneran, bukan @lid
+        // Resolve known LID ke phone JID untuk senderId (sudo/admin check)
+        // chatId TIDAK di-resolve — tetap LID JID supaya tcToken ke-attach oleh Baileys
         const knownLid = process.env.OWNER_LID;
         const knownPhone = process.env.OWNER_NUMBER;
         if (knownLid && knownPhone) {
@@ -208,11 +208,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
             if (sid.endsWith('@lid') && sid.split('@')[0] === knownLid) {
                 console.log(chalk.cyan(`[${moment().tz('Asia/Jakarta').format('HH:mm:ss')}]`) + chalk.bgMagenta.white(' LID  ') + chalk.white(`Resolve sender ${sid} → ${knownPhone}@s.whatsapp.net`));
                 senderId = knownPhone + '@s.whatsapp.net';
-            }
-            const cid = chatId || '';
-            if (cid.endsWith('@lid') && cid.split('@')[0] === knownLid) {
-                console.log(chalk.cyan(`[${moment().tz('Asia/Jakarta').format('HH:mm:ss')}]`) + chalk.bgMagenta.white(' LID  ') + chalk.white(`Resolve chatId ${cid} → ${knownPhone}@s.whatsapp.net`));
-                chatId = knownPhone + '@s.whatsapp.net';
             }
         }
 

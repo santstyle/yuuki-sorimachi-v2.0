@@ -14,6 +14,18 @@ content = content.replace(/\r\n/g, '\n');
 
 // ===== REVERT ALL PATCHES (clean slate) =====
 function revertAll(content) {
+    // Revert hunk 7: remove tcToken injection before stanza
+    content = content.replace(
+        /\n            \/\/ tcToken: attach privacy token for 1:1 messages to prevent error 463\n            if \(!isGroup && !isStatus && !isNewsletter\) \{\n                const _tcToken = tcTokenStore\.get\(jidNormalizedUser\(destinationJid\)\);\n                if \(_tcToken\) \{\n                    binaryNodeContent\.unshift\(\{ tag: 'token', attrs: \{\}, content: _tcToken \}\);\n                }\n            }\n/,
+        ''
+    );
+
+    // Revert hunk 6: remove tcToken store + listener
+    content = content.replace(
+        /\n    \/\/ tcToken store: simpan privacy token dari chats\.update event\n    const tcTokenStore = new Map\(\);\n    ev\.on\('chats\.update', \(\_updates\) => \{\n        for \(const u of \_updates\) \{\n            if \(u\.tcToken && u\.id\) tcTokenStore\.set\(jidNormalizedUser\(u\.id\), u\.tcToken\);\n        }\n    }\);\n/,
+        ''
+    );
+
     // Revert hunk 5: remove debug log before sendNode
     content = content.replace(
         /if \(!isGroup\) \{ const encTypes = \[\];[\s\S]*?console\.log\(`\[RELAY DEBUG\] SEND[^`]*`\); \}\n            /,
@@ -50,12 +62,10 @@ function applyPatches(content) {
     );
     results['hunk1_destUser'] = content !== h1Before;
 
-    // Hunk 2: REMOVED — old Baileys had `const server = isMe ? ...` which no longer exists
-    // Code now uses jidEncode() directly, no server assignment to patch
+    // Hunk 2: REMOVED
     results['hunk2_isDest'] = 'skipped (not needed)';
 
     // Hunk 3: skip bare { user } entry if USync already provided device-specific entries
-    // Prevents phantom device-0 sessions that cause error 463
     const h3Before = content;
     content = content.replace(
         'for (const { user, device } of devices) {\n                    const isMe = user === meUser;\n                    const jid = jidEncode(isMe && isLid ? authState.creds?.me?.lid.split(\':\')[0] || user : user, isLid ? \'lid\' : \'s.whatsapp.net\', device);',
@@ -71,13 +81,29 @@ function applyPatches(content) {
     );
     results['hunk4_relayDebug1'] = content !== h4Before;
 
-    // Hunk 5: debug logging before sendNode (encryption types + stanza details)
+    // Hunk 5: debug logging before sendNode
     const h5Before = content;
     content = content.replace(
         'await sendNode(stanza);',
         'if (!isGroup) { const encTypes = []; for (const p of participants) { const enc = p?.content?.[0]; encTypes.push(`${p?.attrs?.jid}:${enc?.attrs?.type || \'?\'}`); } console.log(`[RELAY DEBUG] SEND to=${stanza.attrs.to} enc=[${encTypes.join(\", \")}] id=${stanza.attrs.id}`); }\n            await sendNode(stanza);'
     );
     results['hunk5_relayDebug2'] = content !== h5Before;
+
+    // Hunk 6: tcToken store — listen to chats.update to capture privacy tokens
+    const h6Before = content;
+    content = content.replace(
+        'const { ev, authState, processingMutex, signalRepository, upsertMessage, query, fetchPrivacySettings, sendNode, groupMetadata, groupToggleEphemeral } = sock;',
+        'const { ev, authState, processingMutex, signalRepository, upsertMessage, query, fetchPrivacySettings, sendNode, groupMetadata, groupToggleEphemeral } = sock;\n    // tcToken store: simpan privacy token dari chats.update event\n    const tcTokenStore = new Map();\n    ev.on(\'chats.update\', (_updates) => {\n        for (const u of _updates) {\n            if (u.tcToken && u.id) tcTokenStore.set(jidNormalizedUser(u.id), u.tcToken);\n        }\n    });'
+    );
+    results['hunk6_tcTokenStore'] = content !== h6Before;
+
+    // Hunk 7: tcToken injection — attach privacy token to outgoing 1:1 messages
+    const h7Before = content;
+    content = content.replace(
+        '            const stanza = {\n                tag: \'message\',',
+        '            // tcToken: attach privacy token for 1:1 messages to prevent error 463\n            if (!isGroup && !isStatus && !isNewsletter) {\n                const _tcToken = tcTokenStore.get(jidNormalizedUser(destinationJid));\n                if (_tcToken) {\n                    binaryNodeContent.unshift({ tag: \'token\', attrs: {}, content: _tcToken });\n                }\n            }\n            const stanza = {\n                tag: \'message\','
+    );
+    results['hunk7_tcTokenInject'] = content !== h7Before;
 
     return { content, results };
 }
@@ -101,6 +127,8 @@ for (const [name, ok] of Object.entries(results)) {
 
 const hasDestUser = content.includes('const destUser');
 const hasBareDeviceSkip = content.includes('device === undefined && devices.some');
+const hasTcTokenStore = content.includes('tcTokenStore');
+const hasTcTokenInject = content.includes('binaryNodeContent.unshift');
 const hasRelayDebug = content.includes('[RELAY DEBUG]');
 
 console.log('');
@@ -108,6 +136,11 @@ if (hasDestUser && hasBareDeviceSkip) {
     console.log('  ✓ Core patches applied successfully');
 } else {
     console.log(`  ✗ Core patches incomplete — destUser: ${hasDestUser}, bareDeviceSkip: ${hasBareDeviceSkip}`);
+}
+if (hasTcTokenStore && hasTcTokenInject) {
+    console.log('  ✓ tcToken handling applied successfully');
+} else {
+    console.log(`  ✗ tcToken incomplete — store: ${hasTcTokenStore}, inject: ${hasTcTokenInject}`);
 }
 if (hasRelayDebug) {
     console.log('  ✓ Debug logs present');
