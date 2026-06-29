@@ -127,22 +127,22 @@ async function startXeonBotInc() {
         fs.writeFileSync('./session/creds.json', JSON.stringify(state.creds, null, 2));
     }
 
-    // Force refresh owner sessions jika bot identity berubah (re-pairing)
-    const ownerNumber = process.env.OWNER_NUMBER;
-    const ownerLid = process.env.OWNER_LID;
-    if (ownerNumber || ownerLid) {
-        const sessionFiles = fs.readdirSync('./session').filter(f =>
-            (ownerNumber && f.startsWith(`session-${ownerNumber}`)) ||
-            (ownerLid && f.startsWith(`session-${ownerLid}`))
-        );
-        if (sessionFiles.length > 0) {
-            console.log(chalk.yellow(`⚠ Menghapus ${sessionFiles.length} session stale owner untuk force refresh...`));
-            sessionFiles.forEach(f => {
-                fs.unlinkSync(`./session/${f}`);
-                console.log(chalk.gray(`  🗑 ${f}`));
-            });
-        }
-    }
+    // // Force refresh owner sessions — DISABLED: bikin session encryption owner rusak tiap restart
+    // const ownerNumber = process.env.OWNER_NUMBER;
+    // const ownerLid = process.env.OWNER_LID;
+    // if (ownerNumber || ownerLid) {
+    //     const sessionFiles = fs.readdirSync('./session').filter(f =>
+    //         (ownerNumber && f.startsWith(`session-${ownerNumber}`)) ||
+    //         (ownerLid && f.startsWith(`session-${ownerLid}`))
+    //     );
+    //     if (sessionFiles.length > 0) {
+    //         console.log(chalk.yellow(`⚠ Menghapus ${sessionFiles.length} session stale owner untuk force refresh...`));
+    //         sessionFiles.forEach(f => {
+    //             fs.unlinkSync(`./session/${f}`);
+    //             console.log(chalk.gray(`  🗑 ${f}`));
+    //         });
+    //     }
+    // }
 
     const msgRetryCounterCache = new NodeCache()
 
