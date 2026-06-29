@@ -14,15 +14,15 @@ content = content.replace(/\r\n/g, '\n');
 
 // ===== REVERT ALL PATCHES (clean slate) =====
 function revertAll(content) {
-    // Revert hunk 7: remove tcToken injection before stanza
+    // Revert hunk 7: remove tcToken injection before stanza (matches with or without debug logs)
     content = content.replace(
-        /\n            \/\/ tcToken: attach privacy token for 1:1 messages to prevent error 463\n            if \(!isGroup && !isStatus && !isNewsletter\) \{\n                const _tcToken = tcTokenStore\.get\(jidNormalizedUser\(destinationJid\)\);\n                if \(_tcToken\) \{\n                    binaryNodeContent\.unshift\(\{ tag: 'token', attrs: \{\}, content: _tcToken \}\);\n                }\n            }\n/,
+        /\n            \/\/ tcToken: attach privacy token for 1:1 messages to prevent error 463\n            if \(!isGroup && !isStatus && !isNewsletter\) \{\n                const _tcToken = tcTokenStore\.get\(jidNormalizedUser\(destinationJid\)\);\n                if \(_tcToken\) \{\n                    binaryNodeContent\.unshift\(\{ tag: 'token', attrs: \{\}, content: _tcToken \}\);[\s\S]*?\}\n            }\n/,
         ''
     );
 
-    // Revert hunk 6: remove tcToken store + listener
+    // Revert hunk 6: remove tcToken store + listener (matches with or without debug logs)
     content = content.replace(
-        /\n    \/\/ tcToken store: simpan privacy token dari chats\.update event\n    const tcTokenStore = new Map\(\);\n    ev\.on\('chats\.update', \(\_updates\) => \{\n        for \(const u of \_updates\) \{\n            if \(u\.tcToken && u\.id\) tcTokenStore\.set\(jidNormalizedUser\(u\.id\), u\.tcToken\);\n        }\n    }\);\n/,
+        /\n    \/\/ tcToken store: simpan privacy token dari chats\.update event\n    const tcTokenStore = new Map\(\);\n    ev\.on\('chats\.update', \(\_updates\) => \{\n        for \(const u of \_updates\) \{\n            if \(u\.tcToken && u\.id\)[\s\S]*?\}\n    }\);\n/,
         ''
     );
 
@@ -93,7 +93,7 @@ function applyPatches(content) {
     const h6Before = content;
     content = content.replace(
         'const { ev, authState, processingMutex, signalRepository, upsertMessage, query, fetchPrivacySettings, sendNode, groupMetadata, groupToggleEphemeral } = sock;',
-        'const { ev, authState, processingMutex, signalRepository, upsertMessage, query, fetchPrivacySettings, sendNode, groupMetadata, groupToggleEphemeral } = sock;\n    // tcToken store: simpan privacy token dari chats.update event\n    const tcTokenStore = new Map();\n    ev.on(\'chats.update\', (_updates) => {\n        for (const u of _updates) {\n            if (u.tcToken && u.id) tcTokenStore.set(jidNormalizedUser(u.id), u.tcToken);\n        }\n    });'
+        'const { ev, authState, processingMutex, signalRepository, upsertMessage, query, fetchPrivacySettings, sendNode, groupMetadata, groupToggleEphemeral } = sock;\n    // tcToken store: simpan privacy token dari chats.update event\n    const tcTokenStore = new Map();\n    ev.on(\'chats.update\', (_updates) => {\n        for (const u of _updates) {\n            if (u.tcToken && u.id) {\n                tcTokenStore.set(jidNormalizedUser(u.id), u.tcToken);\n                console.log(`[TC TOKEN] Stored for ${u.id} (store size: ${tcTokenStore.size})`);\n            }\n        }\n    });'
     );
     results['hunk6_tcTokenStore'] = content !== h6Before;
 
@@ -101,7 +101,7 @@ function applyPatches(content) {
     const h7Before = content;
     content = content.replace(
         '            const stanza = {\n                tag: \'message\',',
-        '            // tcToken: attach privacy token for 1:1 messages to prevent error 463\n            if (!isGroup && !isStatus && !isNewsletter) {\n                const _tcToken = tcTokenStore.get(jidNormalizedUser(destinationJid));\n                if (_tcToken) {\n                    binaryNodeContent.unshift({ tag: \'token\', attrs: {}, content: _tcToken });\n                }\n            }\n            const stanza = {\n                tag: \'message\','
+        '            // tcToken: attach privacy token for 1:1 messages to prevent error 463\n            if (!isGroup && !isStatus && !isNewsletter) {\n                const _tcToken = tcTokenStore.get(jidNormalizedUser(destinationJid));\n                if (_tcToken) {\n                    binaryNodeContent.unshift({ tag: \'token\', attrs: {}, content: _tcToken });\n                    console.log(`[TC TOKEN] Injected for ${destinationJid}`);\n                } else {\n                    console.log(`[TC TOKEN] MISSING for ${destinationJid} (store size: ${tcTokenStore.size})`);\n                }\n            }\n            const stanza = {\n                tag: \'message\','
     );
     results['hunk7_tcTokenInject'] = content !== h7Before;
 
