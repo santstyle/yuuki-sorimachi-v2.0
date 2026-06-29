@@ -436,7 +436,7 @@ class APIManager {
             }
         }
 
-        return this.getFallbackResponse(userMessage, userId, isAdmin, failedApis);
+        return this.getFallbackResponse();
     }
 
     cleanResponse(response) {
@@ -602,10 +602,8 @@ class APIManager {
         return null;
     }
 
-    getFallbackResponse(userMessage, userId, isAdmin, failedApis = []) {
-        const title = isAdmin ? "Tuan Besar" : "Tuan";
-        const statusStr = failedApis.length ? ` (${failedApis.join(' › ')})` : '';
-        return `${title} yang terhormat, mohon maaf, Yuuki tidak bisa menjawab sekarang karena semua layanan AI sedang mengalami keterbatasan. Silakan coba lagi dalam 5-10 menit~${statusStr}`;
+    getFallbackResponse() {
+        return `Mohon maaf, Tuan~ Yuuki sedang tidak dapat melayani permintaan Tuan saat ini. Silakan coba lagi nanti~`;
     }
 }
 
@@ -661,10 +659,7 @@ Perintah:
 .yuuki off  — Nonaktifkan Yuuki (grup)
 .yuuki      — Panduan ini`;
 
-            return sock.sendMessage(chatId, {
-                text: helpText,
-                quoted: message
-            });
+            return sock.sendMessage(chatId, { text: helpText }, { quoted: message });
         }
 
         const command = match.trim().toLowerCase();
@@ -673,7 +668,17 @@ Perintah:
         if (chatId.endsWith('@g.us')) {
             try {
                 const metadata = await sock.groupMetadata(chatId);
-                const participant = metadata.participants.find(p => p.id === sender);
+                const rawUser = sender.split(':')[0];
+                const userPart = rawUser.split('@')[0];
+                const knownLid = process.env.OWNER_LID;
+                const knownPhone = process.env.OWNER_NUMBER;
+                const checkNum = (knownLid && knownPhone && rawUser.endsWith('@lid') && userPart === knownLid)
+                    ? knownPhone
+                    : userPart;
+                const participant = metadata.participants.find(p => {
+                    const pid = p.id.split(':')[0].split('@')[0];
+                    return pid === checkNum || (knownLid && pid === knownLid);
+                });
                 isAdmin = participant?.admin === 'admin' || participant?.admin === 'superadmin';
             } catch (error) {
                 console.log('Tidak bisa cek admin status');
@@ -684,53 +689,35 @@ Perintah:
 
         if (command === 'on') {
             if (chatId.endsWith('@g.us') && !isAdmin) {
-                return sock.sendMessage(chatId, {
-                    text: `Maaf ${title}, hanya admin yang boleh mengaktifkan Yuuki di sini. Yuuki menunggu dengan sabar~`,
-                    quoted: message
-                });
+                return sock.sendMessage(chatId, { text: `Maaf ${title}, hanya admin yang boleh mengaktifkan Yuuki di sini. Yuuki menunggu dengan sabar~` }, { quoted: message });
             }
 
             groupData.chatbot = groupData.chatbot || {};
             groupData.chatbot[chatId] = true;
             saveUserGroupData(groupData);
 
-            return sock.sendMessage(chatId, {
-                text: `${title}, pelayanmu yang setia dan rendah hati, Yuuki Sorimachi menerima panggilanmu~`,
-                quoted: message
-            });
+            return sock.sendMessage(chatId, { text: `${title}, pelayanmu yang setia dan rendah hati, Yuuki Sorimachi menerima panggilanmu~` }, { quoted: message });
         }
 
         if (command === 'off') {
             if (chatId.endsWith('@g.us') && !isAdmin) {
-                return sock.sendMessage(chatId, {
-                    text: `Maaf ${title}, hanya admin yang boleh menonaktifkan Yuuki. Yuuki akan tetap menunggu~`,
-                    quoted: message
-                });
+                return sock.sendMessage(chatId, { text: `Maaf ${title}, hanya admin yang boleh menonaktifkan Yuuki. Yuuki akan tetap menunggu~` }, { quoted: message });
             }
 
             groupData.chatbot = groupData.chatbot || {};
             groupData.chatbot[chatId] = false;
             saveUserGroupData(groupData);
 
-            return sock.sendMessage(chatId, {
-                text: `Semoga kita bertemu lagi, ${title}~`,
-                quoted: message
-            });
+            return sock.sendMessage(chatId, { text: `Semoga kita bertemu lagi, ${title}~` }, { quoted: message });
         }
 
-        return sock.sendMessage(chatId, {
-            text: `Perintah tidak dikenali, ${title}. Gunakan .yuuki untuk melihat panduan Yuuki~`,
-            quoted: message
-        });
+        return sock.sendMessage(chatId, { text: `Perintah tidak dikenali, ${title}. Gunakan .yuuki untuk melihat panduan Yuuki~` }, { quoted: message });
 
     } catch (error) {
         console.error('Error di Yuuki command:', error);
         const errMsg = error?.message || error?.toString() || '';
         const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
-        return sock.sendMessage(chatId, {
-            text: isNetworkIssue ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~' : `Maaf${title ? ' ' + title : ', Tuan'}~ Yuuki mengalami sedikit gangguan. Mohon maaf, coba lagi~`,
-            quoted: message
-        });
+        return sock.sendMessage(chatId, { text: isNetworkIssue ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~' : `Maaf${title ? ' ' + title : ', Tuan'}~ Yuuki mengalami sedikit gangguan. Mohon maaf, coba lagi~` }, { quoted: message });
     }
 }
 
@@ -855,7 +842,12 @@ async function handleYuukiResponse(sock, chatId, message, userMessage, senderId)
         if (isGroup) {
             try {
                 const metadata = await sock.groupMetadata(chatId);
-                const participant = metadata.participants.find(p => p.id === senderId);
+                const sNum = senderId.split(':')[0].split('@')[0];
+                const knownLid = process.env.OWNER_LID;
+                const participant = metadata.participants.find(p => {
+                    const pid = p.id.split(':')[0].split('@')[0];
+                    return pid === sNum || (knownLid && pid === knownLid);
+                });
                 isAdmin = participant?.admin === 'admin' || participant?.admin === 'superadmin';
             } catch (error) {
                 console.log('Tidak bisa cek admin status di Yuuki response');
@@ -880,10 +872,7 @@ async function handleYuukiResponse(sock, chatId, message, userMessage, senderId)
         const errMsg = error?.message || error?.toString() || '';
         const isNetworkIssue = /ENOTFOUND|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
         try {
-            await sock.sendMessage(chatId, {
-                text: isNetworkIssue ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~' : 'Maaf, Tuan~ Yuuki mengalami sedikit gangguan. Mohon maaf, coba lagi~',
-                quoted: message
-            });
+            await sock.sendMessage(chatId, { text: isNetworkIssue ? 'Maaf, Tuan~ Jaringan Yuuki sedang lambat. Silakan coba lagi nanti~' : 'Maaf, Tuan~ Yuuki mengalami sedikit gangguan. Mohon maaf, coba lagi~' }, { quoted: message });
         } catch (e) {}
     }
 }
