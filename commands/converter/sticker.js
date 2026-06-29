@@ -6,7 +6,7 @@ const settings = require('../../settings');
 const webp = require('node-webpmux');
 const crypto = require('crypto');
 
-async function stickerCommand(sock, chatId, message) {
+async function stickerCommand(sock, chatId, message, senderId) {
     const messageToQuote = message;
 
     let targetMessage = message;
@@ -83,7 +83,6 @@ async function stickerCommand(sock, chatId, message) {
         await img.load(webpBuffer);
 
         const prisma = require('../../lib/db');
-        const senderId = message.key.participant || message.key.remoteJid;
         let wmName = '';
 
         try {

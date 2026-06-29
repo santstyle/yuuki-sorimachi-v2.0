@@ -451,7 +451,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             }
             case userMessage === '.stickercrop' || userMessage === '.scrop':
-                await stickercropCommand(sock, chatId, message);
+                await stickercropCommand(sock, chatId, message, senderId);
                 commandExecuted = true;
                 break;
             case userMessage === '.togif':
@@ -531,7 +531,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 commandExecuted = true;
                 break;
             case userMessage === '.sticker' || userMessage === '.s':
-                await stickerCommand(sock, chatId, message);
+                await stickerCommand(sock, chatId, message, senderId);
                 commandExecuted = true;
                 break;
             case userMessage.startsWith('.warnings'):
