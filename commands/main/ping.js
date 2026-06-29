@@ -34,20 +34,7 @@ async function pingCommand(sock, chatId, message) {
 │
 └───────────────`;
 
-    console.log(`[PING DEBUG] chatId=${chatId} isGroup=${chatId.endsWith('@g.us')} remoteJid=${message.key?.remoteJid}`);
-    console.log(`[PING DEBUG] Attempting sendMessage to ${chatId}...`);
-
-    try {
-        const result = await sock.sendMessage(chatId, { text: botInfo });
-        console.log(`[PING DEBUG] sendMessage OK id=${result?.key?.id}`);
-    } catch (error) {
-        console.error(`[PING DEBUG] sendMessage FAILED:`, error?.message || error);
-        try {
-            await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki error: ' + (error?.message || 'unknown') });
-        } catch (e2) {
-            console.error(`[PING DEBUG] Error message ALSO failed:`, e2?.message);
-        }
-    }
+    await sock.sendMessage(chatId, { text: botInfo });
 }
 
 module.exports = pingCommand;

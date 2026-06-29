@@ -161,23 +161,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
     // Monkey-patch sendMessage sekali per socket biar bisa catch error stack trace
     if (!sock._debugPatched) {
         sock._debugPatched = true;
-        const origSend = sock.sendMessage.bind(sock);
-        sock.sendMessage = async function(jid, content, options) {
-            const isPrivateChat = jid && !jid.endsWith('@g.us') && !jid.endsWith('@broadcast');
-            if (isPrivateChat) {
-                console.log(`[SENDMSG DEBUG] to=${jid} type=${Object.keys(content || {})[0]}`);
-            }
-            try {
-                const result = await origSend(jid, content, options);
-                if (isPrivateChat) {
-                    console.log(`[SENDMSG DEBUG] OK id=${result?.key?.id}`);
-                }
-                return result;
-            } catch (error) {
-                console.error(`[SENDMSG DEBUG] FAILED to=${jid}`, error?.stack || error?.message || error);
-                throw error;
-            }
-        };
     }
 
     let chatId = null;
@@ -241,9 +224,9 @@ async function handleMessages(sock, messageUpdate, printLog) {
         }
 
         if (userMessage.startsWith('.')) {
-            logger.cmd(`${chalk.yellow(pushName)} [${chalk.white(isGroup ? 'GROUP' : 'PRIVATE')}] -> ${chalk.green(userMessage)}`);
+            if (!isGroup) logger.cmd(`${chalk.yellow(pushName)} [${chalk.white('PRIVATE')}] -> ${chalk.green(userMessage)}`);
         } else if (rawText) {
-            logger.msg(`${chalk.yellow(pushName)} [${chalk.white(isGroup ? 'GROUP' : 'PRIVATE')}] -> ${chalk.white(displayMsg)}`);
+            if (!isGroup) logger.msg(`${chalk.yellow(pushName)} [${chalk.white('PRIVATE')}] -> ${chalk.white(displayMsg)}`);
         }
 
         const isUserBanned = await isBanned(senderId);
@@ -1052,9 +1035,10 @@ async function handleGroupParticipantUpdate(sock, update) {
             const groupName = groupMetadata.subject;
             const groupDesc = groupMetadata.desc || 'Tidak ada deskripsi tersedia';
 
-            for (const participant of participants) {
-                const user = participant.split('@')[0];
-                const isNewAdmin = groupMetadata.participants.some(p => p.id === participant && (p.admin === 'admin' || p.admin === 'superadmin'));
+            for (const p of participants) {
+                const jid = typeof p === 'string' ? p : p.id;
+                const user = jid.split('@')[0];
+                const isNewAdmin = groupMetadata.participants.some(gp => gp.id === jid && (gp.admin === 'admin' || gp.admin === 'superadmin'));
                 const title = isNewAdmin ? 'Tuan Besar' : 'Tuan';
                 const savedMessage = await getWelcomeMessage(id);
                 const welcomeMessage = savedMessage || `Selamat Datang Tuan {user}, Pelayanmu yang setia dan rendah hati,Yuuki siap melayani mu`;
@@ -1066,7 +1050,7 @@ async function handleGroupParticipantUpdate(sock, update) {
 
                 await sock.sendMessage(id, {
                     text: formattedMessage,
-                    mentions: [participant]
+                    mentions: [jid]
                 });
             }
         }
@@ -1078,9 +1062,10 @@ async function handleGroupParticipantUpdate(sock, update) {
             const groupMetadata = await sock.groupMetadata(id);
             const groupName = groupMetadata.subject;
 
-            for (const participant of participants) {
-                const user = participant.split('@')[0];
-                const isLeavingAdmin = groupMetadata.participants.some(p => p.id === participant && (p.admin === 'admin' || p.admin === 'superadmin'));
+            for (const p of participants) {
+                const jid = typeof p === 'string' ? p : p.id;
+                const user = jid.split('@')[0];
+                const isLeavingAdmin = groupMetadata.participants.some(gp => gp.id === jid && (gp.admin === 'admin' || gp.admin === 'superadmin'));
                 const title = isLeavingAdmin ? 'Tuan Besar' : 'Tuan';
                 const savedMessage = await getGoodbyeMessage(id);
                 const goodbyeMessage = savedMessage || `Pelayanmu yang setia dan rendah hati ,Yuuki menantikan kedatanganmu selanjutnya tuan {user}`;
@@ -1091,7 +1076,7 @@ async function handleGroupParticipantUpdate(sock, update) {
 
                 await sock.sendMessage(id, {
                     text: formattedMessage,
-                    mentions: [participant]
+                    mentions: [jid]
                 });
             }
         }

@@ -260,7 +260,8 @@ async function startXeonBotInc() {
             const status = update.update?.status;
             const errors = update.update?.errors;
             if (status || errors) {
-                console.log(`[MSG UPDATE] id=${id} to=${remoteJid} status=${status || 'none'} errors=${errors ? JSON.stringify(errors) : 'none'}`);
+                const isGroup = remoteJid?.endsWith('@g.us');
+                if (!isGroup) console.log(`[MSG UPDATE] id=${id} to=${remoteJid} status=${status || 'none'} errors=${errors ? JSON.stringify(errors) : 'none'}`);
             }
         }
     })
@@ -269,7 +270,8 @@ async function startXeonBotInc() {
     XeonBotInc.ev.on('message-receipt.update', updates => {
         for (const update of updates) {
             const key = update.key;
-            console.log(`[MSG RECEIPT] id=${key?.id} from=${update.receipt?.remoteJid} participant=${update.receipt?.participant} type=${update.receipt?.type} status=${update.receipt?.status}`);
+            const isGroup = key?.remoteJid?.endsWith('@g.us');
+            if (!isGroup) console.log(`[MSG RECEIPT] id=${key?.id} from=${update.receipt?.remoteJid} participant=${update.receipt?.participant} type=${update.receipt?.type} status=${update.receipt?.status}`);
         }
     })
 
