@@ -182,15 +182,21 @@ async function handleMessages(sock, messageUpdate, printLog) {
         chatId = message.key.remoteJid;
         let senderId = message.key.fromMe ? (sock.user?.id || message.key.participant || message.key.remoteJid) : (message.key.participant || message.key.remoteJid);
 
-        // Resolve known LID ke phone JID untuk senderId (sudo/admin check)
+        // Resolve LID ke phone JID untuk semua user (biar ga duplikat di DB)
         // chatId TIDAK di-resolve — tetap LID JID supaya tcToken ke-attach oleh Baileys
-        const knownLid = process.env.OWNER_LID;
-        const knownPhone = process.env.OWNER_NUMBER;
-        if (knownLid && knownPhone) {
-            const sid = senderId || '';
-            if (sid.endsWith('@lid') && sid.split('@')[0] === knownLid) {
-                console.log(chalk.cyan(`[${moment().tz('Asia/Jakarta').format('HH:mm:ss')}]`) + chalk.bgMagenta.white(' LID  ') + chalk.white(`Resolve sender ${sid} → ${knownPhone}@s.whatsapp.net`));
-                senderId = knownPhone + '@s.whatsapp.net';
+        if (senderId && senderId.endsWith('@lid')) {
+            try {
+                const pn = await sock.signalRepository.lidMapping.getPNForLID(senderId);
+                if (pn) {
+                    const resolvedPhone = pn.split('@')[0];
+                    const phoneJid = resolvedPhone + '@s.whatsapp.net';
+                    if (senderId !== phoneJid) {
+                        console.log(chalk.cyan(`[${moment().tz('Asia/Jakarta').format('HH:mm:ss')}]`) + chalk.bgMagenta.white(' LID  ') + chalk.white(`Resolve ${senderId} → ${phoneJid}`));
+                        senderId = phoneJid;
+                    }
+                }
+            } catch (e) {
+                // fallback: kalau resolve gagal, tetap pake LID
             }
         }
 
