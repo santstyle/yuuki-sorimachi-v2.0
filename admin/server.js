@@ -84,6 +84,7 @@ function toPascalCase(str) {
 const SORTABLE = {
   User: ['createdAt', 'updatedAt', 'name'],
   UserProgress: ['level', 'xp', 'streak', 'lastActive'],
+  UserStyle: ['totalMessages', 'formalityScore', 'relationshipLevel', 'lastInteraction', 'createdAt'],
   Group: ['createdAt', 'updatedAt', 'name'],
   GroupSettings: ['id'],
   WarningRecord: ['createdAt'],
@@ -93,6 +94,7 @@ const SORTABLE = {
 const SEARCHABLE = {
   User: ['id', 'name'],
   UserProgress: ['userId', 'userName'],
+  UserStyle: ['userId'],
   Group: ['id', 'name'],
   GroupSettings: ['groupId', 'groupName'],
   WarningRecord: ['userId', 'userName', 'reason', 'moderatorName'],
@@ -102,6 +104,7 @@ const SEARCHABLE = {
 const EXCLUDE_CREATE = {
   User: ['customId', 'createdAt', 'updatedAt'],
   UserProgress: ['id'],
+  UserStyle: ['id', 'createdAt', 'updatedAt'],
   Group: ['createdAt', 'updatedAt'],
   GroupSettings: ['id'],
   WarningRecord: ['id', 'createdAt'],
