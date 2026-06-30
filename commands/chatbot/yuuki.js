@@ -675,10 +675,40 @@ Perintah:
                 const checkNum = (knownLid && knownPhone && rawUser.endsWith('@lid') && userPart === knownLid)
                     ? knownPhone
                     : userPart;
-                const participant = metadata.participants.find(p => {
+                let participant = metadata.participants.find(p => {
                     const pid = p.id.split(':')[0].split('@')[0];
                     return pid === checkNum || (knownLid && pid === knownLid);
                 });
+                // Fallback: resolve participant LID → phone
+                if (!participant && sender.endsWith('@s.whatsapp.net')) {
+                    for (const p of metadata.participants) {
+                        if (p.id.endsWith('@lid')) {
+                            try {
+                                const pn = await sock.signalRepository.lidMapping.getPNForLID(p.id);
+                                if (pn) {
+                                    const pPhone = pn.split(':')[0].split('@')[0];
+                                    if (pPhone === checkNum) {
+                                        participant = p;
+                                        break;
+                                    }
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                }
+                // Fallback: resolve sender LID → phone
+                if (!participant && sender.endsWith('@lid')) {
+                    try {
+                        const pn = await sock.signalRepository.lidMapping.getPNForLID(sender);
+                        if (pn) {
+                            const sPhone = pn.split(':')[0].split('@')[0];
+                            participant = metadata.participants.find(p => {
+                                const pid = p.id.split(':')[0].split('@')[0];
+                                return pid === sPhone || (knownLid && pid === knownLid);
+                            });
+                        }
+                    } catch (e) {}
+                }
                 isAdmin = participant?.admin === 'admin' || participant?.admin === 'superadmin';
             } catch (error) {
                 console.log('Tidak bisa cek admin status');
@@ -844,10 +874,40 @@ async function handleYuukiResponse(sock, chatId, message, userMessage, senderId)
                 const metadata = await sock.groupMetadata(chatId);
                 const sNum = senderId.split(':')[0].split('@')[0];
                 const knownLid = process.env.OWNER_LID;
-                const participant = metadata.participants.find(p => {
+                let participant = metadata.participants.find(p => {
                     const pid = p.id.split(':')[0].split('@')[0];
                     return pid === sNum || (knownLid && pid === knownLid);
                 });
+                // Fallback: resolve participant LID → phone
+                if (!participant && senderId.endsWith('@s.whatsapp.net')) {
+                    for (const p of metadata.participants) {
+                        if (p.id.endsWith('@lid')) {
+                            try {
+                                const pn = await sock.signalRepository.lidMapping.getPNForLID(p.id);
+                                if (pn) {
+                                    const pPhone = pn.split(':')[0].split('@')[0];
+                                    if (pPhone === sNum) {
+                                        participant = p;
+                                        break;
+                                    }
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                }
+                // Fallback: resolve sender LID → phone
+                if (!participant && senderId.endsWith('@lid')) {
+                    try {
+                        const pn = await sock.signalRepository.lidMapping.getPNForLID(senderId);
+                        if (pn) {
+                            const sPhone = pn.split(':')[0].split('@')[0];
+                            participant = metadata.participants.find(p => {
+                                const pid = p.id.split(':')[0].split('@')[0];
+                                return pid === sPhone || (knownLid && pid === knownLid);
+                            });
+                        }
+                    } catch (e) {}
+                }
                 isAdmin = participant?.admin === 'admin' || participant?.admin === 'superadmin';
             } catch (error) {
                 console.log('Tidak bisa cek admin status di Yuuki response');
