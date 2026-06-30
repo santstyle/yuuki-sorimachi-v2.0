@@ -450,6 +450,9 @@ function formatCell(row, field) {
   if (row[field.name] === null || row[field.name] === undefined) return '<span class="cell-null">—</span>';
   if (field.type === 'Boolean') return `<span class="cell-bool ${row[field.name]}">${row[field.name] ? 'true' : 'false'}</span>`;
   if (field.isId) return `<span class="cell-id id-pk">${esc(String(row[field.name]))}</span>`;
+  if (field.name === 'userId' && row.user && row.user.name) {
+    return `<span class="cell-id">${esc(row.user.name)} <span style="color:var(--text3);font-size:11px">(${esc(String(row[field.name]))})</span></span>`;
+  }
   if (field.name.endsWith('Id')) return `<span class="cell-id">${esc(String(row[field.name]))}</span>`;
   if (field.type === 'DateTime' || field.name.match(/^(createdAt|updatedAt|lastActive|expiredAt|muteUntil)$/i)) {
     const d = new Date(row[field.name]);

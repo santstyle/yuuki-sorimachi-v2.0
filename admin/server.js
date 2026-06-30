@@ -94,7 +94,7 @@ const SORTABLE = {
 const SEARCHABLE = {
   User: ['id', 'name'],
   UserProgress: ['userId', 'userName'],
-  UserStyle: ['userId'],
+  UserStyle: ['userId', 'userName'],
   Group: ['id', 'name'],
   GroupSettings: ['groupId', 'groupName'],
   WarningRecord: ['userId', 'userName', 'reason', 'moderatorName'],
@@ -139,12 +139,19 @@ app.get('/api/model/:name', authenticate, async (req, res) => {
 
     const where = {};
     if (search && SEARCHABLE[modelName]) {
-      where.OR = SEARCHABLE[modelName].map(f => ({ [f]: { contains: search } }));
+      where.OR = SEARCHABLE[modelName].map(f => {
+        if (f === 'userName' && modelName === 'UserStyle') {
+          return { user: { name: { contains: search } } };
+        }
+        return { [f]: { contains: search } };
+      });
     }
+
+    const includeRelation = modelName === 'UserStyle' ? { user: { select: { id: true, name: true } } } : {};
 
     const [total, data] = await Promise.all([
       delegate.count({ where }),
-      delegate.findMany({ where, orderBy, skip: (pageNum - 1) * limitNum, take: limitNum }),
+      delegate.findMany({ where, orderBy, skip: (pageNum - 1) * limitNum, take: limitNum, include: includeRelation }),
     ]);
 
     // Tambahan JS sort buat jaga-jaga kalo Prisma orderBy array ga respected
