@@ -17,6 +17,36 @@ model User {
   updatedAt DateTime  @updatedAt
   History   History[]
   Progress  UserProgress?
+  Style     UserStyle?
+}
+
+model UserStyle {
+  id                 Int      @id @default(autoincrement())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  formalityScore     Int      @default(50)
+  emojiPreference    Int      @default(0)
+  playfulnessScore   Int      @default(50)
+  relationshipLevel  String   @default("stranger")
+
+  totalMessages      Int      @default(0)
+  lastInteraction    DateTime @default(now())
+  firstInteraction   DateTime @default(now())
+
+  detectedTraits     String   @default("[]")
+  preferredTopics    String   @default("[]")
+  recentTopics       String   @default("[]")
+  styleOverrides     String   @default("{}")
+  conversationHistory String  @default("[]")
+  conversationSummary String  @default("[]")
+  lastSummaryAt       Int      @default(0)
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([userId])
+  @@index([relationshipLevel])
 }
 
 model UserProgress {
