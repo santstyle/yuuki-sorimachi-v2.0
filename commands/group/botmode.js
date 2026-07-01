@@ -8,12 +8,16 @@ async function botmodeCommand(sock, chatId, senderId, message, args) {
             return;
         }
 
-        if (!message.key.fromMe && !senderId.includes(process.env.OWNER_NUMBER || '')) {
-            const { isSenderAdmin } = await isAdmin(sock, chatId, senderId);
-            if (!isSenderAdmin) {
-                await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya admin yang bisa mengatur mode bot. Yuuki mohon maaf~' }, { quoted: message });
-                return;
-            }
+        const isOwner = message.key.fromMe;
+        let isSenderAdmin = false;
+        if (!isOwner) {
+            const adminStatus = await isAdmin(sock, chatId, senderId);
+            isSenderAdmin = adminStatus.isSenderAdmin;
+        }
+
+        if (!isOwner && !isSenderAdmin) {
+            await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya admin yang bisa mengatur mode bot. Yuuki mohon maaf~' }, { quoted: message });
+            return;
         }
 
         const action = args[0]?.toLowerCase();
