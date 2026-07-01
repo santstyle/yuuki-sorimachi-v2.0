@@ -344,6 +344,21 @@ async function handleMessages(sock, messageUpdate, printLog) {
             if (handled) return;
         }
 
+        if (isGroup) {
+            try {
+                const botmode = await getBotmode(chatId);
+                const { isSenderAdmin: botmodeAdmin } = await isAdmin(sock, chatId, senderId);
+                console.log(`[BOTMODE] Group: ${chatId}, Mode: ${botmode}, Sender: ${senderId}, fromMe: ${message.key.fromMe}, isSudo: ${senderIsSudo}, isAdmin: ${botmodeAdmin}`);
+                if (botmode === 'admin' && !message.key.fromMe && !senderIsSudo && !botmodeAdmin) {
+                    console.log(`[BOTMODE] BLOCKED: ${senderId} — not admin in admin-only mode`);
+                    return;
+                }
+            } catch (error) {
+                console.error('Error checking botmode:', error);
+                return;
+            }
+        }
+
         if (!userMessage.startsWith('.')) {
             const wasAfk = await getAfk(senderId);
             if (wasAfk) {
@@ -422,21 +437,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
             }
         } catch (error) {
             console.error('Error memeriksa mode akses:', error);
-        }
-
-        if (isGroup) {
-            try {
-                const botmode = await getBotmode(chatId);
-                const { isSenderAdmin: botmodeAdmin } = await isAdmin(sock, chatId, senderId);
-                console.log(`[BOTMODE] Group: ${chatId}, Mode: ${botmode}, Sender: ${senderId}, fromMe: ${message.key.fromMe}, isSudo: ${senderIsSudo}, isAdmin: ${botmodeAdmin}`);
-                if (botmode === 'admin' && !message.key.fromMe && !senderIsSudo && !botmodeAdmin) {
-                    console.log(`[BOTMODE] BLOCKED: ${senderId} — not admin in admin-only mode`);
-                    return;
-                }
-            } catch (error) {
-                console.error('Error checking botmode:', error);
-                return;
-            }
         }
 
         if (userMessage.startsWith('.') && connectionMonitor.isUnstable() && connectionMonitor.canSendWarning()) {
