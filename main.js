@@ -427,8 +427,10 @@ async function handleMessages(sock, messageUpdate, printLog) {
         if (isGroup) {
             try {
                 const botmode = await getBotmode(chatId);
+                console.log(`[BOTMODE] Group: ${chatId}, Mode: ${botmode}, Sender: ${senderId}, fromMe: ${message.key.fromMe}, isSudo: ${senderIsSudo}`);
                 if (botmode === 'admin' && !message.key.fromMe && !senderIsSudo) {
                     const { isSenderAdmin: botmodeAdmin } = await isAdmin(sock, chatId, senderId);
+                    console.log(`[BOTMODE] isAdmin check: ${botmodeAdmin}`);
                     if (!botmodeAdmin) return;
                 }
             } catch (error) {

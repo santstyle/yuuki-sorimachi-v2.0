@@ -1161,7 +1161,7 @@ JAWABLAH SEBAGAI YUUKI SORIMACHI — PELAYAN YANG SETIA DAN RENDAH HATI:`.trim()
 
     getFallbackResponse(errorMessage = '') {
         if (/rate_limit|limit/i.test(errorMessage)) {
-            return `Mohon maaf, Tuan~ Yuuki sedang kelehabisan jatah melayani dari para dewa AI. Silakan coba lagi beberapa saat~`;
+            return `Mohon maaf, Tuan~ Yuuki sedang mengalami kendala teknis. Silakan coba lagi beberapa saat~`;
         }
         if (/timeout|ETIMEDOUT|ECONNABORTED/i.test(errorMessage)) {
             return `Mohon maaf, Tuan~ Yuuki sedang menunggu terlalu lama dari para dewa AI. Jaringan mungkin sedang lambat~`;
@@ -1318,7 +1318,7 @@ Perintah:
         const isNetworkIssue = /ENOTFOUND|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
         
         let errorMsg = `Maaf${title ? ' ' + title : ', Tuan'}~ Yuuki mengalami sedikit gangguan. Mohon maaf, coba lagi~`;
-        if (isRateLimit) errorMsg = `Maaf, Tuan~ Yuuki sedang kelehabisan jatah melayani. Silakan coba lagi nanti~`;
+        if (isRateLimit) errorMsg = `Maaf, Tuan~ Yuuki sedang mengalami kendala teknis. Silakan coba lagi nanti~`;
         else if (isTimeout) errorMsg = `Maaf, Tuan~ Yuuki sedang menunggu terlalu lama. Jaringan mungkin lambat~`;
         else if (isNetworkIssue) errorMsg = `Maaf, Tuan~ Yuuki sedang terputus dari dunia luar. Jaringan gangguan~`;
         
@@ -1511,7 +1511,7 @@ async function handleYuukiResponse(sock, chatId, message, userMessage, senderId)
         const isNetworkIssue = /ENOTFOUND|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errMsg) || errMsg.includes('getaddrinfo');
         
         let errorMsg = 'Maaf, Tuan~ Yuuki mengalami sedikit gangguan. Mohon maaf, coba lagi~';
-        if (isRateLimit) errorMsg = 'Maaf, Tuan~ Yuuki sedang kelehabisan jatah melayani. Silakan coba lagi nanti~';
+        if (isRateLimit) errorMsg = 'Maaf, Tuan~ Yuuki sedang mengalami kendala teknis. Silakan coba lagi nanti~';
         else if (isTimeout) errorMsg = 'Maaf, Tuan~ Yuuki sedang menunggu terlalu lama. Jaringan mungkin lambat~';
         else if (isNetworkIssue) errorMsg = 'Maaf, Tuan~ Yuuki sedang terputus dari dunia luar. Jaringan gangguan~';
         
