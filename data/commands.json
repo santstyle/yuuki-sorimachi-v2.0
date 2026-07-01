@@ -120,6 +120,11 @@
           "name": ".antidelete",
           "desc": "Cegah penghapusan pesan grup",
           "usage": ".antidelete on/off/status"
+        },
+        {
+          "name": ".botmode",
+          "desc": "Atur mode akses bot di grup",
+          "usage": ".botmode admin/public"
         }
       ]
     },

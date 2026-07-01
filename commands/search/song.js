@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
 const util = require('util');
+const { youtube } = require('btch-downloader');
 
 const execPromise = util.promisify(exec);
 
@@ -82,7 +83,7 @@ async function getAudioWithYtDlp(youtubeUrl, title) {
         const command = `"${ytdlpPath}" -x --audio-format mp3 --audio-quality 128K ${ffmpegFlag} -o "${outputFile}" "${youtubeUrl}"`;
 
         try {
-            await execPromise(command, { timeout: 180000 });
+            const { stdout, stderr } = await execPromise(command, { timeout: 180000 });
 
             if (fs.existsSync(outputFile)) {
                 const stats = fs.statSync(outputFile);
@@ -94,8 +95,14 @@ async function getAudioWithYtDlp(youtubeUrl, title) {
                         api: 'yt-dlp'
                     };
                 }
+                console.error(`[SONG] yt-dlp file exists but empty: ${outputFile}`);
+            } else {
+                console.error(`[SONG] yt-dlp output file not found: ${outputFile}`);
+                if (stderr) console.error(`[SONG] yt-dlp stderr: ${stderr.substring(0, 500)}`);
             }
         } catch (error) {
+            console.error(`[SONG] yt-dlp exec error: ${error.message}`);
+            if (error.stderr) console.error(`[SONG] yt-dlp stderr: ${error.stderr.substring(0, 500)}`);
             if (fs.existsSync(outputFile)) {
                 fs.unlinkSync(outputFile);
             }
@@ -103,19 +110,56 @@ async function getAudioWithYtDlp(youtubeUrl, title) {
 
         return null;
     } catch (error) {
+        console.error(`[SONG] yt-dlp unexpected error: ${error.message}`);
+        return null;
+    }
+}
+
+async function getAudioViaBtch(youtubeUrl, title) {
+    try {
+        console.log(`[SONG] Trying btch-downloader API for: ${title}`);
+        const result = await youtube(youtubeUrl);
+
+        if (!result) {
+            console.error('[SONG] btch-downloader returned null');
+            return null;
+        }
+
+        if (result.mp3) {
+            console.log(`[SONG] btch-downloader success: ${result.mp3.substring(0, 80)}...`);
+            return {
+                success: true,
+                url: result.mp3,
+                title: title,
+                api: 'btch-downloader'
+            };
+        }
+
+        console.error('[SONG] btch-downloader: no mp3 link in response');
+        return null;
+    } catch (error) {
+        console.error(`[SONG] btch-downloader error: ${error.message}`);
         return null;
     }
 }
 
 async function getAudioUrl(videoInfo) {
+    // Method 1: yt-dlp (local)
+    console.log(`[SONG] Trying yt-dlp for: ${videoInfo.title}`);
     const ytDlpResult = await getAudioWithYtDlp(videoInfo.url, videoInfo.title);
     if (ytDlpResult) {
         return ytDlpResult;
     }
 
+    // Method 2: btch-downloader API (remote)
+    const btchResult = await getAudioViaBtch(videoInfo.url, videoInfo.title);
+    if (btchResult) {
+        return btchResult;
+    }
+
     return {
         success: false,
-        error: "Semua metode download gagal"
+        error: "Semua metode download gagal. Coba lagi nanti atau gunakan .dl dengan link YouTube langsung~"
     };
 }
 
@@ -179,6 +223,8 @@ async function songCommand(sock, chatId, message, input) {
         if (!audioData.success) {
             return await sock.sendMessage(chatId, { text: `Maaf, Tuan~ Error: ${audioData.error}` }, { quoted: message });
         }
+
+        console.log(`[SONG] Download success via ${audioData.api}: ${videoInfo.title}`);
 
         let fileBuffer;
         if (audioData.filePath) {

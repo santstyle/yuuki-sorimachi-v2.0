@@ -21,7 +21,8 @@ const sharp = require('sharp');
 const ffmpeg = require('fluent-ffmpeg');
 const FormData = require('form-data');
 
-const { addWelcome, delWelcome, isWelcomeOn, getWelcomeMessage, addGoodbye, delGoodBye, isGoodByeOn, getGoodbyeMessage, isSudo } = require('./lib/index');
+const { addWelcome, delWelcome, isWelcomeOn, getWelcomeMessage, addGoodbye, delGoodBye, isGoodByeOn, getGoodbyeMessage, isSudo, getBotmode } = require('./lib/index');
+const { botmodeCommand } = require('./commands/group/botmode');
 const chalk = require('chalk');
 const moment = require('moment-timezone');
 
@@ -423,6 +424,18 @@ async function handleMessages(sock, messageUpdate, printLog) {
             console.error('Error memeriksa mode akses:', error);
         }
 
+        if (isGroup) {
+            try {
+                const botmode = await getBotmode(chatId);
+                if (botmode === 'admin' && !message.key.fromMe && !senderIsSudo) {
+                    const { isSenderAdmin: botmodeAdmin } = await isAdmin(sock, chatId, senderId);
+                    if (!botmodeAdmin) return;
+                }
+            } catch (error) {
+                console.error('Error checking botmode:', error);
+            }
+        }
+
         if (userMessage.startsWith('.') && connectionMonitor.isUnstable() && connectionMonitor.canSendWarning()) {
             connectionMonitor.markWarningSent();
             const title = isSenderAdmin ? 'Tuan Besar' : 'Tuan';
@@ -439,6 +452,12 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage === '.afk' || userMessage.startsWith('.afk '): {
                 const afkArgs = rawText.substring(rawText.indexOf('.afk') + 4).trim().split(/\s+/);
                 await afkCommand(sock, chatId, message, afkArgs, senderId);
+                commandExecuted = true;
+                break;
+            }
+            case userMessage === '.botmode' || userMessage.startsWith('.botmode '): {
+                const botmodeArgs = rawText.substring(rawText.indexOf('.botmode') + 8).trim().split(/\s+/);
+                await botmodeCommand(sock, chatId, senderId, message, botmodeArgs);
                 commandExecuted = true;
                 break;
             }
@@ -1760,7 +1779,14 @@ async function animeCommand(sock, chatId, message, args) {
         ], 1);
 
         if (response) {
-            await sock.sendMessage(chatId, { image: { url: response } }, { quoted: message });
+            try {
+                const imgRes = await axios.get(response, { responseType: 'arraybuffer', timeout: 15000 });
+                const imgBuffer = Buffer.from(imgRes.data);
+                await sock.sendMessage(chatId, { image: imgBuffer }, { quoted: message });
+            } catch (imgErr) {
+                console.error('[WAIFU] Gagal download gambar, coba kirim URL langsung:', imgErr.message);
+                await sock.sendMessage(chatId, { image: { url: response } }, { quoted: message });
+            }
         } else {
             await sock.sendMessage(chatId, { text: `Tuan~ Maaf, Yuuki tidak menemukan gambar *${sub}*~` }, { quoted: message });
         }
