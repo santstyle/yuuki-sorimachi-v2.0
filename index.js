@@ -392,8 +392,10 @@ async function startXeonBotInc() {
 
     // Auto-cleanup database every 24 hours (at 3 AM)
     const { performAutoCleanup } = require('./lib/cleanupManager');
+    const { cleanupOldAiLogs } = require('./lib/aiProviders');
     setInterval(async () => {
         await performAutoCleanup();
+        await cleanupOldAiLogs(30);
     }, 24 * 60 * 60 * 1000);
 
     // Schedule initial cleanup if bot starts near 3 AM (just to sync it up roughly)
@@ -406,8 +408,10 @@ async function startXeonBotInc() {
     const msUntil3AM = next3AM - now;
     setTimeout(async () => {
         await performAutoCleanup();
+        await cleanupOldAiLogs(30);
         setInterval(async () => {
             await performAutoCleanup();
+            await cleanupOldAiLogs(30);
         }, 24 * 60 * 60 * 1000);
     }, msUntil3AM);
 

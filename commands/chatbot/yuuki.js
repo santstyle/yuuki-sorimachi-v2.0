@@ -755,7 +755,7 @@ class APIManager {
         this.summarizer = new ConversationSummarizer();
     }
 
-    async getAPIResponse(userMessage, userId, isAdmin) {
+    async getAPIResponse(userMessage, userId, isAdmin, userName) {
         this.personalityManager.updateUserProfile(userId, userMessage);
         await this.styleManager.addToConversationHistory(userId, 'user', userMessage);
 
@@ -798,7 +798,7 @@ class APIManager {
             const { content, provider } = await callAI([
                 { role: "system", content: systemPrompt },
                 { role: "user", content: userMessage }
-            ], { userId });
+            ], { userId, userName });
 
             console.log(`${ts()} ${chalk.bgBlue(' API  ')} ${provider} -> ${chalk.green('Berhasil')}`);
             const cleanedResponse = this.cleanResponse(content);
@@ -1326,7 +1326,7 @@ Perintah:
     }
 }
 
-async function handleYuukiResponse(sock, chatId, message, userMessage, senderId) {
+async function handleYuukiResponse(sock, chatId, message, userMessage, senderId, userName) {
     global.sock = sock;
     try {
         const isGroup = chatId.endsWith('@g.us');
@@ -1492,7 +1492,7 @@ async function handleYuukiResponse(sock, chatId, message, userMessage, senderId)
 
         await sock.sendPresenceUpdate('composing', chatId);
 
-        const response = await apiManager.getAPIResponse(cleanedMessage, senderId, isAdmin);
+        const response = await apiManager.getAPIResponse(cleanedMessage, senderId, isAdmin, userName);
 
         const responseDelay = Math.min(cleanedMessage.length * 10, 3000);
         await delay(responseDelay);

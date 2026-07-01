@@ -383,7 +383,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 }
             }
 
-            await handleYuukiResponse(sock, chatId, message, rawText, senderId);
+            await handleYuukiResponse(sock, chatId, message, rawText, senderId, pushName);
             if (isGroup) {
                 await handleLinkDetection(sock, chatId, message, userMessage, senderId);
                 await handleBadwordDetection(sock, chatId, message, userMessage, senderId);
@@ -1032,7 +1032,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
 
                 if (isGroup) {
                     if (userMessage) {
-                        await handleYuukiResponse(sock, chatId, message, userMessage, senderId);
+                        await handleYuukiResponse(sock, chatId, message, userMessage, senderId, pushName);
                     }
                     await handleLinkDetection(sock, chatId, message, userMessage, senderId);
                     await handleTagDetection(sock, chatId, message, senderId);
