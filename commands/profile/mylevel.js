@@ -1,13 +1,14 @@
 const { getProgress, getXPForNextLevel } = require('../../lib/xpManager');
 const prisma = require('../../lib/db');
+const { resolveJid } = require('../../lib/jidResolver');
 
 async function mylevelCommand(sock, chatId, message, args) {
     try {
-        let targetId = message.key.participant || message.key.remoteJid;
+        let targetId = await resolveJid(sock, message.key.participant || message.key.remoteJid);
         const mentionedJid = message.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
 
         if (mentionedJid.length > 0) {
-            targetId = mentionedJid[0];
+            targetId = await resolveJid(sock, mentionedJid[0]);
         } else if (args.length > 0) {
             const rawQuery = args.join(' ').replace(/[^0-9]/g, '');
             if (rawQuery.length > 5) {

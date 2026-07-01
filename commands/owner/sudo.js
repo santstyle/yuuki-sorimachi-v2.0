@@ -1,4 +1,5 @@
 const { addSudo, removeSudo, getSudoList } = require('../../lib/index');
+const { resolveJid } = require('../../lib/jidResolver');
 
 async function sudoCommand(sock, chatId, message) {
     try {
@@ -7,9 +8,9 @@ async function sudoCommand(sock, chatId, message) {
 
         let targetJid = null;
         if (mentionedJidList.length > 0) {
-            targetJid = mentionedJidList[0];
+            targetJid = await resolveJid(sock, mentionedJidList[0]);
         } else if (quotedParticipant) {
-            targetJid = quotedParticipant;
+            targetJid = await resolveJid(sock, quotedParticipant);
         }
 
         const sudoList = await getSudoList();

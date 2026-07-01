@@ -1,4 +1,5 @@
 const { downloadContentFromMessage, downloadMediaMessage } = require("@whiskeysockets/baileys");
+const { resolveJid } = require('../../lib/jidResolver');
 
 async function getUserTitle(sock, chatId, senderId) {
     try {
@@ -17,7 +18,7 @@ async function hidetagCommand(sock, m, prefix) {
     try {
         console.log("[HIDETAG]");
 
-        const senderId = m.key.participant || m.key.remoteJid;
+        const senderId = await resolveJid(sock, m.key.participant || m.key.remoteJid);
         const title = await getUserTitle(sock, m.key.remoteJid, senderId);
 
         if (!m.key.remoteJid.endsWith("@g.us")) {

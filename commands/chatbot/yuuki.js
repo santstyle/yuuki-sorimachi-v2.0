@@ -3,6 +3,7 @@ const path = require('path');
 const axios = require('axios');
 const chalk = require('chalk');
 const moment = require('moment-timezone');
+const { resolveJid } = require('../../lib/jidResolver');
 const store = require('../../lib/lightweight_store');
 const { API_CONFIGS, callAI, getRecentErrors } = require('../../lib/aiProviders');
 const { PrismaClient } = require('@prisma/client');
@@ -1203,7 +1204,7 @@ async function handleYuukiCommand(sock, chatId, message, match) {
     try {
         const text = message.message?.conversation ||
             message.message?.extendedTextMessage?.text || '';
-        const sender = message.key.participant || message.key.remoteJid;
+        const sender = await resolveJid(sock, message.key.participant || message.key.remoteJid);
 
         await sock.sendPresenceUpdate('composing', chatId);
         await delay(800);

@@ -1,5 +1,6 @@
 const isAdmin = require('../../lib/isAdmin');
 const { clearWarnings, getWarningCount } = require('../../lib/warningManager');
+const { resolveJid } = require('../../lib/jidResolver');
 
 async function resetWarnCommand(sock, chatId, senderId, mentionedJids, message) {
     try {
@@ -29,9 +30,9 @@ async function resetWarnCommand(sock, chatId, senderId, mentionedJids, message) 
         let userToReset;
 
         if (mentionedJids && mentionedJids.length > 0) {
-            userToReset = mentionedJids[0];
+            userToReset = await resolveJid(sock, mentionedJids[0]);
         } else if (message.message?.extendedTextMessage?.contextInfo?.participant) {
-            userToReset = message.message.extendedTextMessage.contextInfo.participant;
+            userToReset = await resolveJid(sock, message.message.extendedTextMessage.contextInfo.participant);
         }
 
         if (!userToReset) {

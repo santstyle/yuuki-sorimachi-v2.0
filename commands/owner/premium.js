@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { resolveJid } = require('../../lib/jidResolver');
 
 const PREMIUM_PATH = path.join(__dirname, '../../data/premium.json');
 
@@ -37,9 +38,9 @@ async function addPremCommand(sock, chatId, message, args) {
 
         let targetJid = null;
         if (mentionedJidList.length > 0) {
-            targetJid = mentionedJidList[0];
+            targetJid = await resolveJid(sock, mentionedJidList[0]);
         } else if (quotedParticipant) {
-            targetJid = quotedParticipant;
+            targetJid = await resolveJid(sock, quotedParticipant);
         }
 
         if (!targetJid) {

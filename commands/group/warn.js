@@ -2,6 +2,7 @@ const isAdmin = require('../../lib/isAdmin');
 const { addWarning, getWarningCount, getMaxWarnLevel } = require('../../lib/warningManager');
 const { getGroupSettings } = require('../../lib/groupSettings');
 const prisma = require('../../lib/db');
+const { resolveJid } = require('../../lib/jidResolver');
 
 async function warnCommand(sock, chatId, senderId, mentionedJids, message, reason = 'Tidak ada alasan') {
     try {
@@ -31,9 +32,9 @@ async function warnCommand(sock, chatId, senderId, mentionedJids, message, reaso
         let userToWarn;
 
         if (mentionedJids && mentionedJids.length > 0) {
-            userToWarn = mentionedJids[0];
+            userToWarn = await resolveJid(sock, mentionedJids[0]);
         } else if (message.message?.extendedTextMessage?.contextInfo?.participant) {
-            userToWarn = message.message.extendedTextMessage.contextInfo.participant;
+            userToWarn = await resolveJid(sock, message.message.extendedTextMessage.contextInfo.participant);
         }
 
         if (!userToWarn) {

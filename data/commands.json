@@ -43,6 +43,12 @@
           "name": ".leaderboard",
           "alias": ".lb, .globalrank",
           "desc": "Peringkat global seluruh user berdasarkan level & XP"
+        },
+        {
+          "name": ".afk",
+          "desc": "Set status AFK (Away From Keyboard)",
+          "usage": ".afk [alasan]",
+          "example": ".afk tidur"
         }
       ]
     },

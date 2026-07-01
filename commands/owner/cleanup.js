@@ -1,4 +1,4 @@
-const { performAutoCleanup, cleanupHistory, cleanupInactiveUsers, cleanupWarnings } = require('../../lib/cleanupManager');
+const { performAutoCleanup, cleanupHistory, cleanupInactiveUsers, cleanupWarnings, cleanupLidUsers } = require('../../lib/cleanupManager');
 
 async function cleanupCommand(sock, chatId, message, senderId, args) {
     try {
@@ -23,8 +23,12 @@ async function cleanupCommand(sock, chatId, message, senderId, args) {
                 deletedCount = await performAutoCleanup();
                 responseText = `Tuan~ Auto-cleanup selesai! Total ${deletedCount} data lama lenyap dari dunia ini. Bersih sekali~ Yuuki merasa seperti dewa pemusnah yang membersihkan dunia dari sampah. Memuaskan~`;
                 break;
+            case 'lidusers':
+                deletedCount = await cleanupLidUsers();
+                responseText = `Tuan~ ${deletedCount} user @lid berhasil di-merge ke @s.whatsapp.net. Duplikat sudah lenyap~`;
+                break;
             default:
-                responseText = `Tuan~ Yuuki pusing membaca perintah Tuan. Coba format yang benar:\n.cleanup [history|users|warnings|all] [hari]\n\nContoh:\n.cleanup all - Hapus semua~ biar bersih\n.cleanup history 60 - Hapus kenangan 60 hari\n.cleanup users 90 - Buang yang tidak setia 90 hari`;
+                responseText = `Tuan~ Yuuki pusing membaca perintah Tuan. Coba format yang benar:\n.cleanup [history|users|warnings|lidusers|all] [hari]\n\nContoh:\n.cleanup all - Hapus semua~ biar bersih\n.cleanup history 60 - Hapus kenangan 60 hari\n.cleanup users 90 - Buang yang tidak setia 90 hari\n.cleanup lidusers - Merge duplikat @lid ke @s.whatsapp.net`;
         }
 
         await sock.sendMessage(chatId, { text: responseText }, { quoted: message });

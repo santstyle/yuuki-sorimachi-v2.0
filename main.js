@@ -114,6 +114,9 @@ const { mylevelCommand } = require('./commands/profile/mylevel');
 const { setnameCommand } = require('./commands/profile/setname');
 const { addXP } = require('./lib/xpManager');
 const { getNextCustomId } = require('./lib/customId');
+const { resolveJid } = require('./lib/jidResolver');
+const { afkCommand, formatDuration } = require('./commands/main/afk');
+const { getAfk, clearAfk } = require('./lib/afkManager');
 const { groupsetCommand } = require('./commands/group/groupset');
 const { cleanupCommand } = require('./commands/owner/cleanup');
 const ownermenuCommand = require('./commands/owner/ownermenu');
@@ -182,28 +185,8 @@ async function handleMessages(sock, messageUpdate, printLog) {
         chatId = message.key.remoteJid;
         let senderId = message.key.fromMe ? (sock.user?.id || message.key.participant || message.key.remoteJid) : (message.key.participant || message.key.remoteJid);
 
-        // Normalisasi senderId: resolve LID → phone, strip device suffix
-        // chatId TIDAK di-resolve — tetap LID JID supaya tcToken ke-attach oleh Baileys
         if (senderId) {
-            if (senderId.endsWith('@lid')) {
-                // LID → phone JID
-                try {
-                    const pn = await sock.signalRepository.lidMapping.getPNForLID(senderId);
-                    if (pn) {
-                        const phoneNum = pn.split('@')[0].split(':')[0];
-                        const phoneJid = phoneNum + '@s.whatsapp.net';
-                        if (senderId !== phoneJid) {
-                            console.log(chalk.cyan(`[${moment().tz('Asia/Jakarta').format('HH:mm:ss')}]`) + chalk.bgMagenta.white(' LID  ') + chalk.white(`Resolve ${senderId} → ${phoneJid}`));
-                            senderId = phoneJid;
-                        }
-                    }
-                } catch (e) {}
-            }
-            // Strip device suffix dari phone JID (e.g. "628xxx:0@s.whatsapp.net" → "628xxx@s.whatsapp.net")
-            if (senderId.endsWith('@s.whatsapp.net') && senderId.includes(':')) {
-                const cleanNum = senderId.split(':')[0];
-                senderId = cleanNum + '@s.whatsapp.net';
-            }
+            senderId = await resolveJid(sock, senderId);
         }
 
         const isGroup = chatId.endsWith('@g.us');
@@ -361,6 +344,29 @@ async function handleMessages(sock, messageUpdate, printLog) {
         }
 
         if (!userMessage.startsWith('.')) {
+            const wasAfk = await getAfk(senderId);
+            if (wasAfk) {
+                await clearAfk(senderId);
+                const duration = formatDuration(wasAfk.since);
+                await sock.sendMessage(chatId, {
+                    text: `@${senderId.split('@')[0]} sudah pulang (${duration}). Yuuki senang Tuan kembali~`,
+                    mentions: [senderId]
+                }, { quoted: message });
+            }
+
+            const mentionedJids = message.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+            for (const rawMentioned of mentionedJids) {
+                const mentioned = await resolveJid(sock, rawMentioned);
+                const afkData = await getAfk(mentioned);
+                if (afkData) {
+                    await sock.sendMessage(chatId, {
+                        text: `@${mentioned.split('@')[0]} AFK${afkData.reason ? `: ${afkData.reason}` : ''}`,
+                        mentions: [mentioned]
+                    }, { quoted: message });
+                    break;
+                }
+            }
+
             await handleYuukiResponse(sock, chatId, message, rawText, senderId);
             if (isGroup) {
                 await handleLinkDetection(sock, chatId, message, userMessage, senderId);
@@ -430,6 +436,12 @@ async function handleMessages(sock, messageUpdate, printLog) {
         let commandExecuted = false;
 
         switch (true) {
+            case userMessage === '.afk' || userMessage.startsWith('.afk '): {
+                const afkArgs = rawText.substring(rawText.indexOf('.afk') + 4).trim().split(/\s+/);
+                await afkCommand(sock, chatId, message, afkArgs, senderId);
+                commandExecuted = true;
+                break;
+            }
             case userMessage === '.toimage' || userMessage === '.toimg': {
                 const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
                 if (quotedMessage?.stickerMessage) {
@@ -1225,9 +1237,9 @@ async function addSudoCommand(sock, chatId, message) {
 
         let targetJid = null;
         if (mentionedJidList.length > 0) {
-            targetJid = mentionedJidList[0];
+            targetJid = await resolveJid(sock, mentionedJidList[0]);
         } else if (quotedParticipant) {
-            targetJid = quotedParticipant;
+            targetJid = await resolveJid(sock, quotedParticipant);
         }
 
         if (!targetJid) {
@@ -1286,9 +1298,9 @@ async function delSudoCommand(sock, chatId, message) {
 
         let targetJid = null;
         if (mentionedJidList.length > 0) {
-            targetJid = mentionedJidList[0];
+            targetJid = await resolveJid(sock, mentionedJidList[0]);
         } else if (quotedParticipant) {
-            targetJid = quotedParticipant;
+            targetJid = await resolveJid(sock, quotedParticipant);
         }
 
         if (!targetJid) {
@@ -1400,7 +1412,7 @@ async function flirtCommand(sock, chatId, message) {
 async function shipCommand(sock, chatId, message) {
     try {
         const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
-        const senderId = message.key.participant || message.key.remoteJid;
+        const senderId = await resolveJid(sock, message.key.participant || message.key.remoteJid);
         const groupMetadata = await sock.groupMetadata(chatId);
         const allMembers = groupMetadata.participants.map(p => p.id).filter(jid => jid !== senderId);
 
@@ -1411,7 +1423,8 @@ async function shipCommand(sock, chatId, message) {
             return;
         }
 
-        let user1 = mentioned[0], user2 = mentioned[1];
+        let user1 = await resolveJid(sock, mentioned[0]);
+        let user2 = await resolveJid(sock, mentioned[1]);
 
         const compatibility = Math.floor(Math.random() * 60) + 30;
 

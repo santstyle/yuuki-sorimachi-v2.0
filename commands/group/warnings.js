@@ -1,13 +1,14 @@
 const { getWarningsByUser, getWarningCount } = require('../../lib/warningManager');
+const { resolveJid } = require('../../lib/jidResolver');
 
 async function warningsCommand(sock, chatId, mentionedJidList, message) {
     try {
         let userToCheck;
 
         if (mentionedJidList && mentionedJidList.length > 0) {
-            userToCheck = mentionedJidList[0];
+            userToCheck = await resolveJid(sock, mentionedJidList[0]);
         } else if (message?.message?.extendedTextMessage?.contextInfo?.participant) {
-            userToCheck = message.message.extendedTextMessage.contextInfo.participant;
+            userToCheck = await resolveJid(sock, message.message.extendedTextMessage.contextInfo.participant);
         }
 
         if (!userToCheck) {

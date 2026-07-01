@@ -5,7 +5,7 @@ async function getUserTitle(sock, chatId, senderId) {
     return isSenderAdmin ? 'Tuan Besar' : 'Tuan';
 }
 
-async function tagAllCommand(sock, chatId, senderId) {
+async function tagAllCommand(sock, chatId, senderId, message) {
     try {
         const { isSenderAdmin, isBotAdmin } = await isAdmin(sock, chatId, senderId);
 
@@ -29,13 +29,13 @@ async function tagAllCommand(sock, chatId, senderId) {
         }
 
         const title = await getUserTitle(sock, chatId, senderId);
-        let message = `Dengan hormat, ${title}, Yuuki panggil semua yang ada di sini:\n\n`;
+        let tagText = `Dengan hormat, ${title}, Yuuki panggil semua yang ada di sini:\n\n`;
         participants.forEach((participant, index) => {
-            message += `${index + 1}. @${participant.id.split('@')[0]}\n`;
+            tagText += `${index + 1}. @${participant.id.split('@')[0]}\n`;
         });
 
         await sock.sendMessage(chatId, {
-            text: message,
+            text: tagText,
             mentions: participants.map(p => p.id)
         }, { quoted: message });
 

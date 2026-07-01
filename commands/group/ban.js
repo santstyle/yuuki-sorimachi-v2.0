@@ -1,14 +1,15 @@
 const prisma = require('../../lib/db');
 const { getNextCustomId } = require('../../lib/customId');
+const { resolveJid } = require('../../lib/jidResolver');
 
 async function banCommand(sock, chatId, message) {
     let userToBan;
 
     if (message.message?.extendedTextMessage?.contextInfo?.mentionedJid?.length > 0) {
-        userToBan = message.message.extendedTextMessage.contextInfo.mentionedJid[0];
+        userToBan = await resolveJid(sock, message.message.extendedTextMessage.contextInfo.mentionedJid[0]);
     }
     else if (message.message?.extendedTextMessage?.contextInfo?.participant) {
-        userToBan = message.message.extendedTextMessage.contextInfo.participant;
+        userToBan = await resolveJid(sock, message.message.extendedTextMessage.contextInfo.participant);
     }
 
     if (!userToBan) {

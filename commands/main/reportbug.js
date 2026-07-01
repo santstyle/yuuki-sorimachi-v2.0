@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const moment = require('moment-timezone');
 const chalk = require('chalk');
+const { resolveJid } = require('../../lib/jidResolver');
 
 const REPORTS_FILE = path.join(__dirname, '../../data/reports.json');
 
@@ -87,7 +88,7 @@ async function handleReportReply(sock, chatId, message, rawText, senderId, sende
 
 async function reportbugCommand(sock, chatId, message, input) {
     const pushName = message.pushName || 'User';
-    const senderId = message.key.participant || message.key.remoteJid;
+    const senderId = await resolveJid(sock, message.key.participant || message.key.remoteJid);
     const isGroup = chatId.endsWith('@g.us');
     const reportMsg = input || '';
 

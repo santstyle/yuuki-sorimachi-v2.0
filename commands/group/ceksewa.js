@@ -1,5 +1,6 @@
 const prisma = require('../../lib/db');
 const isAdmin = require('../../lib/isAdmin');
+const { resolveJid } = require('../../lib/jidResolver');
 
 async function cekSewaCommand(sock, chatId, message) {
     try {
@@ -8,7 +9,7 @@ async function cekSewaCommand(sock, chatId, message) {
             return;
         }
 
-        const senderId = message.key.participant || message.key.remoteJid;
+        const senderId = await resolveJid(sock, message.key.participant || message.key.remoteJid);
         const adminStatus = await isAdmin(sock, chatId, senderId, message);
         if (!adminStatus.isSenderAdmin && !message.key.fromMe) {
             await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Hanya admin grup yang bisa menggunakan command ini. Yuuki mohon pengertian~' }, { quoted: message });
