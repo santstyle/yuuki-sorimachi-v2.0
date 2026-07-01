@@ -1164,7 +1164,7 @@ JAWABLAH SEBAGAI YUUKI SORIMACHI — PELAYAN YANG SETIA DAN RENDAH HATI:`.trim()
             return `Mohon maaf, Tuan~ Yuuki sedang mengalami kendala teknis. Silakan coba lagi beberapa saat~`;
         }
         if (/timeout|ETIMEDOUT|ECONNABORTED/i.test(errorMessage)) {
-            return `Mohon maaf, Tuan~ Yuuki sedang menunggu terlalu lama dari para dewa AI. Jaringan mungkin sedang lambat~`;
+            return `Mohon maaf, Tuan~ Yuuki sedang menunggu terlalu lama. Jaringan mungkin sedang lambat~`;
         }
         if (/ENOTFOUND|ECONNREFUSED|ECONNRESET|ENETUNREACH|EAI_AGAIN|socket hang up|fetch failed/i.test(errorMessage)) {
             return `Mohon maaf, Tuan~ Yuuki sedang terputus dari dunia luar. Jaringan mungkin sedang gangguan~`;
