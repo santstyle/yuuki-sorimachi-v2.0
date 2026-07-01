@@ -123,3 +123,20 @@ model History {
   @@index([userId])
   @@index([chatId])
 }
+
+model AiLog {
+  id           Int      @id @default(autoincrement())
+  provider     String
+  model        String?
+  success      Boolean  @default(true)
+  responseTime Int?     // ms
+  userId       String?
+  userName     String?
+  error        String?
+  tokens       Int?
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt(sort: Desc)])
+  @@index([provider])
+  @@index([success])
+}

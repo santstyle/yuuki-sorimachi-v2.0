@@ -60,6 +60,67 @@ app.get('/api/bot-status', async (req, res) => {
   }
 });
 
+app.get('/api/ai-stats', authenticate, async (req, res) => {
+  try {
+    const { period = '24h' } = req.query;
+    const now = new Date();
+    let since;
+    if (period === '7d') since = new Date(now - 7 * 24 * 60 * 60 * 1000);
+    else if (period === '30d') since = new Date(now - 30 * 24 * 60 * 60 * 1000);
+    else since = new Date(now - 24 * 60 * 60 * 1000);
+
+    const logs = await prisma.aiLog.findMany({
+      where: { createdAt: { gte: since } },
+      orderBy: { createdAt: 'desc' },
+      take: 500,
+    });
+
+    const providers = {};
+    for (const log of logs) {
+      if (!providers[log.provider]) {
+        providers[log.provider] = { total: 0, success: 0, fail: 0, totalTime: 0, lastUsed: null, model: log.model };
+      }
+      const p = providers[log.provider];
+      p.total++;
+      if (log.success) { p.success++; p.totalTime += log.responseTime || 0; }
+      else p.fail++;
+      if (!p.lastUsed || log.createdAt > p.lastUsed) p.lastUsed = log.createdAt;
+    }
+
+    const stats = Object.entries(providers).map(([name, p]) => ({
+      provider: name,
+      model: p.model,
+      total: p.total,
+      success: p.success,
+      fail: p.fail,
+      successRate: p.total > 0 ? Math.round((p.success / p.total) * 100) : 0,
+      avgResponseTime: p.success > 0 ? Math.round(p.totalTime / p.success) : 0,
+      lastUsed: p.lastUsed,
+    }));
+
+    stats.sort((a, b) => b.total - a.total);
+
+    const totalCalls = logs.length;
+    const totalSuccess = logs.filter(l => l.success).length;
+
+    res.json({
+      period,
+      totalCalls,
+      totalSuccess,
+      totalFail: totalCalls - totalSuccess,
+      successRate: totalCalls > 0 ? Math.round((totalSuccess / totalCalls) * 100) : 0,
+      providers: stats,
+      recentErrors: logs.filter(l => !l.success).slice(0, 10).map(l => ({
+        provider: l.provider,
+        error: l.error,
+        createdAt: l.createdAt,
+      })),
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   if (username !== ADMIN_USERNAME) return res.status(401).json({ error: 'Invalid credentials' });
@@ -89,6 +150,7 @@ const SORTABLE = {
   GroupSettings: ['id'],
   WarningRecord: ['createdAt'],
   History: ['createdAt'],
+  AiLog: ['createdAt', 'provider', 'success', 'responseTime'],
 };
 
 const SEARCHABLE = {
@@ -99,6 +161,7 @@ const SEARCHABLE = {
   GroupSettings: ['groupId', 'groupName'],
   WarningRecord: ['userId', 'userName', 'reason', 'moderatorName'],
   History: ['userId', 'userName', 'command', 'chatId'],
+  AiLog: ['provider', 'model', 'userId', 'userName', 'error'],
 };
 
 const EXCLUDE_CREATE = {
@@ -109,6 +172,7 @@ const EXCLUDE_CREATE = {
   GroupSettings: ['id'],
   WarningRecord: ['id', 'createdAt'],
   History: ['id', 'createdAt'],
+  AiLog: ['id', 'createdAt'],
 };
 
 app.get('/api/models', authenticate, async (req, res) => {
