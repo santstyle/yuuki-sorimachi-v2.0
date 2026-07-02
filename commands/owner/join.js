@@ -90,7 +90,7 @@ async function joinCommand(sock, chatId, message, args, senderIsSudo, senderId) 
         } else if (errMsg.includes('not-authorized') || errMsg.includes('not authorized')) {
             await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki tidak memiliki izin untuk bergabung ke grup tersebut. Mungkin tautannya sudah expired, Yuuki telah diblokir dari grup, atau ada pengaturan yang membatasi Yuuki. Coba periksa kembali tautannya~' }, { quoted: message });
         } else if (errMsg.includes('account_reachout_restricted')) {
-            await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Akun Yuuki sedang dibatasi oleh WhatsApp. Jika masih gagal, simpan nomor Yuuki dan add manual ke grup ya~' }, { quoted: message });
+            await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Akun Yuuki sedang dibatasi oleh WhatsApp karena terlalu sering join grup. Jika masih gagal, simpan nomor Yuuki dan add manual ke grup ya~' }, { quoted: message });
         } else {
             await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal bergabung ke grup. Mungkin tautannya sudah expired atau Yuuki tidak diizinkan~' }, { quoted: message });
         }
