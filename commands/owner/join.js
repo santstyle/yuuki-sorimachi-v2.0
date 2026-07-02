@@ -49,6 +49,7 @@ async function joinCommand(sock, chatId, message, args, senderIsSudo, senderId) 
             groupId = inviteInfo.id;
         } catch (e) { }
 
+        await new Promise(r => setTimeout(r, 3000));
         await sock.groupAcceptInvite(code);
 
         await sock.sendMessage(chatId, {
@@ -88,6 +89,8 @@ async function joinCommand(sock, chatId, message, args, senderIsSudo, senderId) 
             await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal bergabung karena koneksi internet sedang tidak stabil. Mohon Tuan bersabar dan coba lagi nanti~' }, { quoted: message });
         } else if (errMsg.includes('not-authorized') || errMsg.includes('not authorized')) {
             await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki tidak memiliki izin untuk bergabung ke grup tersebut. Mungkin tautannya sudah expired, Yuuki telah diblokir dari grup, atau ada pengaturan yang membatasi Yuuki. Coba periksa kembali tautannya~' }, { quoted: message });
+        } else if (errMsg.includes('account_reachout_restricted')) {
+            await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Akun Yuuki sedang dibatasi oleh WhatsApp. Jika masih gagal, simpan nomor Yuuki dan add manual ke grup ya~' }, { quoted: message });
         } else {
             await sock.sendMessage(chatId, { text: 'Maaf, Tuan~ Yuuki gagal bergabung ke grup. Mungkin tautannya sudah expired atau Yuuki tidak diizinkan~' }, { quoted: message });
         }
