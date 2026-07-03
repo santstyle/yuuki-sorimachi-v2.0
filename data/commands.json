@@ -247,6 +247,12 @@
           "name": ".stickercrop",
           "alias": ".scrop",
           "desc": "Crop stiker ke bentuk 1:1"
+        },
+        {
+          "name": ".smeme",
+          "desc": "Buat meme stiker dengan teks",
+          "usage": ".smeme <teks> atau .smeme <teks atas> | <teks bawah>",
+          "example": ".smeme halo dunia atau .smeme atas | bawah"
         }
       ]
     },
