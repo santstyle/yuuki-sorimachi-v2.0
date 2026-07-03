@@ -179,6 +179,18 @@ mkdir -p node_modules/@imgly/background-removal-node/resources/model
 curl -L https://github.com/imgly/background-removal-js/releases/download/v1.4.0/model-medium.onnx -o node_modules/@imgly/background-removal-node/resources/model/model-medium.onnx
 ```
 
+### 9b. Install Canvas Dependencies untuk Fitur Smeme
+
+Fitur `.smeme` menggunakan `@napi-rs/canvas` untuk rendering teks dengan font custom (ObelixPro). Package ini sudah termasuk di `package.json` dan akan terinstall otomatis saat `npm install`.
+
+Di **Linux VPS**, pastikan library system berikut terinstall untuk font rendering:
+
+```bash
+sudo apt install -y libfontconfig1 libfreetype6 libpango1.0-0 libcairo2 libjpeg-turbo8 libpng16-16 libgif7 librsvg2-2
+```
+
+> **Catatan:** Jika library ini tidak terinstall, fitur `.smeme` akan gagal dengan error terkait font rendering. Font ObelixPro sudah disertakan di folder `assets/fonts/`.
+
 ### 10. Setup Environment Variables
 
 ```bash
@@ -369,7 +381,7 @@ Kirim pesan `.ping` ke nomor bot — harus reply `Pong!`.
   maxStoreMessages: 20,               // Max pesan disimpan di memory
   storeWriteInterval: 10000,          // Interval simpan store (ms)
   description: "-",                   // Deskripsi bot
-  version: "2.0.0",                   // Versi bot (sesuai package.json)
+  version: "2.4.1",                   // Versi bot (sesuai package.json)
   removebgApiKey: '',                 // API key remove.bg (opsional, local AI sbg fallback)
 }
 ```

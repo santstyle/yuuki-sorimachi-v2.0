@@ -1,6 +1,6 @@
 {
   "name": "yuuki-bot",
-  "version": "2.3.0",
+  "version": "2.4.1",
   "description": "WhatsApp Bot",
   "main": "index.js",
   "scripts": {
@@ -28,6 +28,7 @@
     "@adiwajshing/keyed-db": "^0.2.4",
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@hapi/boom": "^10.0.1",
+    "@napi-rs/canvas": "^1.0.2",
     "@prisma/client": "^5.22.0",
     "@types/node": "^20.0.0",
     "@whiskeysockets/baileys": "^7.0.0-rc13",

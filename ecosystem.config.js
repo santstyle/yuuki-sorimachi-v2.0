@@ -1,7 +1,7 @@
 module.exports = {
   apps: [{
     name: "yuuki-bot",
-    "version": "2.0.0",
+    "version": "2.4.1",
     script: "./index.js",
     cwd: __dirname,
 
@@ -45,7 +45,7 @@ module.exports = {
     time: true
   }, {
     name: "yuuki-admin",
-    version: "2.0.0",
+    version: "2.4.1",
     script: "./admin/server.js",
     cwd: __dirname,
 
