@@ -90,6 +90,7 @@ const tovideoCommand = require('./commands/converter/tovideo');
 const stickercropCommand = require('./commands/converter/stickercrop');
 const toGifCommand = require('./commands/converter/togif');
 const toAudioCommand = require('./commands/converter/toaudio');
+const smemeCommand = require('./commands/converter/smeme');
 const { debugLevelUp } = require('./commands/debug/debuglevelup');
 const { lyrics: lyricsCommand } = require('./commands/search/lyrics');
 const pingCommand = require('./commands/main/ping');
@@ -566,6 +567,10 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 break;
             case userMessage === '.sticker' || userMessage === '.s':
                 await stickerCommand(sock, chatId, message, senderId);
+                commandExecuted = true;
+                break;
+            case userMessage.startsWith('.smeme'):
+                await smemeCommand(sock, chatId, message, senderId);
                 commandExecuted = true;
                 break;
             case userMessage.startsWith('.warnings'):
