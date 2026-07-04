@@ -231,10 +231,12 @@ async function handleMessages(sock, messageUpdate, printLog) {
             try {
                 if (!message.key.fromMe) incrementMessageCount(chatId, senderId);
             } catch (e) {}
-            await sock.sendMessage(chatId, {
-                text: `Maaf, Tuan @${senderId.split('@')[0]}~ Yuuki sangat berterima kasih atas perhatian Tuan, tetapi... Yuuki tidak diizinkan berbicara dengan Tuan saat ini. *Keputusan ini di luar kendali Yuuki.* Mohon hubungi pemilik Yuuki jika Tuan merasa ada kekeliruan. Yuuki tetap menanti dengan hormat~`,
-                mentions: [senderId]
-            }, { quoted: message });
+            if (userMessage.startsWith('.')) {
+                await sock.sendMessage(chatId, {
+                    text: `Maaf, Tuan @${senderId.split('@')[0]}~ Yuuki sangat berterima kasih atas perhatian Tuan, tetapi... Yuuki tidak diizinkan berbicara dengan Tuan saat ini. *Keputusan ini di luar kendali Yuuki.* Mohon hubungi pemilik Yuuki jika Tuan merasa ada kekeliruan. Yuuki tetap menanti dengan hormat~`,
+                    mentions: [senderId]
+                }, { quoted: message });
+            }
             return;
         }
 
@@ -558,11 +560,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             case userMessage.startsWith('.menu'):
             case userMessage === '.bot':
             case userMessage === '.list':
-                {
-                    const prefix = userMessage.startsWith('.menu') ? '.menu' : (userMessage === '.bot' ? '.bot' : '.list');
-                    const input = userMessage.slice(prefix.length).trim();
-                    await menuCommand(sock, chatId, message, input);
-                }
+                await menuCommand(sock, chatId, message);
                 commandExecuted = true;
                 break;
             case userMessage === '.sticker' || userMessage === '.s':
@@ -1197,9 +1195,9 @@ async function unbanCommand(sock, chatId, message) {
         let targetJid = null;
 
         if (mentionedJidList.length > 0) {
-            targetJid = mentionedJidList[0];
+            targetJid = await resolveJid(sock, mentionedJidList[0]);
         } else if (quotedParticipant) {
-            targetJid = quotedParticipant;
+            targetJid = await resolveJid(sock, quotedParticipant);
         }
 
         if (!targetJid) {

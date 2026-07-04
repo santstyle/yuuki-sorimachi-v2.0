@@ -1338,13 +1338,17 @@ async function handleYuukiResponse(sock, chatId, message, userMessage, senderId,
         if (isGroup && (!groupData.chatbot || !groupData.chatbot[chatId])) return;
 
         if (!global.__botJidCache) global.__botJidCache = {};
-        if (message.key.fromMe) {
-            if (isGroup) {
-                const botJid = message.key.participant || message.key.remoteJid;
-                if (botJid && (botJid.endsWith('@s.whatsapp.net') || botJid.endsWith('@lid'))) {
-                    global.__botJidCache[chatId] = botJid;
-                }
+        if (!global.__chatbotResponseIds) global.__chatbotResponseIds = new Set();
+
+        if (message.key.fromMe && isGroup) {
+            const botJid = message.key.participant || message.key.remoteJid;
+            if (botJid && (botJid.endsWith('@s.whatsapp.net') || botJid.endsWith('@lid'))) {
+                global.__botJidCache[chatId] = botJid;
             }
+        }
+
+        if (message.key.fromMe && message.key.id && global.__chatbotResponseIds.has(message.key.id)) {
+            global.__chatbotResponseIds.delete(message.key.id);
             return;
         }
 
@@ -1497,11 +1501,16 @@ async function handleYuukiResponse(sock, chatId, message, userMessage, senderId,
         const responseDelay = Math.min(cleanedMessage.length * 10, 3000);
         await delay(responseDelay);
 
-        await sock.sendMessage(chatId, {
+        const sentMsg = await sock.sendMessage(chatId, {
             text: response
         }, {
             quoted: message
         });
+
+        if (sentMsg?.key?.id) {
+            global.__chatbotResponseIds.add(sentMsg.key.id);
+            setTimeout(() => global.__chatbotResponseIds?.delete(sentMsg.key.id), 5000);
+        }
 
     } catch (error) {
         console.error('Error di Yuuki response:', error);
